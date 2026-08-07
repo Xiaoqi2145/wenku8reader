@@ -17,16 +17,8 @@ import android.view.View
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
  * This file includes code from NetNovelReader under the Apache License, Version 2.0.
  * The original source can be found at: https://github.com/ya-b/NetNovelReader/
- *
- * Modified by 15dd on 2024 - 删除了用不到的函数以及变量
  */
 
 class PageText : View {
@@ -37,22 +29,26 @@ class PageText : View {
             isFilterBitmap = true
         }
     }
+
     var mBgColor = Color.WHITE
     var mTextArray: MutableList<String>? = null
+    var mSecondTextArray: MutableList<String>? = null
     var mTextColor: Int = Color.BLACK
     var mTxtFontType: Typeface = Typeface.DEFAULT
     var mBottomTextSize = 45f
     var mTextSize = 55f
         set(value) {
-            if(value > 20f) {
+            if (value > 20f) {
                 field = value
             }
         }
-    var mRowSpace = 2f  //行距
+    var mRowSpace = 2f
 
     var mTitle: String? = null
     var mPageNum: Int = 0
+    var mSecondPageNum: Int = 0
     var mMaxPageNum: Int = 0
+    var mDoublePageMode = false
 
     constructor(context: Context) : super(context)
 
@@ -65,47 +61,98 @@ class PageText : View {
     )
 
     override fun onDraw(canvas: Canvas) {
-        mPaint.color = mTextColor                             //字体颜色
+        mPaint.color = mTextColor
         mPaint.typeface = mTxtFontType
-        mPaint.textSize = mBottomTextSize
+        mPaint.textSize = getFooterTextSize()
         canvas.drawColor(mBgColor)
-        //底部右下角绘制：章节相关信息    格式为:   第 XXX 章节 YYY章节名  ：  n / 该章节总共页数
-        val bottomText = "${mTitle ?: ""} ${if(mPageNum > mMaxPageNum) 0 else mPageNum}/$mMaxPageNum"
-        canvas.drawText(
-            bottomText,
-            width - mPaint.measureText(bottomText) - getMarginLeft(),
-            height - mBottomTextSize,
-            mPaint
-        )
-        if (mTextArray == null || mMaxPageNum < 1) return              //正文内容缺乏，直接不绘制了
-        mPaint.textSize = mTextSize                                       //正文部分画笔大小
-        //绘制正文
-        for (i in 0 until (mTextArray?.size ?: 0)) {
+
+        val currentPage = if (mPageNum > mMaxPageNum) 0 else mPageNum
+        val pageText = if (mDoublePageMode && mSecondPageNum > 0) {
+            "$currentPage-$mSecondPageNum/$mMaxPageNum"
+        } else {
+            "$currentPage/$mMaxPageNum"
+        }
+        drawFooter(canvas, pageText)
+
+        if (mTextArray == null || mMaxPageNum < 1) return
+
+        mPaint.textSize = mTextSize
+        val pageWidth = if (mDoublePageMode) width / 2f else width.toFloat()
+        drawPage(canvas, mTextArray, 0f, pageWidth)
+        if (mDoublePageMode) {
+            mSecondTextArray?.let {
+                drawPage(canvas, it, pageWidth, pageWidth)
+            }
+        }
+    }
+
+    private fun drawPage(
+        canvas: Canvas,
+        textArray: MutableList<String>?,
+        pageLeft: Float,
+        pageWidth: Float
+    ) {
+        for (i in 0 until (textArray?.size ?: 0)) {
             canvas.drawText(
-                mTextArray!![i].replace(" ", "  "),
-                getMarginLeft(),
+                textArray!![i].replace(" ", "  "),
+                pageLeft + getMarginLeft(pageWidth),
                 getMarginTop() + i * mTextSize * mRowSpace,
                 mPaint
             )
         }
     }
 
-    //左边距
-    private fun getMarginLeft(): Float {
-        val count = getTextWidth() / mTextSize.toInt()   //一行字数
-        return (width - count * mTextSize) / 2
+    private fun drawFooter(canvas: Canvas, pageText: String) {
+        val footerMargin = getMarginLeft(width.toFloat()).coerceAtLeast(16f)
+        val footerY = height - getFooterBottomPadding()
+        val pageTextWidth = mPaint.measureText(pageText)
+        val titleMaxWidth = (width - footerMargin * 3f - pageTextWidth).coerceAtLeast(0f)
+        val titleText = fitFooterText(mTitle.orEmpty(), titleMaxWidth)
+        val originalAlpha = mPaint.alpha
+
+        mPaint.alpha = (originalAlpha * 0.55f).toInt()
+        if (titleText.isNotEmpty()) {
+            canvas.drawText(titleText, footerMargin, footerY, mPaint)
+        }
+        canvas.drawText(pageText, width - pageTextWidth - footerMargin, footerY, mPaint)
+        mPaint.alpha = originalAlpha
     }
 
-    //上边距
+    private fun fitFooterText(text: String, maxWidth: Float): String {
+        if (text.isBlank() || maxWidth <= 0f) return ""
+        if (mPaint.measureText(text) <= maxWidth) return text
+
+        val ellipsis = "..."
+        val ellipsisWidth = mPaint.measureText(ellipsis)
+        if (ellipsisWidth >= maxWidth) return ""
+
+        val keepCount = mPaint.breakText(text, true, maxWidth - ellipsisWidth, null)
+        return text.take(keepCount).trimEnd() + ellipsis
+    }
+
+    private fun getMarginLeft(pageWidth: Float): Float {
+        val count = getTextWidth(pageWidth) / mTextSize.toInt()
+        return (pageWidth - count * mTextSize) / 2
+    }
+
     private fun getMarginTop(): Float {
-        val count = getTextHeight() / (mTextSize * mRowSpace).toInt()   //一列字数
-        return ((height - mBottomTextSize) - count * mTextSize * mRowSpace) / 2 + mTextSize
+        val count = getTextHeight() / (mTextSize * mRowSpace).toInt()
+        return (getContentHeight() - count * mTextSize * mRowSpace) / 2 + mTextSize
     }
 
-    //正文区域宽度
-    private fun getTextWidth(): Int = (width * 0.96f).toInt()
+    private fun getTextWidth(pageWidth: Float): Int =
+        (pageWidth * if (mDoublePageMode) 0.90f else 0.96f).toInt()
 
-    //正文区域高度
-    private fun getTextHeight(): Int = ((height - mBottomTextSize) * 0.96f).toInt()
+    private fun getTextHeight(): Int = (getContentHeight() * 0.94f).toInt()
 
+    private fun getContentHeight(): Float =
+        (height - getFooterReservedHeight()).coerceAtLeast(mTextSize * mRowSpace)
+
+    private fun getFooterTextSize(): Float = mBottomTextSize.coerceAtMost(mTextSize * 0.55f)
+
+    private fun getFooterReservedHeight(): Float =
+        (getFooterTextSize() * 2.2f).coerceAtLeast(mTextSize * 1.2f)
+
+    private fun getFooterBottomPadding(): Float =
+        (getFooterTextSize() * 0.55f).coerceAtLeast(12f)
 }

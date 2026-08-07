@@ -1,6 +1,7 @@
 package com.cyh128.hikari_novel.util
 
 import android.app.ActivityOptions
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
@@ -90,6 +91,13 @@ fun Fragment.getIsInDarkMode() =
         Configuration.UI_MODE_NIGHT_NO -> false
         else -> false
     }
+
+fun Context.novelGridSpanCount(): Int {
+    val screenWidthDp = resources.configuration.screenWidthDp
+    if (screenWidthDp == Configuration.SCREEN_WIDTH_DP_UNDEFINED) return 3
+
+    return (screenWidthDp / 130).coerceIn(3, 8)
+}
 
 fun String.urlEncode(enc: String? = null): String {
     if (enc != null) return URLEncoder.encode(this, enc)

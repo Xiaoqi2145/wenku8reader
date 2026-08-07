@@ -2,16 +2,18 @@ package com.cyh128.hikari_novel.ui.read.horizontal
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.Typeface
 import android.text.TextPaint
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.widget.ViewFlipper
 import androidx.core.view.size
 import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.data.model.HorizontalRead
+import com.cyh128.hikari_novel.util.ReaderTapArea
+import com.cyh128.hikari_novel.util.ReaderTouchJudge
 import kotlin.math.abs
 import kotlin.reflect.KProperty
 
@@ -54,8 +56,14 @@ class PageView: ViewFlipper, IPageView {
 
     var textArray = mutableListOf<MutableList<String>>()
     var imageArray = listOf<String>()
+    var doublePageEnabled: Boolean by InvalidateAfterSet(false)
 
     private lateinit var imageClick: (String) -> Unit
+
+    private val touchJudge by lazy { ReaderTouchJudge(context) }
+    private var touchStartX = 0f
+    private var touchStartY = 0f
+    private var ignoreCurrentGesture = false
 
     private var isMoved = false                       //手势判断
     private var isTouching = false                    //手势判断
@@ -82,6 +90,8 @@ class PageView: ViewFlipper, IPageView {
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (handleReaderTouchEvent(event)) return true
+
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 moveStart = floatArrayOf(event.x, event.y)
@@ -168,6 +178,89 @@ class PageView: ViewFlipper, IPageView {
         return true
     }
 
+    override fun performClick(): Boolean {
+        super.performClick()
+        return true
+    }
+
+    private fun handleReaderTouchEvent(event: MotionEvent): Boolean {
+        if (currentView is PageImage) {
+            currentView.dispatchTouchEvent(event)
+            return true
+        }
+        if (currentView is PageLoading) return true
+
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                touchStartX = event.x
+                touchStartY = event.y
+                ignoreCurrentGesture = false
+            }
+
+            MotionEvent.ACTION_POINTER_DOWN -> {
+                ignoreCurrentGesture = true
+            }
+
+            MotionEvent.ACTION_UP -> {
+                if (!ignoreCurrentGesture) {
+                    handleGesture(event.x - touchStartX, event.y - touchStartY)
+                }
+                ignoreCurrentGesture = false
+            }
+
+            MotionEvent.ACTION_CANCEL -> {
+                ignoreCurrentGesture = false
+            }
+        }
+        return true
+    }
+
+    private fun handleGesture(deltaX: Float, deltaY: Float) {
+        if (touchJudge.isTap(deltaX, deltaY)) {
+            performClick()
+            when (touchJudge.tapArea(touchStartX, width)) {
+                ReaderTapArea.Previous -> pageToPrevious()
+                ReaderTapArea.Center -> {
+                    inAnimation = null
+                    outAnimation = null
+                    onCenterClick?.onCenterClick()
+                    pageFlag = 1
+                }
+                ReaderTapArea.Next -> pageToNext()
+            }
+        } else if (touchJudge.isHorizontalSwipe(deltaX, deltaY)) {
+            if (deltaX < 0) pageToNext() else pageToPrevious()
+        }
+    }
+
+    private fun isDoublePageActive(): Boolean =
+        doublePageEnabled &&
+            resources.configuration.screenWidthDp >= 600 &&
+            width > height
+
+    private fun getForwardPageStep(): Int =
+        if (isDoublePageActive() && pageNum < textArray.size) 2 else 1
+
+    private fun getPreviousPageStart(): Int {
+        if (!isDoublePageActive()) return pageNum - 1
+
+        if (pageNum > textArray.size) {
+            return if (pageNum == textArray.size + 1 && textArray.isNotEmpty()) {
+                getLastTextSpreadStart()
+            } else {
+                pageNum - 1
+            }
+        }
+
+        return pageNum - 2
+    }
+
+    private fun getLastTextSpreadStart(): Int =
+        if (textArray.size % 2 == 0) textArray.size - 1 else textArray.size
+
+    private fun normalizeDoublePageStart(page: Int): Int =
+        if (isDoublePageActive() && page in 2..textArray.size && page % 2 == 0) page - 1 else page
+
     fun pageToNext() {
         if (switchAnimation) {
             setInAnimation(context, R.anim.slide_in_right)
@@ -177,8 +270,9 @@ class PageView: ViewFlipper, IPageView {
             outAnimation = null
         }
         pageFlag = 2
-        if (pageNum < maxPageNum) {
-            pageNum += 1
+        val nextPage = pageNum + getForwardPageStep()
+        if (nextPage <= maxPageNum) {
+            pageNum = nextPage
         } else {
             onNextChapter?.onNextChapter()
         }
@@ -196,7 +290,12 @@ class PageView: ViewFlipper, IPageView {
         if (pageNum < 2) {
             onPreviousChapter?.onPreviousChapter()
         } else {
-            pageNum -= 1
+            val previousPage = getPreviousPageStart()
+            if (previousPage < 1) {
+                onPreviousChapter?.onPreviousChapter()
+            } else {
+                pageNum = previousPage
+            }
         }
     }
 
@@ -228,11 +327,23 @@ class PageView: ViewFlipper, IPageView {
                     if (pageNum > textArray.size) pageNum = textArray.size
                     if (pageNum == 0) pageNum = 1
                     mTextArray = textArray[pageNum - 1]
+                    val secondPageNum = if (isDoublePageActive() && pageNum < textArray.size) {
+                        pageNum + 1
+                    } else {
+                        0
+                    }
+                    mSecondTextArray = if (secondPageNum > 0) {
+                        textArray[secondPageNum - 1]
+                    } else {
+                        null
+                    }
+                    mSecondPageNum = secondPageNum
                 }
                 mRowSpace = rowSpace
                 mTextSize = textSize
                 mPageNum = pageNum
                 mMaxPageNum = maxPageNum
+                mDoublePageMode = isDoublePageActive()
                 mTextColor = textColor
                 mTitle = title
                 mTxtFontType = txtFontType
@@ -308,10 +419,21 @@ class PageView: ViewFlipper, IPageView {
     }
 
     //正文区域宽度
-    private fun getTextWidth(): Int = (width * 0.96f).toInt()
+    private fun getTextWidth(): Int {
+        val pageWidth = if (isDoublePageActive()) width / 2f else width.toFloat()
+        return (pageWidth * if (isDoublePageActive()) 0.90f else 0.96f).toInt()
+    }
 
     //正文区域高度
-    private fun getTextHeight(): Int = ((height - bottomTextSize) * 0.96f).toInt()
+    private fun getTextHeight(): Int = (getContentHeight() * 0.94f).toInt()
+
+    private fun getContentHeight(): Float =
+        (height - getFooterReservedHeight()).coerceAtLeast(textSize * rowSpace)
+
+    private fun getFooterTextSize(): Float = bottomTextSize.coerceAtMost(textSize * 0.55f)
+
+    private fun getFooterReservedHeight(): Float =
+        (getFooterTextSize() * 2.2f).coerceAtLeast(textSize * 1.2f)
 
     private fun splitContent(chapterContent: String?): MutableList<MutableList<String>> {
         if (chapterContent.isNullOrEmpty() || getTextWidth() == 0) return mutableListOf()
@@ -323,7 +445,7 @@ class PageView: ViewFlipper, IPageView {
 
         val textWidth = getTextWidth() //可用的文字宽度
         val textHeight = getTextHeight() //可用的文字高度
-        val linesPerPage = textHeight / (textSize * rowSpace).toInt() //每页可容纳的行数
+        val linesPerPage = (textHeight / (textSize * rowSpace).toInt()).coerceAtLeast(1) //每页可容纳的行数
 
         val result = mutableListOf<MutableList<String>>() //最终分页结果
         val tmpList = mutableListOf<String>() //临时存储每行文字
@@ -416,14 +538,23 @@ class PageView: ViewFlipper, IPageView {
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
             this.value = value
             when (property.name) {
-                "rowSpace", "textSize", "bottomTextSize" -> {
+                "rowSpace", "textSize", "bottomTextSize", "doublePageEnabled" -> {
                     if (width < 1) return
-                    val scale = maxPageNum.toFloat() / pageNum
+                    val scale = if (maxPageNum > 0 && pageNum > 0) {
+                        maxPageNum.toFloat() / pageNum
+                    } else {
+                        1f
+                    }
                     textArray = splitContent(content.content)
+                    imageArray = content.imageList
                     maxPageNum = if (content.content.length <= title.length + 1
                         || content.content.isEmpty()
                     ) 0 else textArray.size + imageArray.size
-                    pageNum = (maxPageNum / scale).toInt().takeIf { it != 0 } ?: 1
+                    pageNum = if (maxPageNum == 0) {
+                        0
+                    } else {
+                        (maxPageNum / scale).toInt().coerceIn(1, maxPageNum)
+                    }
                 }
 
                 "content" -> {
@@ -442,6 +573,11 @@ class PageView: ViewFlipper, IPageView {
 
                 }
                 "pageNum" -> {
+                    val normalizedPage = normalizeDoublePageStart(pageNum)
+                    if (normalizedPage != pageNum) {
+                        @Suppress("UNCHECKED_CAST")
+                        this.value = normalizedPage as T
+                    }
                     onPageChange?.onPageChange(pageNum)
                     displayView()
                 }

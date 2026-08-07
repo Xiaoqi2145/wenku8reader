@@ -19,6 +19,8 @@ import com.cyh128.hikari_novel.data.model.Volume
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.jsoup.nodes.Node
+import org.jsoup.nodes.TextNode
 import org.jsoup.select.Elements
 
 object Wenku8Parser {
@@ -502,6 +504,53 @@ object Wenku8Parser {
     }
 
     //获取小说内容中的图像url
+    fun parseReaderPage(html: String): String {
+        val content = Jsoup.parse(html).getElementById("content") ?: return ""
+        val builder = StringBuilder()
+        appendReaderText(content, builder)
+        return normalizeReaderContent(builder.toString())
+    }
+
+    fun getImagesFromReaderPage(html: String): List<String> {
+        val content = Jsoup.parse(html).getElementById("content") ?: return emptyList()
+        return content.select("img[src]")
+            .map { it.attr("abs:src").ifBlank { it.attr("src") } }
+            .filter { it.isNotBlank() }
+            .map { replaceDomain(it.replace("http://", "https://")) }
+    }
+
+    private fun appendReaderText(node: Node, builder: StringBuilder) {
+        readerNode@ for (child in node.childNodes()) {
+            when (child) {
+                is TextNode -> builder.append(child.text().replace('\u00A0', ' '))
+                is Element -> {
+                    when (child.normalName()) {
+                        "ul", "script", "style" -> continue@readerNode
+                        "br" -> {
+                            builder.append('\n')
+                            continue@readerNode
+                        }
+                    }
+                    appendReaderText(child, builder)
+                    when (child.normalName()) {
+                        "div", "p", "li", "tr" -> builder.append('\n')
+                    }
+                }
+            }
+        }
+    }
+
+    private fun normalizeReaderContent(content: String): String =
+        content
+            .replace("\r\n", "\n")
+            .replace('\r', '\n')
+            .lines()
+            .joinToString("\n") { line ->
+                line.replace(Regex("[\\t\\u000B\\f\\u00A0]+"), " ").trimEnd()
+            }
+            .replace(Regex("\n{3,}"), "\n\n")
+            .trim()
+
     fun getImageFromContent(content: String): List<String> {
         val regex = "<!--image-->(.*?)<!--image-->".toRegex()
         val images = mutableListOf<String>()

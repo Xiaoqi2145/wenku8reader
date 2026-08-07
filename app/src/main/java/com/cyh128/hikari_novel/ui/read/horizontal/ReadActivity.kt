@@ -2,6 +2,7 @@ package com.cyh128.hikari_novel.ui.read.horizontal
 
 import android.animation.Animator
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
@@ -26,6 +27,7 @@ import com.cyh128.hikari_novel.data.source.local.database.read_history.horizonta
 import com.cyh128.hikari_novel.databinding.ActivityHorizontalReadBinding
 import com.cyh128.hikari_novel.databinding.ViewHorizontalReadConfigBinding
 import com.cyh128.hikari_novel.ui.read.SelectColorActivity
+import com.cyh128.hikari_novel.ui.read.catalog.ReadChapterCatalogBottomSheet
 import com.cyh128.hikari_novel.util.ThemeHelper
 import com.cyh128.hikari_novel.util.getIsInDarkMode
 import com.cyh128.hikari_novel.util.startActivity
@@ -226,6 +228,10 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
         bottomViewBinding.sVHReadConfigLineSpacing.value = viewModel.getLineSpacing()
         bottomViewBinding.sVHReadConfigKeyDownSwitchChapter.isChecked = viewModel.getKeyDownSwitchChapter()
         bottomViewBinding.sVHReadConfigSwitchAnimation.isChecked = viewModel.getSwitchAnimation()
+        bottomViewBinding.sVHReadConfigTabletDoublePage.isChecked = viewModel.getTabletDoublePage()
+        bottomViewBinding.sVHReadConfigTabletDoublePage.isEnabled =
+            resources.configuration.screenWidthDp >= 600 ||
+                resources.configuration.screenWidthDp == Configuration.SCREEN_WIDTH_DP_UNDEFINED
         bottomViewBinding.sVHReadConfigRestoreChapterReadHistory.isChecked = viewModel.getIsShowChapterReadHistory()
         bottomViewBinding.sVHReadConfigKeepScreenOn.isChecked = viewModel.getKeepScreenOn()
 
@@ -239,6 +245,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
         binding.pvAHRead.textSize = viewModel.getFontSize()
         binding.pvAHRead.bottomTextSize = viewModel.getBottomFontSize()
         binding.pvAHRead.switchAnimation = viewModel.getSwitchAnimation()
+        binding.pvAHRead.doublePageEnabled = viewModel.getTabletDoublePage()
 
         setColor()
         showBar()
@@ -257,6 +264,11 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
     private fun initListener() {
         binding.tbAHRead.setOnMenuItemClickListener {
             when (it.itemId) {
+                R.id.menu_chapter_catalog -> {
+                    showChapterCatalog()
+                    true
+                }
+
                 R.id.menu_hide_bar -> {
                     hideBar()
                     true
@@ -399,6 +411,11 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             binding.pvAHRead.switchAnimation = isChecked
         }
 
+        bottomViewBinding.sVHReadConfigTabletDoublePage.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.setTabletDoublePage(isChecked)
+            binding.pvAHRead.doublePageEnabled = isChecked
+        }
+
         bottomViewBinding.sVHReadConfigRestoreChapterReadHistory.setOnCheckedChangeListener { _, isChecked ->
             viewModel.setIsShowChapterReadHistory(isChecked)
             bottomViewBinding.sVHReadConfigRestoreChapterReadHistoryWithoutConfirm.isEnabled = isChecked
@@ -407,6 +424,29 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
         bottomViewBinding.sVHReadConfigRestoreChapterReadHistoryWithoutConfirm.setOnCheckedChangeListener { _, isChecked ->
             viewModel.setIsShowChapterReadHistoryWithoutConfirm(isChecked)
         }
+    }
+
+    private fun showChapterCatalog() {
+        val novel = viewModel.novel ?: return
+        ReadChapterCatalogBottomSheet
+            .newInstance(novel, viewModel.curVolumePos, viewModel.curChapterPos)
+            .apply {
+                onChapterSelected = { volumePos, chapterPos ->
+                    jumpToChapter(volumePos, chapterPos)
+                }
+            }
+            .show(supportFragmentManager, "horizontal_read_chapter_catalog")
+    }
+
+    private fun jumpToChapter(volumePos: Int, chapterPos: Int) {
+        if (viewModel.curVolumePos == volumePos && viewModel.curChapterPos == chapterPos) return
+
+        viewModel.goToLatest = false
+        viewModel.curVolumePos = volumePos
+        viewModel.curChapterPos = chapterPos
+        binding.pvAHRead.showLoadingTip()
+        viewModel.getNovelContent()
+        setBottomBarIsEnable(false)
     }
 
     private fun toPreviousChapter() {
@@ -426,6 +466,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
                 }
                 viewModel.curVolumePos--
                 viewModel.curChapterPos = viewModel.curVolume.chapters.size - 1
+                viewModel.goToLatest = false
                 binding.pvAHRead.showLoadingTip()
 
                 viewModel.getNovelContent()
@@ -434,6 +475,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             }
             binding.pvAHRead.showLoadingTip()
             viewModel.curChapterPos--
+            viewModel.goToLatest = false
             viewModel.getNovelContent()
             setBottomBarIsEnable(false)
         }
@@ -453,6 +495,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
                 }
                 viewModel.curVolumePos++
                 viewModel.curChapterPos = 0
+                viewModel.goToLatest = false
                 binding.pvAHRead.showLoadingTip()
                 viewModel.getNovelContent()
                 setBottomBarIsEnable(false)
@@ -460,6 +503,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             }
             binding.pvAHRead.showLoadingTip()
             viewModel.curChapterPos++
+            viewModel.goToLatest = false
             viewModel.getNovelContent()
             setBottomBarIsEnable(false)
         }

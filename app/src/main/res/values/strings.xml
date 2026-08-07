@@ -260,6 +260,7 @@
     <string name="default_tab">冷启动默认Tab</string>
     <string name="restore_chapter_read_history_without_confirm">直接恢复历史记录并且不提醒</string>
     <string name="switch_animation">翻页动画</string>
+    <string name="tablet_double_page">平板双页阅读</string>
     <string name="key_down_switch_chapter">音量键翻页</string>
     <string name="keep_screen_on">屏幕常亮</string>
     <string name="progress_text_size">进度提示字体大小</string>
@@ -324,4 +325,7 @@
     <string name="warning">警告</string>
     <string name="server_empty_content">服务器返回了空数据，请查看其它章节</string>
     <string name="http_code_429">请求次数过多，请稍后重试</string>
+    <string name="chapter_catalog">目录</string>
+    <string name="current_chapter">当前章节</string>
+    <string name="volume_number">第%1$d卷</string>
 </resources>

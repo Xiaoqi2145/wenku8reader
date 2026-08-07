@@ -13,7 +13,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -60,33 +59,32 @@ class BookshelfViewModel @Inject constructor(
             bookshelfRepository.deleteAll()
 
             val list = (0..5).map { classId ->
-                async {
-                    wenku8Repository.getBookshelf(classId)
-                        .onSuccess { success ->
-                            bookshelfRepository.upsertAll(
-                                success.list.map { info ->
-                                    BookshelfEntity(
-                                        aid = info.aid,
-                                        bid = info.bid,
-                                        detailUrl = info.detailUrl,
-                                        title = info.title,
-                                        img = info.img,
-                                        classId = classId
-                                    )
-                                }
-                            )
-                            if (classId == 5) {
-                                bookshelfRepository.setMaxCollection(success.maxNum)
+                async<Boolean> {
+                    val result = wenku8Repository.getBookshelf(classId)
+                    result.onSuccess { success ->
+                        bookshelfRepository.upsertAll(
+                            success.list.map { info ->
+                                BookshelfEntity(
+                                    aid = info.aid,
+                                    bid = info.bid,
+                                    detailUrl = info.detailUrl,
+                                    title = info.title,
+                                    img = info.img,
+                                    classId = classId
+                                )
                             }
-                            return@async true
-                        }.onFailure { failure ->
-                            sendEvent(Event.NetworkErrorEvent(failure.message), "event_bookshelf_fragment")
-                            cancel()
+                        )
+                        if (classId == 5) {
+                            bookshelfRepository.setMaxCollection(success.maxNum)
                         }
+                    }.onFailure { failure ->
+                        sendEvent(Event.NetworkErrorEvent(failure.message), "event_bookshelf_fragment")
+                    }
+                    result.isSuccess
                 }
             }
 
-            val result = list.awaitAll().all { it as Boolean }
+            val result = list.awaitAll().all { it }
             if (result) sendEvent(Event.LoadSuccessEvent, "event_bookshelf_fragment")
         }
     }

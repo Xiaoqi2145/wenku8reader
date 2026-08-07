@@ -1,5 +1,6 @@
 package com.cyh128.hikari_novel.ui.splash
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -13,7 +14,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -64,34 +64,33 @@ class LoginViewModel @Inject constructor(
             bookshelfRepository.deleteAll()
 
             val list = (0..5).map { classId ->
-                async {
-                    wenku8Repository.getBookshelf(classId)
-                        .onSuccess { success ->
-                            bookshelfRepository.upsertAll(
-                                success.list.map { info ->
-                                    BookshelfEntity(
-                                        aid = info.aid,
-                                        bid = info.bid,
-                                        detailUrl = info.detailUrl,
-                                        title = info.title,
-                                        img = info.img,
-                                        classId = classId
-                                    )
-                                }
-                            )
-                            if (classId == 5) {
-                                bookshelfRepository.setMaxCollection(success.maxNum)
+                async<Boolean> {
+                    val result = wenku8Repository.getBookshelf(classId)
+                    result.onSuccess { success ->
+                        bookshelfRepository.upsertAll(
+                            success.list.map { info ->
+                                BookshelfEntity(
+                                    aid = info.aid,
+                                    bid = info.bid,
+                                    detailUrl = info.detailUrl,
+                                    title = info.title,
+                                    img = info.img,
+                                    classId = classId
+                                )
                             }
-                            return@async true
-                        }.onFailure { failure ->
-                            sendEvent(Event.NetworkErrorEvent(failure.message), "event_login_activity")
-                            cancel() //取消协程
+                        )
+                        if (classId == 5) {
+                            bookshelfRepository.setMaxCollection(success.maxNum)
                         }
+                    }.onFailure { failure ->
+                        Log.w("LoginViewModel", "Bookshelf sync failed for class $classId", failure)
+                    }
+                    result.isSuccess
                 }
             }
 
-            val result = list.awaitAll().all { it as Boolean }
-            if (result) sendEvent(Event.LogInSuccessEvent, "event_login_activity")
+            list.awaitAll()
+            sendEvent(Event.LogInSuccessEvent, "event_login_activity")
         }
     }
 

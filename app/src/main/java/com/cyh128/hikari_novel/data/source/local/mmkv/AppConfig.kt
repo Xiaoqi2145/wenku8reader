@@ -40,7 +40,7 @@ class AppConfig @Inject constructor() {
 
     //www.wenku8.net或www.wenku8.cc
     var node: String
-        get() = cursor.decodeString("node", "www.wenku8.net")!!
+        get() = cursor.decodeString("node", "www.wenku8.cc")!!
         set(value) {
             cursor.encode("node", value)
         }

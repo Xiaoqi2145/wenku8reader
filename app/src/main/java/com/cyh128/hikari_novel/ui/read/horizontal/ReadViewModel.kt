@@ -127,6 +127,12 @@ class ReadViewModel @Inject constructor(
         horizontalReadRepository.setSwitchAnimation(value)
     }
 
+    fun getTabletDoublePage() = horizontalReadRepository.getTabletDoublePage()
+
+    fun setTabletDoublePage(value: Boolean) {
+        horizontalReadRepository.setTabletDoublePage(value)
+    }
+
     fun getIsShowChapterReadHistory() = horizontalReadRepository.getIsShowChapterReadHistory()
 
     fun setIsShowChapterReadHistory(value: Boolean) {

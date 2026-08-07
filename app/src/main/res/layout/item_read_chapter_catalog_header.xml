@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/tv_i_read_chapter_catalog_header"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:ellipsize="end"
+    android:maxLines="1"
+    android:paddingLeft="20dp"
+    android:paddingTop="14dp"
+    android:paddingRight="20dp"
+    android:paddingBottom="8dp"
+    android:textColor="?attr/colorPrimary"
+    android:textSize="13sp"
+    android:textStyle="bold"
+    tools:text="Volume" />

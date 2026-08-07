@@ -2,8 +2,8 @@ package com.cyh128.hikari_novel.ui.read.vertical
 
 import android.annotation.SuppressLint
 import android.graphics.Color
+import android.graphics.Rect
 import android.os.Bundle
-import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewTreeObserver
@@ -14,6 +14,8 @@ import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.base.BaseFragment
 import com.cyh128.hikari_novel.data.model.Event
 import com.cyh128.hikari_novel.databinding.FragmentVerticalReadBinding
+import com.cyh128.hikari_novel.util.ReaderTapArea
+import com.cyh128.hikari_novel.util.ReaderTouchJudge
 import com.cyh128.hikari_novel.util.getIsInDarkMode
 import com.cyh128.hikari_novel.util.startActivity
 import com.drake.channel.receiveEvent
@@ -27,8 +29,14 @@ import java.text.DecimalFormat
 @AndroidEntryPoint
 class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
     private val viewModel by lazy { ViewModelProvider(requireActivity())[ReadViewModel::class.java] }
-    private lateinit var gestureDetector: GestureDetector //https://juejin.cn/post/7032900181519515685
+    private lateinit var touchJudge: ReaderTouchJudge
     private var readAdapter: ReadAdapter? = null
+    private val interactiveChildRect = Rect()
+    private var touchStartX = 0f
+    private var touchStartY = 0f
+    private var ignoreCurrentGesture = false
+    private var touchStartedOnInteractiveChild = false
+    private var hasRequestedNextChapter = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -128,15 +136,15 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
 
     @SuppressLint("ClickableViewAccessibility")
     private fun initListener() {
-        gestureDetector = GestureDetector(requireActivity(), ReaderBarGestureListener())
-        binding.nsvFVRead.setOnTouchListener { _: View?, event: MotionEvent? ->
-            gestureDetector.onTouchEvent(
-                (event)!!
-            )
+        touchJudge = ReaderTouchJudge(requireContext())
+        binding.nsvFVRead.setOnTouchListener { _, event ->
+            handleReaderTouch(event)
+            false
         }
 
         binding.nsvFVRead.setOnScrollChangeListener { _, _, _, _, _ ->
             refreshProgressText()
+            maybeAutoLoadNextChapter()
         }
 
         binding.bFVReadPreviousChapter.setOnClickListener {
@@ -145,6 +153,56 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
 
         binding.bFVReadNextChapter.setOnClickListener {
             (requireActivity() as ReadActivity).toNextChapter()
+        }
+    }
+
+    private fun handleReaderTouch(event: MotionEvent) {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                touchStartX = event.x
+                touchStartY = event.y
+                ignoreCurrentGesture = false
+                touchStartedOnInteractiveChild = isInteractiveChildTouch(event)
+            }
+
+            MotionEvent.ACTION_POINTER_DOWN -> {
+                ignoreCurrentGesture = true
+            }
+
+            MotionEvent.ACTION_UP -> {
+                val deltaX = event.x - touchStartX
+                val deltaY = event.y - touchStartY
+                if (!ignoreCurrentGesture &&
+                    !touchStartedOnInteractiveChild &&
+                    touchJudge.isTap(deltaX, deltaY) &&
+                    touchJudge.tapArea(touchStartX, binding.nsvFVRead.width) == ReaderTapArea.Center
+                ) {
+                    toggleReaderBar()
+                }
+                ignoreCurrentGesture = false
+                touchStartedOnInteractiveChild = false
+            }
+
+            MotionEvent.ACTION_CANCEL -> {
+                ignoreCurrentGesture = false
+                touchStartedOnInteractiveChild = false
+            }
+        }
+    }
+
+    private fun isInteractiveChildTouch(event: MotionEvent): Boolean =
+        listOf(binding.bFVReadPreviousChapter, binding.rvFVRead, binding.bFVReadNextChapter).any {
+            it.getGlobalVisibleRect(interactiveChildRect) &&
+                interactiveChildRect.contains(event.rawX.toInt(), event.rawY.toInt())
+        }
+
+    private fun toggleReaderBar() {
+        if (viewModel.isBarShown) {
+            (requireActivity() as ReadActivity).hideBar()
+            viewModel.isBarShown = false
+        } else {
+            (requireActivity() as ReadActivity).showBar()
+            viewModel.isBarShown = true
         }
     }
 
@@ -159,33 +217,20 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
         viewModel.progressText.value = "$result%"
     }
 
-    private inner class ReaderBarGestureListener : GestureDetector.OnGestureListener {
-        override fun onDown(e: MotionEvent): Boolean = false
-        override fun onShowPress(e: MotionEvent) {}
-        override fun onSingleTapUp(e: MotionEvent): Boolean {
-            if (viewModel.isBarShown) {
-                (requireActivity() as ReadActivity).hideBar()
-                viewModel.isBarShown = false
-            } else {
-                (requireActivity() as ReadActivity).showBar()
-                viewModel.isBarShown = true
-            }
-            return true
+    private fun maybeAutoLoadNextChapter() {
+        if (hasRequestedNextChapter) return
+
+        val contentView = binding.nsvFVRead.getChildAt(0) ?: return
+        val canScroll = contentView.height > binding.nsvFVRead.height
+        if (!canScroll) return
+
+        val thresholdPx = (resources.displayMetrics.density * 24).toInt()
+        val distanceToBottom =
+            contentView.height - binding.nsvFVRead.height - binding.nsvFVRead.scrollY
+
+        if (distanceToBottom <= thresholdPx) {
+            hasRequestedNextChapter = (requireActivity() as ReadActivity).autoLoadNextChapter()
         }
-
-        override fun onScroll(
-            e1: MotionEvent?,
-            e2: MotionEvent,
-            distanceX: Float,
-            distanceY: Float
-        ): Boolean = false
-
-        override fun onLongPress(e: MotionEvent) {}
-        override fun onFling(
-            e1: MotionEvent?,
-            e2: MotionEvent,
-            velocityX: Float,
-            velocityY: Float
-        ): Boolean = false
     }
+
 }

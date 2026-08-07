@@ -62,6 +62,12 @@ class HorizontalReadRepository @Inject constructor(
         horizontalReadConfig.switchAnimation = value
     }
 
+    fun getTabletDoublePage() = horizontalReadConfig.tabletDoublePage
+
+    fun setTabletDoublePage(value: Boolean) {
+        horizontalReadConfig.tabletDoublePage = value
+    }
+
     //获取是否显示当前章节的历史阅读记录
     fun getIsShowChapterReadHistory() = horizontalReadConfig.isShowChapterReadHistory
 

@@ -10,6 +10,7 @@ import com.cyh128.hikari_novel.data.model.ListViewType
 import com.cyh128.hikari_novel.databinding.FragmentNovelListBinding
 import com.cyh128.hikari_novel.ui.detail.NovelInfoActivity
 import com.cyh128.hikari_novel.ui.main.NovelCoverListAdapter
+import com.cyh128.hikari_novel.util.novelGridSpanCount
 import com.cyh128.hikari_novel.util.startActivity
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -26,7 +27,7 @@ class BookshelfSearchContentFragment: BaseFragment<FragmentNovelListBinding>() {
             }
         }
         binding.rvFNovelList.apply {
-            layoutManager = if (viewModel.listViewType == ListViewType.Linear) LinearLayoutManager(context) else GridLayoutManager(context, 3)
+            layoutManager = if (viewModel.listViewType == ListViewType.Linear) LinearLayoutManager(context) else GridLayoutManager(requireContext(), requireContext().novelGridSpanCount())
             this.adapter = adapter
         }
     }

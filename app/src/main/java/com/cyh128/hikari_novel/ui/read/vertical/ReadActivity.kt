@@ -21,6 +21,7 @@ import com.cyh128.hikari_novel.databinding.ActivityVerticalReadBinding
 import com.cyh128.hikari_novel.databinding.ViewVerticalReadConfigBinding
 import com.cyh128.hikari_novel.ui.other.LoadingView
 import com.cyh128.hikari_novel.ui.read.SelectColorActivity
+import com.cyh128.hikari_novel.ui.read.catalog.ReadChapterCatalogBottomSheet
 import com.cyh128.hikari_novel.util.getIsInDarkMode
 import com.drake.channel.receiveEvent
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -152,6 +153,11 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
     private fun initListener() {
         binding.tbAVRead.setOnMenuItemClickListener {
             when (it.itemId) {
+                R.id.menu_chapter_catalog -> {
+                    showChapterCatalog()
+                    true
+                }
+
                 R.id.menu_hide_bar -> {
                     hideBar()
                     true
@@ -236,6 +242,29 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
         }
     }
 
+    private fun showChapterCatalog() {
+        val novel = viewModel.novel ?: return
+        ReadChapterCatalogBottomSheet
+            .newInstance(novel, viewModel.curVolumePos, viewModel.curChapterPos)
+            .apply {
+                onChapterSelected = { volumePos, chapterPos ->
+                    jumpToChapter(volumePos, chapterPos)
+                }
+            }
+            .show(supportFragmentManager, "vertical_read_chapter_catalog")
+    }
+
+    private fun jumpToChapter(volumePos: Int, chapterPos: Int) {
+        if (viewModel.curVolumePos == volumePos && viewModel.curChapterPos == chapterPos) return
+
+        viewModel.goToLatest = false
+        viewModel.curVolumePos = volumePos
+        viewModel.curChapterPos = chapterPos
+        showLoading()
+        viewModel.getNovelContent()
+        setBottomBarIsEnable(false)
+    }
+
     fun toPreviousChapter() { //切换至上一章
         lifecycleScope.launch {
             if (viewModel.curChapterPos == 0) { //判断是不是该卷的第一章
@@ -253,6 +282,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
                 }
                 viewModel.curVolumePos--
                 viewModel.curChapterPos = viewModel.curVolume.chapters.size - 1
+                viewModel.goToLatest = false
                 showLoading()
                 viewModel.getNovelContent()
                 setBottomBarIsEnable(false)
@@ -260,6 +290,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
             }
             showLoading()
             viewModel.curChapterPos--
+            viewModel.goToLatest = false
             viewModel.getNovelContent()
             setBottomBarIsEnable(false)
         }
@@ -279,6 +310,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
                 }
                 viewModel.curVolumePos++
                 viewModel.curChapterPos = 0
+                viewModel.goToLatest = false
                 showLoading()
                 viewModel.getNovelContent()
                 setBottomBarIsEnable(false)
@@ -286,9 +318,26 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
             }
             showLoading()
             viewModel.curChapterPos++
+            viewModel.goToLatest = false
             viewModel.getNovelContent()
             setBottomBarIsEnable(false)
         }
+    }
+
+    fun autoLoadNextChapter(): Boolean {
+        if (viewModel.curChapterPos == viewModel.curVolume.chapters.size - 1) {
+            if (viewModel.curVolumePos == viewModel.novel!!.volume.size - 1) return false
+            viewModel.curVolumePos++
+            viewModel.curChapterPos = 0
+        } else {
+            viewModel.curChapterPos++
+        }
+
+        viewModel.goToLatest = false
+        showLoading()
+        viewModel.getNovelContent()
+        setBottomBarIsEnable(false)
+        return true
     }
 
     private fun showContent() { //显示小说正文内容

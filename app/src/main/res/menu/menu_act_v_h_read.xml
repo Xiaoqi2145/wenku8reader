@@ -3,6 +3,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/menu_chapter_catalog"
+        android:icon="@drawable/ic_view_list"
+        android:title="@string/chapter_catalog"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/menu_hide_bar"
         android:icon="@drawable/ic_fullscreen"
         android:title="@string/hide_bar"

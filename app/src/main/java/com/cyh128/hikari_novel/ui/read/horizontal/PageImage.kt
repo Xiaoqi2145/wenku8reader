@@ -17,6 +17,8 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.cyh128.hikari_novel.util.ReaderTapArea
+import com.cyh128.hikari_novel.util.ReaderTouchJudge
 import kotlin.math.abs
 
 /*
@@ -71,6 +73,11 @@ class PageImage : AppCompatImageView {
     lateinit var mOnPreviousPage: () -> Unit
     var mOnCenterClick: IPageView.OnCenterClick? = null
 
+    private val touchJudge by lazy { ReaderTouchJudge(context) }
+    private var touchStartX = 0f
+    private var touchStartY = 0f
+    private var ignoreCurrentGesture = false
+
     private var isMoved = false                       //手势判断
     private var isTouching = false                    //手势判断
     private var moveStart = FloatArray(2)        //手势判断
@@ -91,6 +98,8 @@ class PageImage : AppCompatImageView {
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (handleReaderTouchEvent(event)) return true
+
         imageRect = getBitmapRectF(imageBitmap)
 
         val x = event.x
@@ -170,21 +179,69 @@ class PageImage : AppCompatImageView {
         return super.onTouchEvent(event)
     }
 
+    override fun performClick(): Boolean {
+        super.performClick()
+        return true
+    }
+
+    private fun handleReaderTouchEvent(event: MotionEvent): Boolean {
+        imageRect = getBitmapRectF(imageBitmap)
+
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                touchStartX = event.x
+                touchStartY = event.y
+                ignoreCurrentGesture = false
+            }
+
+            MotionEvent.ACTION_POINTER_DOWN -> {
+                ignoreCurrentGesture = true
+            }
+
+            MotionEvent.ACTION_UP -> {
+                if (!ignoreCurrentGesture) {
+                    handleGesture(event.x - touchStartX, event.y - touchStartY)
+                }
+                ignoreCurrentGesture = false
+            }
+
+            MotionEvent.ACTION_CANCEL -> {
+                ignoreCurrentGesture = false
+            }
+        }
+        return true
+    }
+
+    private fun handleGesture(deltaX: Float, deltaY: Float) {
+        if (touchJudge.isTap(deltaX, deltaY)) {
+            performClick()
+            when (touchJudge.tapArea(touchStartX, width)) {
+                ReaderTapArea.Previous -> mOnPreviousPage()
+                ReaderTapArea.Center -> handleCenterTap()
+                ReaderTapArea.Next -> mOnNextPage()
+            }
+        } else if (touchJudge.isHorizontalSwipe(deltaX, deltaY)) {
+            if (deltaX < 0) mOnNextPage() else mOnPreviousPage()
+        }
+    }
+
+    private fun handleCenterTap() {
+        if (imageRect?.contains(touchStartX, touchStartY) == true || imageBitmap == null) {
+            mImageurl?.let { mImageClick(it) }
+        } else {
+            mOnCenterClick?.onCenterClick()
+        }
+    }
+
     override fun onDraw(canvas: Canvas) {
         mPaint.color = mTextColor                             //字体颜色
         mPaint.typeface = mTxtFontType
-        mPaint.textSize = mBottomTextSize
+        mPaint.textSize = getFooterTextSize()
         canvas.drawColor(mBgColor)
 
         //底部右下角绘制：章节相关信息    格式为:   第 XXX 章节 YYY章节名  ：  n / 该章节总共页数
-        val bottomText =
-            "${mTitle ?: ""} ${if (mPageNum > mMaxPageNum) 0 else mPageNum}/$mMaxPageNum"
-        canvas.drawText(
-            bottomText,
-            width - mPaint.measureText(bottomText) - getMarginLeft(),
-            height - mBottomTextSize,
-            mPaint
-        )
+        val pageText = "${if (mPageNum > mMaxPageNum) 0 else mPageNum}/$mMaxPageNum"
+        drawFooter(canvas, pageText)
 
         if (imageBitmap == null) {
             if (isLoadFailed) {
@@ -212,6 +269,34 @@ class PageImage : AppCompatImageView {
         }
 
         super.onDraw(canvas)
+    }
+
+    private fun drawFooter(canvas: Canvas, pageText: String) {
+        val footerMargin = getMarginLeft().coerceAtLeast(16f)
+        val footerY = height - getFooterBottomPadding()
+        val pageTextWidth = mPaint.measureText(pageText)
+        val titleMaxWidth = (width - footerMargin * 3f - pageTextWidth).coerceAtLeast(0f)
+        val titleText = fitFooterText(mTitle.orEmpty(), titleMaxWidth)
+        val originalAlpha = mPaint.alpha
+
+        mPaint.alpha = (originalAlpha * 0.55f).toInt()
+        if (titleText.isNotEmpty()) {
+            canvas.drawText(titleText, footerMargin, footerY, mPaint)
+        }
+        canvas.drawText(pageText, width - pageTextWidth - footerMargin, footerY, mPaint)
+        mPaint.alpha = originalAlpha
+    }
+
+    private fun fitFooterText(text: String, maxWidth: Float): String {
+        if (text.isBlank() || maxWidth <= 0f) return ""
+        if (mPaint.measureText(text) <= maxWidth) return text
+
+        val ellipsis = "..."
+        val ellipsisWidth = mPaint.measureText(ellipsis)
+        if (ellipsisWidth >= maxWidth) return ""
+
+        val keepCount = mPaint.breakText(text, true, maxWidth - ellipsisWidth, null)
+        return text.take(keepCount).trimEnd() + ellipsis
     }
 
     @SuppressLint("CheckResult")
@@ -348,4 +433,9 @@ class PageImage : AppCompatImageView {
 
     //正文区域高度
     private fun getTextHeight(): Int = ((height - mBottomTextSize) * 0.96f).toInt()
+
+    private fun getFooterTextSize(): Float = mBottomTextSize.coerceAtMost(mTextSize * 0.55f)
+
+    private fun getFooterBottomPadding(): Float =
+        (getFooterTextSize() * 0.55f).coerceAtLeast(12f)
 }

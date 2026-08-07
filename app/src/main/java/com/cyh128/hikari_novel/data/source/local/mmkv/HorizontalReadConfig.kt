@@ -38,6 +38,12 @@ class HorizontalReadConfig @Inject constructor() {
             cursor.encode("switch_animation", value)
         }
 
+    var tabletDoublePage: Boolean
+        get() = cursor.decodeBool("tablet_double_page", false)
+        set(value) {
+            cursor.encode("tablet_double_page", value)
+        }
+
     var keepScreenOn: Boolean
         get() = cursor.decodeBool("keep_screen_on", false)
         set(value) {
