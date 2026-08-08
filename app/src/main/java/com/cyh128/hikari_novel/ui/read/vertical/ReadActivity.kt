@@ -293,6 +293,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
         if (viewModel.curVolumePos == volumePos && viewModel.curChapterPos == chapterPos) return
 
         viewModel.goToLatest = false
+        viewModel.appendCurrentChapter = false
         viewModel.curVolumePos = volumePos
         viewModel.curChapterPos = chapterPos
         showLoading()
@@ -302,6 +303,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
     fun toPreviousChapter() { //切换至上一章
         lifecycleScope.launch {
+            viewModel.appendCurrentChapter = false
             if (viewModel.curChapterPos == 0) { //判断是不是该卷的第一章
                 if (viewModel.curVolumePos == 0) {
                     Snackbar.make(
@@ -333,6 +335,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
     fun toNextChapter() { //切换至下一章
         lifecycleScope.launch {
+            viewModel.appendCurrentChapter = false
             if (viewModel.curChapterPos == viewModel.curVolume.chapters.size - 1) { //判断是不是该卷的最后一章
                 if (viewModel.curVolumePos == viewModel.novel!!.volume.size - 1) {
                     Snackbar.make(binding.root, R.string.no_next_chapter, Snackbar.LENGTH_INDEFINITE)
