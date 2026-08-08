@@ -65,6 +65,12 @@ class ReadChapterCatalogAdapter(
             .map { it.ref })
     }
 
+    fun selectAll() {
+        selectedCids.clear()
+        selectedCids += items.filterIsInstance<CatalogItem.ChapterItem>().map { it.ref.cid }
+        notifyDataSetChanged()
+    }
+
     private class VolumeViewHolder(
         private val binding: ItemReadChapterCatalogHeaderBinding
     ) : RecyclerView.ViewHolder(binding.root) {

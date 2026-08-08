@@ -4,7 +4,9 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.cyh128.hikari_novel.data.source.local.database.reader.DownloadBookEntity
+import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.databinding.ItemDownloadBookBinding
+import com.bumptech.glide.Glide
 
 data class DownloadBookRow(val book: DownloadBookEntity, val completed: Int, val failed: Int)
 
@@ -23,6 +25,7 @@ class DownloadBookAdapter(
             val total = row.book.totalChapters.coerceAtLeast(1)
             val percent = (row.completed * 100 / total).coerceIn(0, 100)
             binding.tvDownloadTitle.text = row.book.title
+            Glide.with(binding.ivDownloadCover).load(row.book.imageUrl).placeholder(R.drawable.app_logo_day).into(binding.ivDownloadCover)
             binding.tvDownloadProgress.text = if (row.failed > 0) "${row.completed}/$total · 失败 ${row.failed} 章" else "${row.completed}/$total"
             binding.pbDownload.progress = percent
             binding.bDownloadPause.setOnClickListener { onPause(row.book.aid) }

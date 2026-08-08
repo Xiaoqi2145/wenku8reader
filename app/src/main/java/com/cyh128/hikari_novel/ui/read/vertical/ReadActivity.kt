@@ -168,11 +168,6 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
     private fun initListener() {
         binding.tbAVRead.setOnMenuItemClickListener {
             when (it.itemId) {
-                R.id.menu_chapter_catalog -> {
-                    showChapterCatalog()
-                    true
-                }
-
                 R.id.menu_hide_bar -> {
                     hideBar()
                     true
@@ -401,6 +396,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
             )
             .commit()
         binding.tvAVReadProgress.text = "0%"
+        viewModel.progressText.value = "0%"
     }
 
     fun showBar() { //显示上下栏

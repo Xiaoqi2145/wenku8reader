@@ -84,6 +84,8 @@ class ReadChapterCatalogBottomSheet :
         binding.rvFReadChapterCatalog.adapter = adapter
         binding.bFReadChapterCatalogClose.setOnClickListener { dismiss() }
         binding.bFReadChapterCatalogDownload.visibility = if (allowDownload) View.VISIBLE else View.GONE
+        binding.bFReadChapterCatalogSelectAll.visibility = if (allowDownload) View.VISIBLE else View.GONE
+        binding.bFReadChapterCatalogSelectAll.setOnClickListener { adapter.selectAll() }
         binding.bFReadChapterCatalogDownload.setOnClickListener {
             adapter.downloadSelected()
             dismiss()

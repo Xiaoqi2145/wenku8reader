@@ -282,11 +282,6 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
     private fun initListener() {
         binding.tbAHRead.setOnMenuItemClickListener {
             when (it.itemId) {
-                R.id.menu_chapter_catalog -> {
-                    showChapterCatalog()
-                    true
-                }
-
                 R.id.menu_hide_bar -> {
                     hideBar()
                     true

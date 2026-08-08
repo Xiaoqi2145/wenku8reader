@@ -34,6 +34,16 @@
             android:paddingEnd="14dp">
 
             <TextView
+                android:id="@+id/tv_a_v_read_status"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="?android:attr/textColorSecondary"
+                android:textSize="11sp"
+                android:alpha="0.58"
+                tools:text="19:43 | 91%" />
+
+            <TextView
                 android:id="@+id/tv_a_v_read_progress"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -44,18 +54,6 @@
         </LinearLayout>
 
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/tv_a_v_read_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|start"
-        android:layout_marginStart="14dp"
-        android:layout_marginBottom="112dp"
-        android:textColor="?android:attr/textColorSecondary"
-        android:textSize="11sp"
-        android:alpha="0.58"
-        tools:text="19:43 | 91%" />
 
     <LinearLayout
         android:id="@+id/ll_a_v_read_bottom_bar"

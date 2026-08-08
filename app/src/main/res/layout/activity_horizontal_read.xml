@@ -11,18 +11,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <TextView
-        android:id="@+id/tv_a_h_read_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|start"
-        android:layout_marginStart="14dp"
-        android:layout_marginBottom="112dp"
-        android:textColor="?android:attr/textColorSecondary"
-        android:textSize="11sp"
-        android:alpha="0.58"
-        tools:text="19:43 | 91%" />
-
     <include
         android:id="@+id/i_a_h_read_guide"
         layout="@layout/view_horizontal_read_guide" />
@@ -96,6 +84,17 @@
                 android:gravity="center"
                 android:orientation="horizontal"
                 app:layout_constraintTop_toBottomOf="@id/ll_a_h_read_bottom_1">
+
+                <TextView
+                    android:id="@+id/tv_a_h_read_status"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingStart="14dp"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:textSize="11sp"
+                    android:alpha="0.58"
+                    tools:text="19:43 | 91%" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/b_a_h_read_night"
