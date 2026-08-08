@@ -33,6 +33,7 @@ import java.text.DecimalFormat
 
 @AndroidEntryPoint
 class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
+    private data class ChapterBlock(val start: Int, val end: Int, val contentLength: Int)
     private val viewModel by lazy { ViewModelProvider(requireActivity())[ReadViewModel::class.java] }
     private lateinit var touchJudge: ReaderTouchJudge
     private var readAdapter: ReadAdapter? = null
@@ -43,6 +44,7 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
     private var touchStartedOnInteractiveChild = false
     private var hasRequestedNextChapter = false
     private var activeChapterStartOffset = 0
+    private val chapterBlocks = mutableListOf<ChapterBlock>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -81,6 +83,8 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
         }
         val chapterHeader = "\n\n${viewModel.chapterTitle}\n\n"
         activeChapterStartOffset = chapterHeader.length
+        chapterBlocks.clear()
+        chapterBlocks += ChapterBlock(activeChapterStartOffset, activeChapterStartOffset + viewModel.curNovelContent.length, viewModel.curNovelContent.length)
         binding.tvFVRead.text = SpannableStringBuilder().apply {
             append(chapterHeader)
             setSpan(StyleSpan(Typeface.BOLD), 2, (2 + viewModel.chapterTitle.length).coerceAtMost(length), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
@@ -160,8 +164,10 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
 
     fun appendCurrentChapter() {
         val prefix = "\n\n${viewModel.chapterTitle}\n\n"
-        activeChapterStartOffset = binding.tvFVRead.text.length + prefix.length
+        val contentStart = binding.tvFVRead.text.length + prefix.length
+        activeChapterStartOffset = contentStart
         binding.tvFVRead.append(prefix + viewModel.curNovelContent)
+        chapterBlocks += ChapterBlock(contentStart, contentStart + viewModel.curNovelContent.length, viewModel.curNovelContent.length)
         readAdapter?.appendImages(viewModel.curImages)
         binding.tvFVReadEndTip.text = getString(R.string.continue_reading)
         hasRequestedNextChapter = false
@@ -242,15 +248,16 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
 
     private fun refreshProgressText() {
         val layout = binding.tvFVRead.layout ?: return
-        val contentLength = viewModel.curNovelContent.length.coerceAtLeast(1)
         val visibleY = (binding.nsvFVRead.scrollY + binding.nsvFVRead.height / 2 - binding.tvFVRead.top)
             .coerceIn(0, binding.tvFVRead.height)
         val line = layout.getLineForVertical(visibleY)
         val absoluteOffset = layout.getOffsetForHorizontal(line, 0f)
-        val localOffset = (absoluteOffset - activeChapterStartOffset).coerceIn(0, contentLength)
+        val block = chapterBlocks.lastOrNull { absoluteOffset >= it.start } ?: chapterBlocks.firstOrNull() ?: return
+        val contentLength = block.contentLength.coerceAtLeast(1)
+        val localOffset = (absoluteOffset - block.start).coerceIn(0, contentLength)
         val anchorPercent = localOffset * 100 / contentLength
-        val startLine = layout.getLineForOffset(activeChapterStartOffset.coerceIn(0, binding.tvFVRead.text.length))
-        val endOffset = (activeChapterStartOffset + contentLength).coerceIn(0, binding.tvFVRead.text.length)
+        val startLine = layout.getLineForOffset(block.start.coerceIn(0, binding.tvFVRead.text.length))
+        val endOffset = block.end.coerceIn(0, binding.tvFVRead.text.length)
         val endLine = layout.getLineForOffset(endOffset)
         val startY = layout.getLineTop(startLine)
         val endY = layout.getLineBottom(endLine).coerceAtLeast(startY + 1)
