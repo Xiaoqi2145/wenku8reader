@@ -106,6 +106,7 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
                             val layout = binding.tvFVRead.layout
                             if (layout != null) {
                                 binding.nsvFVRead.scrollTo(0, layout.getLineTop(layout.getLineForOffset(offset)))
+                                binding.nsvFVRead.post { refreshProgressText() }
                             }
                             viewModel.goToLatest = false
                             return@launch
@@ -228,13 +229,13 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
 
     private fun refreshProgressText() {
         val layout = binding.tvFVRead.layout ?: return
-        val startLine = layout.getLineForOffset(activeChapterStartOffset.coerceIn(0, binding.tvFVRead.text.length))
-        val endOffset = (activeChapterStartOffset + viewModel.curNovelContent.length).coerceIn(0, binding.tvFVRead.text.length)
-        val endLine = layout.getLineForOffset(endOffset)
-        val startY = layout.getLineTop(startLine)
-        val endY = layout.getLineBottom(endLine).coerceAtLeast(startY + 1)
-        val visibleBottom = binding.nsvFVRead.scrollY + binding.nsvFVRead.height
-        var result = (((visibleBottom - startY).toFloat() / (endY - startY) * 100f).toInt()).coerceIn(0, 100).toString()
+        val contentLength = viewModel.curNovelContent.length.coerceAtLeast(1)
+        val visibleY = (binding.nsvFVRead.scrollY + binding.nsvFVRead.height / 2 - binding.tvFVRead.top)
+            .coerceIn(0, binding.tvFVRead.height)
+        val line = layout.getLineForVertical(visibleY)
+        val absoluteOffset = layout.getOffsetForHorizontal(line, 0f)
+        val localOffset = (absoluteOffset - activeChapterStartOffset).coerceIn(0, contentLength)
+        val result = (localOffset * 100 / contentLength).coerceIn(0, 100).toString()
         viewModel.curReadPos = binding.nsvFVRead.scrollY
         viewModel.progressText.value = "$result%"
     }
