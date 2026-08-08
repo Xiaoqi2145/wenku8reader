@@ -243,10 +243,9 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
         if (hasRequestedNextChapter) return
 
         val contentView = binding.nsvFVRead.getChildAt(0) ?: return
-        val canScroll = contentView.height > binding.nsvFVRead.height
-        if (!canScroll) return
-
-        val thresholdPx = (resources.displayMetrics.density * 24).toInt()
+        // 短章不自动连锁追加，避免连续触发把整本书一次性展开。
+        if (contentView.height <= binding.nsvFVRead.height) return
+        val thresholdPx = maxOf((binding.nsvFVRead.height * 0.8f).toInt(), (resources.displayMetrics.density * 320).toInt())
         val distanceToBottom =
             contentView.height - binding.nsvFVRead.height - binding.nsvFVRead.scrollY
 

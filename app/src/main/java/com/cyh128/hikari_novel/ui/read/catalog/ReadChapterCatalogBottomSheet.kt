@@ -72,6 +72,7 @@ class ReadChapterCatalogBottomSheet :
             novel = novel,
             currentVolumePos = currentVolumePos,
             currentChapterPos = currentChapterPos,
+            allowDownload = allowDownload,
             onChapterClick = { volumePos, chapterPos ->
                 onChapterSelected?.invoke(volumePos, chapterPos)
                 dismiss()

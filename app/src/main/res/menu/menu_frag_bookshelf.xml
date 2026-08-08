@@ -4,7 +4,7 @@
 
     <item
         android:id="@+id/menu_f_bookshelf_download"
-        android:icon="@drawable/ic_arrow_down"
+        android:icon="@drawable/ic_download"
         android:title="@string/download"
         app:showAsAction="always" />
 

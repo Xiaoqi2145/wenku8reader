@@ -233,7 +233,7 @@
                 android:layout_weight="1"
                 android:text="@string/download"
                 android:textSize="12sp"
-                app:icon="@drawable/ic_arrow_down"
+                app:icon="@drawable/ic_download"
                 app:iconGravity="textTop"
                 app:iconSize="24dp" />
 

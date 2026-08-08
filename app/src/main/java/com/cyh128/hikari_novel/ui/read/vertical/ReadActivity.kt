@@ -24,6 +24,7 @@ import com.cyh128.hikari_novel.ui.other.LoadingView
 import com.cyh128.hikari_novel.ui.read.SelectColorActivity
 import com.cyh128.hikari_novel.ui.read.catalog.ReadChapterCatalogBottomSheet
 import com.cyh128.hikari_novel.util.getIsInDarkMode
+import com.cyh128.hikari_novel.util.ReaderStatusText
 import com.cyh128.hikari_novel.util.startActivity
 import com.drake.channel.receiveEvent
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -131,6 +132,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
     }
 
     private fun initView() {
+        binding.tvAVReadStatus.text = ReaderStatusText.current(this)
         TypedValue().also {  //上下栏颜色初始化
             theme.resolveAttribute(
                 com.google.android.material.R.attr.colorSurfaceContainer,
@@ -281,14 +283,6 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
             .apply {
                 onChapterSelected = { volumePos, chapterPos ->
                     jumpToChapter(volumePos, chapterPos)
-                }
-                onDownloadRequested = { refs ->
-                    if (refs.isEmpty()) {
-                        Snackbar.make(binding.root, R.string.download_chapter, Snackbar.LENGTH_SHORT).show()
-                    } else {
-                        viewModel.enqueueDownloads(refs)
-                        Snackbar.make(binding.root, R.string.download_queued, Snackbar.LENGTH_SHORT).show()
-                    }
                 }
             }
             .show(supportFragmentManager, "vertical_read_chapter_catalog")

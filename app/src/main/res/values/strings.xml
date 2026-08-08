@@ -194,6 +194,7 @@
     <string name="display_settings">显示</string>
     <string name="behavior_settings">行为</string>
     <string name="advanced_settings">高级</string>
+    <string name="paging_settings">翻页</string>
     <string name="read_progress">阅读进度</string>
     <string name="fontsize">字体大小</string>
     <string name="line_spacing">行距</string>

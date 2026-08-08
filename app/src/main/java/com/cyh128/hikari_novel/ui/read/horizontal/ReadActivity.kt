@@ -31,6 +31,7 @@ import com.cyh128.hikari_novel.ui.read.SelectColorActivity
 import com.cyh128.hikari_novel.ui.read.catalog.ReadChapterCatalogBottomSheet
 import com.cyh128.hikari_novel.util.ThemeHelper
 import com.cyh128.hikari_novel.util.getIsInDarkMode
+import com.cyh128.hikari_novel.util.ReaderStatusText
 import com.cyh128.hikari_novel.util.startActivity
 import com.drake.channel.receiveEvent
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -207,6 +208,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
     }
 
     private fun initView() {
+        binding.tvAHReadStatus.text = ReaderStatusText.current(this)
         //初始化阅读器的背景颜色和字体颜色
         binding.pvAHRead.backgroundcolor =
             if (ThemeHelper.isDarkMode()) ("#" + viewModel.getBgColorNight()).toColorInt()

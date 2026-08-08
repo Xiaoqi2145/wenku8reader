@@ -30,18 +30,32 @@
             android:id="@+id/ll_a_v_read_bottom_bar_2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal">
+            android:gravity="end"
+            android:paddingEnd="14dp">
 
             <TextView
                 android:id="@+id/tv_a_v_read_progress"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/read_progress"
-                android:textStyle="bold" />
+                android:textSize="11sp"
+                android:alpha="0.58" />
 
         </LinearLayout>
 
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_a_v_read_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_marginStart="14dp"
+        android:layout_marginBottom="112dp"
+        android:textColor="?android:attr/textColorSecondary"
+        android:textSize="11sp"
+        android:alpha="0.58"
+        tools:text="19:43 | 91%" />
 
     <LinearLayout
         android:id="@+id/ll_a_v_read_bottom_bar"
@@ -98,19 +112,22 @@
                     android:id="@+id/b_a_v_read_night"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
-                    android:text="@string/night_mode" />
+                    android:text="@string/night_mode"
+                    app:icon="@drawable/ic_dark_mode" app:iconGravity="textTop" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/b_a_v_read_settings"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
-                    android:text="@string/setting" />
+                    android:text="@string/setting"
+                    app:icon="@drawable/ic_setting" app:iconGravity="textTop" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/b_a_v_read_catalog"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
-                    android:text="@string/chapter_catalog" />
+                    android:text="@string/chapter_catalog"
+                    app:icon="@drawable/ic_view_list" app:iconGravity="textTop" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/b_a_v_read_config"

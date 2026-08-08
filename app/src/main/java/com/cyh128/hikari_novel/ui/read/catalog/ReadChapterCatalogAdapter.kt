@@ -16,6 +16,7 @@ class ReadChapterCatalogAdapter(
     currentVolumePos: Int,
     currentChapterPos: Int,
     private val onChapterClick: (volumePos: Int, chapterPos: Int) -> Unit,
+    private val allowDownload: Boolean = false,
     private val onDownload: (List<ChapterRef>) -> Unit = {}
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val items = buildItems(novel, currentVolumePos, currentChapterPos)
@@ -85,6 +86,7 @@ class ReadChapterCatalogAdapter(
             binding.tvIReadChapterCatalogCurrent.visibility =
                 if (item.isCurrent) View.VISIBLE else View.GONE
             binding.cbIReadChapterCatalogDownload.setOnCheckedChangeListener(null)
+            binding.cbIReadChapterCatalogDownload.visibility = if (allowDownload) View.VISIBLE else View.GONE
             binding.cbIReadChapterCatalogDownload.isChecked = item.ref.cid in selectedCids
             binding.cbIReadChapterCatalogDownload.setOnCheckedChangeListener { _, checked ->
                 if (checked) selectedCids += item.ref.cid else selectedCids -= item.ref.cid

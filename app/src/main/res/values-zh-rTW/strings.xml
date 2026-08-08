@@ -322,6 +322,7 @@
     <string name="retry">重試</string>
     <string name="using_cached_chapter">網路不可用，正在使用快取章節</string>
     <string name="download_selected">下載所選</string>
+    <string name="paging_settings">翻頁</string>
     <string name="download_chapter">下載章節</string>
     <string name="download_queued">已加入下載佇列</string>
     <string name="continue_reading">繼續閱讀</string>
