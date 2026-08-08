@@ -3,6 +3,11 @@ package com.cyh128.hikari_novel.ui.read.vertical
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.graphics.Rect
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.RelativeSizeSpan
+import android.text.style.StyleSpan
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
@@ -74,7 +79,14 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
                 putExtra("url", imageUrl)
             }
         }
-        binding.tvFVRead.text = viewModel.curNovelContent
+        val chapterHeader = "\n\n${viewModel.chapterTitle}\n\n"
+        activeChapterStartOffset = chapterHeader.length
+        binding.tvFVRead.text = SpannableStringBuilder().apply {
+            append(chapterHeader)
+            setSpan(StyleSpan(Typeface.BOLD), 2, (2 + viewModel.chapterTitle.length).coerceAtMost(length), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            setSpan(RelativeSizeSpan(1.08f), 2, (2 + viewModel.chapterTitle.length).coerceAtMost(length), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            append(viewModel.curNovelContent)
+        }
         binding.rvFVRead.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = readAdapter
@@ -102,7 +114,8 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
 
                     lifecycleScope.launch {
                         viewModel.getReaderProgress()?.let { progress ->
-                            val offset = progress.charOffset.coerceIn(0, binding.tvFVRead.text.length)
+                            val offset = (activeChapterStartOffset + progress.charOffset)
+                                .coerceIn(activeChapterStartOffset, binding.tvFVRead.text.length)
                             val layout = binding.tvFVRead.layout
                             if (layout != null) {
                                 binding.nsvFVRead.scrollTo(0, layout.getLineTop(layout.getLineForOffset(offset)))
