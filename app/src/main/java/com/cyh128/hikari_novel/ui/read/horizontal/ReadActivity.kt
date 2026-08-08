@@ -39,6 +39,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.gyf.immersionbar.ImmersionBar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
@@ -82,6 +83,17 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
                         supportActionBar?.title = viewModel.chapterTitle
 
                         lifecycleScope.launch {
+                            viewModel.getReaderProgress()?.let { progress ->
+                                binding.pvAHRead.post {
+                                    if (binding.pvAHRead.maxPageNum > 0) {
+                                        binding.pvAHRead.pageNum =
+                                            ((progress.normalizedPercent / 100f) * binding.pvAHRead.maxPageNum)
+                                                .toInt().coerceIn(1, binding.pvAHRead.maxPageNum)
+                                    }
+                                }
+                                viewModel.goToLatest = false
+                                return@launch
+                            }
                             viewModel.getByCid.take(1).last()?.let {
                                 if (viewModel.goToLatest) {
                                     validatePageNum(it)
@@ -130,13 +142,15 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
                 }
 
                 is Event.NetworkErrorEvent -> {
-                    MaterialAlertDialogBuilder(this@ReadActivity)
-                        .setTitle(R.string.network_error)
-                        .setIcon(R.drawable.ic_error)
-                        .setMessage(event.msg)
-                        .setCancelable(false)
-                        .setPositiveButton(R.string.ok) { _, _ -> finish() }
-                        .show()
+                    Snackbar.make(
+                        binding.root,
+                        event.msg ?: getString(R.string.network_error_msg),
+                        Snackbar.LENGTH_INDEFINITE
+                    ).apply {
+                        setAnchorView(binding.llAHReadBottomBar)
+                        setAction(R.string.retry) { viewModel.retryNovelContent() }
+                        show()
+                    }
                     setBottomBarIsEnable(false)
                 }
 
@@ -315,7 +329,10 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
         binding.pvAHRead.onPageChange = object : IPageView.OnPageChange {
             override fun onPageChange(index: Int) {
                 saveReadHistoryJob?.cancel()
-                saveReadHistoryJob = lifecycleScope.launch { viewModel.saveReadHistory(binding.pvAHRead.pageNum, binding.pvAHRead.maxPageNum) }
+                saveReadHistoryJob = lifecycleScope.launch {
+                    delay(400)
+                    viewModel.saveReadHistory(binding.pvAHRead.pageNum, binding.pvAHRead.maxPageNum)
+                }
 
                 try {
                     if (binding.pvAHRead.maxPageNum == 1) {
@@ -434,8 +451,24 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
                 onChapterSelected = { volumePos, chapterPos ->
                     jumpToChapter(volumePos, chapterPos)
                 }
+                onDownloadRequested = { refs ->
+                    if (refs.isEmpty()) {
+                        Snackbar.make(binding.root, R.string.download_chapter, Snackbar.LENGTH_SHORT).show()
+                    } else {
+                        viewModel.enqueueDownloads(refs)
+                        Snackbar.make(binding.root, R.string.download_queued, Snackbar.LENGTH_SHORT).show()
+                    }
+                }
             }
             .show(supportFragmentManager, "horizontal_read_chapter_catalog")
+    }
+
+    override fun onStop() {
+        saveReadHistoryJob?.cancel()
+        lifecycleScope.launch {
+            viewModel.saveReadHistory(binding.pvAHRead.pageNum, binding.pvAHRead.maxPageNum)
+        }
+        super.onStop()
     }
 
     private fun jumpToChapter(volumePos: Int, chapterPos: Int) {

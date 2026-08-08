@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.data.model.Novel
+import com.cyh128.hikari_novel.data.model.ChapterRef
 import com.cyh128.hikari_novel.databinding.ItemReadChapterCatalogChapterBinding
 import com.cyh128.hikari_novel.databinding.ItemReadChapterCatalogHeaderBinding
 
@@ -14,9 +15,11 @@ class ReadChapterCatalogAdapter(
     novel: Novel,
     currentVolumePos: Int,
     currentChapterPos: Int,
-    private val onChapterClick: (volumePos: Int, chapterPos: Int) -> Unit
+    private val onChapterClick: (volumePos: Int, chapterPos: Int) -> Unit,
+    private val onDownload: (List<ChapterRef>) -> Unit = {}
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val items = buildItems(novel, currentVolumePos, currentChapterPos)
+    private val selectedCids = mutableSetOf<String>()
     val currentAdapterPosition = items.indexOfFirst {
         it is CatalogItem.ChapterItem && it.isCurrent
     }
@@ -55,6 +58,12 @@ class ReadChapterCatalogAdapter(
         }
     }
 
+    fun downloadSelected() {
+        onDownload(items.filterIsInstance<CatalogItem.ChapterItem>()
+            .filter { it.ref.cid in selectedCids }
+            .map { it.ref })
+    }
+
     private class VolumeViewHolder(
         private val binding: ItemReadChapterCatalogHeaderBinding
     ) : RecyclerView.ViewHolder(binding.root) {
@@ -75,6 +84,11 @@ class ReadChapterCatalogAdapter(
                 if (item.isCurrent) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
             binding.tvIReadChapterCatalogCurrent.visibility =
                 if (item.isCurrent) View.VISIBLE else View.GONE
+            binding.cbIReadChapterCatalogDownload.setOnCheckedChangeListener(null)
+            binding.cbIReadChapterCatalogDownload.isChecked = item.ref.cid in selectedCids
+            binding.cbIReadChapterCatalogDownload.setOnCheckedChangeListener { _, checked ->
+                if (checked) selectedCids += item.ref.cid else selectedCids -= item.ref.cid
+            }
             binding.root.setOnClickListener {
                 onChapterClick(item.volumePos, item.chapterPos)
             }
@@ -91,7 +105,8 @@ class ReadChapterCatalogAdapter(
             val volumePos: Int,
             val chapterPos: Int,
             val title: String,
-            val isCurrent: Boolean
+            val isCurrent: Boolean,
+            val ref: ChapterRef
         ) : CatalogItem()
     }
 
@@ -112,7 +127,8 @@ class ReadChapterCatalogAdapter(
                             volumeIndex,
                             chapterIndex,
                             chapter.chapterTitle,
-                            volumeIndex == currentVolumePos && chapterIndex == currentChapterPos
+                            volumeIndex == currentVolumePos && chapterIndex == currentChapterPos,
+                            ChapterRef(novel.aid, chapter.cid, volumeIndex, chapterIndex, chapter.chapterTitle)
                         )
                     )
                 }

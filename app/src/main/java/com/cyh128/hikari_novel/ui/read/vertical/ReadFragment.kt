@@ -67,7 +67,7 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
     private fun initView() {
         readAdapter = ReadAdapter(
             requireContext(),
-            viewModel.curImages
+            viewModel.curImages.toMutableList()
         ) { imageUrl ->
             startActivity<com.cyh128.hikari_novel.ui.other.PhotoViewActivity> {
                 putExtra("url", imageUrl)
@@ -100,6 +100,15 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
                     refreshProgressText()
 
                     lifecycleScope.launch {
+                        viewModel.getReaderProgress()?.let { progress ->
+                            val offset = progress.charOffset.coerceIn(0, binding.tvFVRead.text.length)
+                            val layout = binding.tvFVRead.layout
+                            if (layout != null) {
+                                binding.nsvFVRead.scrollTo(0, layout.getLineTop(layout.getLineForOffset(offset)))
+                            }
+                            viewModel.goToLatest = false
+                            return@launch
+                        }
                         viewModel.getByCid.take(1).last()?.let {
                             if (viewModel.goToLatest) {
                                 binding.nsvFVRead.scrollTo(0, it.location) //滚动到指定位置
@@ -132,6 +141,14 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
                 }
             }
         )
+    }
+
+    fun appendCurrentChapter() {
+        binding.tvFVRead.append("\n\n${viewModel.chapterTitle}\n\n${viewModel.curNovelContent}")
+        readAdapter?.appendImages(viewModel.curImages)
+        binding.tvFVReadEndTip.text = getString(R.string.continue_reading)
+        hasRequestedNextChapter = false
+        binding.nsvFVRead.post { refreshProgressText() }
     }
 
     @SuppressLint("ClickableViewAccessibility")

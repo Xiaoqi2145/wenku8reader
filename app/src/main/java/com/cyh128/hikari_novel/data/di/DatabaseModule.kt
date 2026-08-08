@@ -7,6 +7,7 @@ import com.cyh128.hikari_novel.data.source.local.database.read_history.horizonta
 import com.cyh128.hikari_novel.data.source.local.database.read_history.vertical_read_history.VerticalReadHistoryDatabase
 import com.cyh128.hikari_novel.data.source.local.database.search_history.SearchHistoryDatabase
 import com.cyh128.hikari_novel.data.source.local.database.visit_history.VisitHistoryDatabase
+import com.cyh128.hikari_novel.data.source.local.database.reader.ReaderDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,6 +18,14 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
+
+    @Provides
+    @Singleton
+    fun readerDatabase(@ApplicationContext context: Context): ReaderDatabase =
+        Room.databaseBuilder(context, ReaderDatabase::class.java, "reader_data").build()
+
+    @Provides
+    fun readerDao(database: ReaderDatabase) = database.readerDao()
 
     @Provides
     @Singleton

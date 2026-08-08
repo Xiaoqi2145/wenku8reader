@@ -15,7 +15,7 @@ import com.cyh128.hikari_novel.databinding.ItemVerticalReadImageBinding
 
 class ReadAdapter(
     private val context: Context,
-    private val imgUrl: List<String>?,
+    private val imgUrl: MutableList<String>,
     val onImageClick: (imageUrl: String) -> Unit
 ) : RecyclerView.Adapter<ReadAdapter.ViewHolder>() {
     inner class ViewHolder(val binding: ItemVerticalReadImageBinding) :
@@ -70,9 +70,16 @@ class ReadAdapter(
     }
 
     override fun getItemCount(): Int {
-        if (imgUrl!!.isNotEmpty()) {
+        if (imgUrl.isNotEmpty()) {
             return imgUrl.size
         }
         return 0
+    }
+
+    fun appendImages(images: List<String>) {
+        if (images.isEmpty()) return
+        val start = imgUrl.size
+        imgUrl.addAll(images)
+        notifyItemRangeInserted(start, images.size)
     }
 }

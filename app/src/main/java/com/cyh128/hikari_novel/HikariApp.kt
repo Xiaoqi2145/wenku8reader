@@ -7,6 +7,7 @@ import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader
 import com.bumptech.glide.load.model.GlideUrl
 import com.cyh128.hikari_novel.data.repository.AppRepository
 import com.cyh128.hikari_novel.data.repository.Wenku8Repository
+import com.cyh128.hikari_novel.data.repository.ReaderRepository
 import com.cyh128.hikari_novel.ui.other.CrashActivity
 import com.cyh128.hikari_novel.util.LanguageHelper
 import com.cyh128.hikari_novel.util.ThemeHelper
@@ -36,6 +37,9 @@ class HikariApp : Application() {
 
     @Inject
     lateinit var wenku8Repository: Wenku8Repository
+
+    @Inject
+    lateinit var readerRepository: ReaderRepository
 
     companion object {
         lateinit var application: Application

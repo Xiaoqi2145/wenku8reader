@@ -21,6 +21,12 @@
     <string name="logout">退出登录</string>
     <string name="logout_successful">退出登录成功！</string>
     <string name="network_error">网络错误</string>
+    <string name="retry">重试</string>
+    <string name="using_cached_chapter">网络不可用，正在使用缓存章节</string>
+    <string name="download_selected">下载所选</string>
+    <string name="download_chapter">下载章节</string>
+    <string name="download_queued">已加入下载队列</string>
+    <string name="continue_reading">继续阅读</string>
     <string name="re_login">重新登录</string>
     <string name="cancel">取消</string>
     <string name="ok">好的</string>

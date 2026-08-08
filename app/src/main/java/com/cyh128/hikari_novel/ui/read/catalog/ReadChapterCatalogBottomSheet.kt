@@ -13,11 +13,13 @@ import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cyh128.hikari_novel.data.model.Novel
+import com.cyh128.hikari_novel.data.model.ChapterRef
 import com.cyh128.hikari_novel.databinding.FragmentReadChapterCatalogBinding
 
 class ReadChapterCatalogBottomSheet :
     DialogFragment() {
     var onChapterSelected: ((volumePos: Int, chapterPos: Int) -> Unit)? = null
+    var onDownloadRequested: ((List<ChapterRef>) -> Unit)? = null
 
     private var _binding: FragmentReadChapterCatalogBinding? = null
     private val binding get() = _binding!!
@@ -65,17 +67,23 @@ class ReadChapterCatalogBottomSheet :
 
         val layoutManager = LinearLayoutManager(requireContext())
         val adapter = ReadChapterCatalogAdapter(
-            novel,
-            currentVolumePos,
-            currentChapterPos
-        ) { volumePos, chapterPos ->
-            onChapterSelected?.invoke(volumePos, chapterPos)
-            dismiss()
-        }
+            novel = novel,
+            currentVolumePos = currentVolumePos,
+            currentChapterPos = currentChapterPos,
+            onChapterClick = { volumePos, chapterPos ->
+                onChapterSelected?.invoke(volumePos, chapterPos)
+                dismiss()
+            },
+            onDownload = { refs -> onDownloadRequested?.invoke(refs) }
+        )
 
         binding.rvFReadChapterCatalog.layoutManager = layoutManager
         binding.rvFReadChapterCatalog.adapter = adapter
         binding.bFReadChapterCatalogClose.setOnClickListener { dismiss() }
+        binding.bFReadChapterCatalogDownload.setOnClickListener {
+            adapter.downloadSelected()
+            dismiss()
+        }
 
         if (adapter.currentAdapterPosition >= 0) {
             binding.rvFReadChapterCatalog.post {

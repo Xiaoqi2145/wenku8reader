@@ -9,9 +9,22 @@ import rxhttp.wrapper.entity.OkResponse
 import rxhttp.wrapper.param.RxHttp
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
 
 @Singleton
 class Network @Inject constructor() {
+    private val downloadClient = OkHttpClient()
+
+    suspend fun downloadBytes(url: String): ByteArray = withContext(Dispatchers.IO) {
+        val request = Request.Builder().url(url).header("User-Agent", "Mozilla/5.0").build()
+        downloadClient.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) error("HTTP ${response.code}")
+            response.body?.bytes() ?: error("Empty response body")
+        }
+    }
     fun login(
         url: String,
         username: String,

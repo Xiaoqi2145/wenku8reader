@@ -26,6 +26,13 @@
             android:textStyle="bold" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/b_f_read_chapter_catalog_download"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/download_selected" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/b_f_read_chapter_catalog_close"
             style="@style/Widget.Material3.Button.IconButton"
             android:layout_width="wrap_content"
