@@ -248,7 +248,14 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
         val line = layout.getLineForVertical(visibleY)
         val absoluteOffset = layout.getOffsetForHorizontal(line, 0f)
         val localOffset = (absoluteOffset - activeChapterStartOffset).coerceIn(0, contentLength)
-        val result = (localOffset * 100 / contentLength).coerceIn(0, 100).toString()
+        val anchorPercent = localOffset * 100 / contentLength
+        val startLine = layout.getLineForOffset(activeChapterStartOffset.coerceIn(0, binding.tvFVRead.text.length))
+        val endOffset = (activeChapterStartOffset + contentLength).coerceIn(0, binding.tvFVRead.text.length)
+        val endLine = layout.getLineForOffset(endOffset)
+        val startY = layout.getLineTop(startLine)
+        val endY = layout.getLineBottom(endLine).coerceAtLeast(startY + 1)
+        val geometryPercent = ((visibleY - startY) * 100 / (endY - startY)).coerceIn(0, 100)
+        val result = maxOf(anchorPercent, geometryPercent).coerceIn(0, 100).toString()
         viewModel.curReadPos = binding.nsvFVRead.scrollY
         viewModel.progressText.value = "$result%"
     }
