@@ -76,7 +76,9 @@ class ReadViewModel @Inject constructor(
                     curImages = chapter.images
                     _readerState.value = ReaderUiState.Ready(chapter, source)
                     sendEvent(Event.LoadSuccessEvent, "event_vertical_read_activity")
-                    nextRef()?.let { readerRepository.prefetch(it) }
+                    nextRef()?.let { next ->
+                        viewModelScope.launch(Dispatchers.IO) { readerRepository.prefetch(next) }
+                    }
                 }.onFailure { failure ->
                     _readerState.value = ReaderUiState.Error(ref, failure.message ?: "加载失败", hasCachedContent = false)
                     if (failure is EmptyException) sendEvent(Event.EmptyContentEvent, "event_vertical_read_activity")

@@ -48,6 +48,14 @@
             android:screenOrientation="unspecified"/>
 
         <activity
+            android:name=".ui.main.bookshelf.DownloadActivity"
+            android:screenOrientation="unspecified"/>
+
+        <activity
+            android:name=".ui.main.bookshelf.DownloadDetailActivity"
+            android:screenOrientation="unspecified"/>
+
+        <activity
             android:name=".ui.detail.NovelInfoActivity"
             android:screenOrientation="unspecified"/>
 

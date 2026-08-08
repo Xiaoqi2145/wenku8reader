@@ -43,3 +43,12 @@ data class DownloadTaskEntity(
     val error: String?,
     val updatedAt: Long
 )
+
+@Entity(tableName = "download_book")
+data class DownloadBookEntity(
+    @PrimaryKey val aid: String,
+    val title: String,
+    val imageUrl: String?,
+    val totalChapters: Int,
+    val updatedAt: Long
+)

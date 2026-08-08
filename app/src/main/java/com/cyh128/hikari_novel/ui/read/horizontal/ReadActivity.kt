@@ -15,6 +15,7 @@ import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.graphics.toColorInt
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
@@ -81,6 +82,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
                             viewModel.curImages
                         )
                         supportActionBar?.title = viewModel.chapterTitle
+                        supportActionBar?.subtitle = viewModel.novel?.title.orEmpty()
 
                         lifecycleScope.launch {
                             viewModel.getReaderProgress()?.let { progress ->
@@ -408,6 +410,22 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
         }
 
         binding.bAHReadConfig.setOnClickListener { bottomSheetDialog.show() }
+        binding.bAHReadSettings.setOnClickListener { bottomSheetDialog.show() }
+        binding.bAHReadCatalog.setOnClickListener { showChapterCatalog() }
+        binding.bAHReadNight.setOnClickListener {
+            AppCompatDelegate.setDefaultNightMode(
+                if (getIsInDarkMode()) AppCompatDelegate.MODE_NIGHT_NO else AppCompatDelegate.MODE_NIGHT_YES
+            )
+        }
+        bottomViewBinding.bHReadConfigVertical.setOnClickListener {
+            lifecycleScope.launch {
+                viewModel.saveReadHistory(binding.pvAHRead.pageNum, binding.pvAHRead.maxPageNum)
+                startActivity<com.cyh128.hikari_novel.ui.read.vertical.ReadActivity> {
+                    putExtra("data", ReadParcel(viewModel.novel!!, viewModel.curVolumePos, viewModel.curChapterPos, false))
+                }
+                finish()
+            }
+        }
 
         binding.bAHReadNextChapter.setOnClickListener { toNextChapter() }
 

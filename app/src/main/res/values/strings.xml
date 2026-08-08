@@ -23,6 +23,8 @@
     <string name="network_error">网络错误</string>
     <string name="retry">重试</string>
     <string name="using_cached_chapter">网络不可用，正在使用缓存章节</string>
+    <string name="download">下载</string>
+    <string name="pause">暂停</string>
     <string name="download_selected">下载所选</string>
     <string name="download_chapter">下载章节</string>
     <string name="download_queued">已加入下载队列</string>
@@ -188,6 +190,10 @@
     <string name="next_chapter">下一章</string>
     <string name="previous_chapter">上一章</string>
     <string name="more_setting">更多设置</string>
+    <string name="night_mode">夜间</string>
+    <string name="display_settings">显示</string>
+    <string name="behavior_settings">行为</string>
+    <string name="advanced_settings">高级</string>
     <string name="read_progress">阅读进度</string>
     <string name="fontsize">字体大小</string>
     <string name="line_spacing">行距</string>

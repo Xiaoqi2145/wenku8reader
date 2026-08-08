@@ -8,6 +8,7 @@ import com.cyh128.hikari_novel.data.model.ContentSource
 import com.cyh128.hikari_novel.data.source.local.database.reader.ChapterCacheEntity
 import com.cyh128.hikari_novel.data.source.local.database.reader.ReaderDao
 import com.cyh128.hikari_novel.data.source.local.database.reader.DownloadTaskEntity
+import com.cyh128.hikari_novel.data.source.local.database.reader.DownloadBookEntity
 import com.cyh128.hikari_novel.data.source.remote.Network
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -66,6 +67,12 @@ class ReaderRepository @Inject constructor(
         downloadScope.launch { runPendingDownloads(refs.first().aid) }
     }
 
+    suspend fun enqueueDownloads(refs: List<ChapterRef>, title: String, imageUrl: String?, totalChapters: Int) {
+        if (refs.isEmpty()) return
+        dao.upsertDownloadBook(DownloadBookEntity(refs.first().aid, title, imageUrl, totalChapters, System.currentTimeMillis()))
+        enqueueDownloads(refs)
+    }
+
     suspend fun resumeQueuedDownloads() {
         dao.pendingAids().forEach { aid -> downloadScope.launch { runPendingDownloads(aid) } }
     }
@@ -73,6 +80,7 @@ class ReaderRepository @Inject constructor(
     suspend fun runPendingDownloads(aid: String): Boolean = downloadMutex.withLock {
         var allSucceeded = true
         dao.pendingDownloads(aid).forEach { task ->
+            if (dao.getDownloadStatus(task.cid) == "PAUSED") return@forEach
             dao.upsertDownload(task.copy(status = "RUNNING", progress = 5, error = null, updatedAt = System.currentTimeMillis()))
             val ref = ChapterRef(task.aid, task.cid, task.volumeIndex, task.chapterIndex, task.title)
             try {
@@ -92,6 +100,27 @@ class ReaderRepository @Inject constructor(
     }
 
     fun observeDownloads(aid: String) = dao.observeDownloads(aid)
+    fun observeDownloadBooks() = dao.observeDownloadBooks()
+
+    suspend fun pauseBook(aid: String) = dao.updateDownloadStatus(aid, "PAUSED", System.currentTimeMillis())
+    suspend fun resumeBook(aid: String) {
+        dao.updateDownloadStatus(aid, "QUEUED", System.currentTimeMillis())
+        downloadScope.launch { runPendingDownloads(aid) }
+    }
+    suspend fun retryBook(aid: String) = resumeBook(aid)
+    suspend fun retryChapter(cid: String) {
+        dao.updateChapterStatus(cid, "QUEUED", System.currentTimeMillis())
+        dao.getChapterTaskAid(cid)?.let { downloadScope.launch { runPendingDownloads(it) } }
+    }
+    suspend fun deleteBookDownloads(aid: String) {
+        dao.deleteDownloadTasks(aid)
+        dao.deleteDownloadBook(aid)
+    }
+
+    suspend fun deleteChapterDownload(cid: String) {
+        dao.deleteDownloadTask(cid)
+        dao.deleteChapterCache(cid)
+    }
 
     private suspend fun downloadImages(chapter: CachedChapter): List<String> {
         if (chapter.images.isEmpty()) return emptyList()

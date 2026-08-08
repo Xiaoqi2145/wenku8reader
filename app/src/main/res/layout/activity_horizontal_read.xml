@@ -86,11 +86,30 @@
                 app:layout_constraintTop_toBottomOf="@id/ll_a_h_read_bottom_1">
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/b_a_h_read_night"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="@string/night_mode" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/b_a_h_read_settings"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="@string/setting" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/b_a_h_read_catalog"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="@string/chapter_catalog" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/b_a_h_read_config"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/more_setting"
+                    android:visibility="gone"
                     android:textSize="16sp" />
 
             </LinearLayout>

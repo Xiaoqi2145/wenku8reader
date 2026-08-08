@@ -225,6 +225,18 @@
                 app:iconGravity="textTop"
                 app:iconSize="24dp" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/b_f_novel_info_content_download"
+                style="@style/Widget.Material3.Button.TextButton.Icon"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/download"
+                android:textSize="12sp"
+                app:icon="@drawable/ic_arrow_down"
+                app:iconGravity="textTop"
+                app:iconSize="24dp" />
+
         </LinearLayout>
 
         <com.ctetin.expandabletextviewlibrary.ExpandableTextView

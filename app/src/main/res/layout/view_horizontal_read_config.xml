@@ -9,10 +9,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:padding="12dp" android:orientation="horizontal">
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/read_mode" android:textSize="16sp" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/b_h_read_config_horizontal" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/horizontal" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/b_h_read_config_vertical" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/vertical" />
+    </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingLeft="20dp" android:paddingTop="12dp" android:text="@string/display_settings" android:textColor="?colorPrimary" android:textStyle="bold" />
 
         <LinearLayout
             android:layout_width="match_parent"

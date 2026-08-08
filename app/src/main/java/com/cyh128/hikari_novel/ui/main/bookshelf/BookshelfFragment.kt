@@ -85,6 +85,11 @@ class BookshelfFragment : BaseFragment<FragmentBookshelfBinding>() {
                     true
                 }
 
+                R.id.menu_f_bookshelf_download -> {
+                    startActivity<DownloadActivity>()
+                    true
+                }
+
                 R.id.menu_f_bookshelf_edit -> {
                     sendEvent(Event.EditBookshelfEvent, "event_bookshelf_list_fragment")
                     true

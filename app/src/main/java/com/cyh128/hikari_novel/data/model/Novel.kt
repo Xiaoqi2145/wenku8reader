@@ -26,5 +26,6 @@ data class Volume(
 @Parcelize
 data class Novel(
     val aid: String,
-    val volume: List<Volume>
+    val volume: List<Volume>,
+    val title: String = ""
 ): Parcelable

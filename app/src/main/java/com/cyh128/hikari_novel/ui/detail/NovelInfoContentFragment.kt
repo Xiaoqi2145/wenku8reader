@@ -16,6 +16,7 @@ import com.cyh128.hikari_novel.data.model.ReadParcel
 import com.cyh128.hikari_novel.data.model.ReaderOrientation
 import com.cyh128.hikari_novel.databinding.FragmentNovelInfoContentBinding
 import com.cyh128.hikari_novel.ui.detail.comment.CommentActivity
+import com.cyh128.hikari_novel.ui.read.catalog.ReadChapterCatalogBottomSheet
 import com.cyh128.hikari_novel.ui.main.home.search.SearchActivity
 import com.cyh128.hikari_novel.ui.other.PhotoViewActivity
 import com.cyh128.hikari_novel.util.startActivity
@@ -246,6 +247,19 @@ class NovelInfoContentFragment : BaseFragment<FragmentNovelInfoContentBinding>()
         binding.bFNovelInfoContentVote.setOnClickListener {
             viewModel.voteNovel()
             binding.bFNovelInfoContentVote.isEnabled = false
+        }
+
+        binding.bFNovelInfoContentDownload.setOnClickListener {
+            ReadChapterCatalogBottomSheet.newInstance(viewModel.novel, 0, 0, true).apply {
+                onDownloadRequested = { refs ->
+                    viewModel.enqueueDownloads(refs)
+                    MaterialAlertDialogBuilder(requireActivity())
+                        .setTitle(R.string.download)
+                        .setMessage(R.string.download_queued)
+                        .setPositiveButton(R.string.ok, null)
+                        .show()
+                }
+            }.show(parentFragmentManager, "novel_download_catalog")
         }
 
         binding.ivFNovelInfoContent.setOnClickListener {

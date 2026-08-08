@@ -2,6 +2,8 @@ package com.cyh128.hikari_novel.data.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.cyh128.hikari_novel.data.source.local.database.bookshelf.BookshelfDatabase
 import com.cyh128.hikari_novel.data.source.local.database.read_history.horizontal_read_history.HorizontalReadHistoryDatabase
 import com.cyh128.hikari_novel.data.source.local.database.read_history.vertical_read_history.VerticalReadHistoryDatabase
@@ -22,7 +24,12 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun readerDatabase(@ApplicationContext context: Context): ReaderDatabase =
-        Room.databaseBuilder(context, ReaderDatabase::class.java, "reader_data").build()
+        Room.databaseBuilder(context, ReaderDatabase::class.java, "reader_data")
+            .addMigrations(object : Migration(1, 2) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("CREATE TABLE IF NOT EXISTS download_book (aid TEXT NOT NULL PRIMARY KEY, title TEXT NOT NULL, imageUrl TEXT, totalChapters INTEGER NOT NULL, updatedAt INTEGER NOT NULL)")
+                }
+            }).build()
 
     @Provides
     fun readerDao(database: ReaderDatabase) = database.readerDao()

@@ -28,6 +28,36 @@ interface ReaderDao {
     @Query("SELECT * FROM download_task WHERE aid = :aid ORDER BY updatedAt DESC")
     fun observeDownloads(aid: String): Flow<List<DownloadTaskEntity>>
 
+    @Query("SELECT * FROM download_book ORDER BY updatedAt DESC")
+    fun observeDownloadBooks(): Flow<List<DownloadBookEntity>>
+
+    @Upsert
+    suspend fun upsertDownloadBook(entity: DownloadBookEntity)
+
+    @Query("DELETE FROM download_book WHERE aid = :aid")
+    suspend fun deleteDownloadBook(aid: String)
+
+    @Query("DELETE FROM download_task WHERE aid = :aid")
+    suspend fun deleteDownloadTasks(aid: String)
+
+    @Query("UPDATE download_task SET status = :status, updatedAt = :updatedAt WHERE aid = :aid AND status IN ('QUEUED','RUNNING','PAUSED','FAILED')")
+    suspend fun updateDownloadStatus(aid: String, status: String, updatedAt: Long)
+
+    @Query("UPDATE download_task SET status = :status, error = NULL, updatedAt = :updatedAt WHERE cid = :cid")
+    suspend fun updateChapterStatus(cid: String, status: String, updatedAt: Long)
+
+    @Query("SELECT aid FROM download_task WHERE cid = :cid LIMIT 1")
+    suspend fun getChapterTaskAid(cid: String): String?
+
+    @Query("DELETE FROM download_task WHERE cid = :cid")
+    suspend fun deleteDownloadTask(cid: String)
+
+    @Query("DELETE FROM chapter_cache WHERE cid = :cid")
+    suspend fun deleteChapterCache(cid: String)
+
+    @Query("SELECT status FROM download_task WHERE cid = :cid LIMIT 1")
+    suspend fun getDownloadStatus(cid: String): String?
+
     @Upsert
     suspend fun upsertDownload(entity: DownloadTaskEntity)
 

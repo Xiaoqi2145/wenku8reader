@@ -37,6 +37,7 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
     private var ignoreCurrentGesture = false
     private var touchStartedOnInteractiveChild = false
     private var hasRequestedNextChapter = false
+    private var activeChapterStartOffset = 0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -144,7 +145,9 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
     }
 
     fun appendCurrentChapter() {
-        binding.tvFVRead.append("\n\n${viewModel.chapterTitle}\n\n${viewModel.curNovelContent}")
+        val prefix = "\n\n${viewModel.chapterTitle}\n\n"
+        activeChapterStartOffset = binding.tvFVRead.text.length + prefix.length
+        binding.tvFVRead.append(prefix + viewModel.curNovelContent)
         readAdapter?.appendImages(viewModel.curImages)
         binding.tvFVReadEndTip.text = getString(R.string.continue_reading)
         hasRequestedNextChapter = false
@@ -224,13 +227,15 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
     }
 
     private fun refreshProgressText() {
-        val start: Int = binding.nsvFVRead.height + binding.nsvFVRead.scrollY
-        val bottom: Int = binding.nsvFVRead.getChildAt(0).height
-        val df = DecimalFormat("0.00")
-        var result: String = df.format((start.toFloat() / bottom * 100).toDouble())
+        val layout = binding.tvFVRead.layout ?: return
+        val startLine = layout.getLineForOffset(activeChapterStartOffset.coerceIn(0, binding.tvFVRead.text.length))
+        val endOffset = (activeChapterStartOffset + viewModel.curNovelContent.length).coerceIn(0, binding.tvFVRead.text.length)
+        val endLine = layout.getLineForOffset(endOffset)
+        val startY = layout.getLineTop(startLine)
+        val endY = layout.getLineBottom(endLine).coerceAtLeast(startY + 1)
+        val visibleBottom = binding.nsvFVRead.scrollY + binding.nsvFVRead.height
+        var result = (((visibleBottom - startY).toFloat() / (endY - startY) * 100f).toInt()).coerceIn(0, 100).toString()
         viewModel.curReadPos = binding.nsvFVRead.scrollY
-        result = result.substring(0, result.indexOf("."))
-        if (result.toInt() > 100) result = "100"
         viewModel.progressText.value = "$result%"
     }
 

@@ -26,6 +26,7 @@ class ReadChapterCatalogBottomSheet :
     private lateinit var novel: Novel
     private var currentVolumePos = 0
     private var currentChapterPos = 0
+    private var allowDownload = false
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
         Dialog(requireContext()).apply {
@@ -38,6 +39,7 @@ class ReadChapterCatalogBottomSheet :
         novel = requireArguments().getParcelable(ARG_NOVEL)!!
         currentVolumePos = requireArguments().getInt(ARG_CURRENT_VOLUME)
         currentChapterPos = requireArguments().getInt(ARG_CURRENT_CHAPTER)
+        allowDownload = requireArguments().getBoolean(ARG_ALLOW_DOWNLOAD, false)
     }
 
     override fun onCreateView(
@@ -80,6 +82,7 @@ class ReadChapterCatalogBottomSheet :
         binding.rvFReadChapterCatalog.layoutManager = layoutManager
         binding.rvFReadChapterCatalog.adapter = adapter
         binding.bFReadChapterCatalogClose.setOnClickListener { dismiss() }
+        binding.bFReadChapterCatalogDownload.visibility = if (allowDownload) View.VISIBLE else View.GONE
         binding.bFReadChapterCatalogDownload.setOnClickListener {
             adapter.downloadSelected()
             dismiss()
@@ -111,6 +114,7 @@ class ReadChapterCatalogBottomSheet :
         private const val ARG_NOVEL = "novel"
         private const val ARG_CURRENT_VOLUME = "current_volume"
         private const val ARG_CURRENT_CHAPTER = "current_chapter"
+        private const val ARG_ALLOW_DOWNLOAD = "allow_download"
         private const val PANEL_WIDTH_RATIO = 0.86f
         private const val MAX_PANEL_WIDTH_DP = 420
         private const val BACKGROUND_DIM_AMOUNT = 0.32f
@@ -118,13 +122,15 @@ class ReadChapterCatalogBottomSheet :
         fun newInstance(
             novel: Novel,
             currentVolumePos: Int,
-            currentChapterPos: Int
+            currentChapterPos: Int,
+            allowDownload: Boolean = false
         ): ReadChapterCatalogBottomSheet =
             ReadChapterCatalogBottomSheet().apply {
                 arguments = Bundle().apply {
                     putParcelable(ARG_NOVEL, novel)
                     putInt(ARG_CURRENT_VOLUME, currentVolumePos)
-                    putInt(ARG_CURRENT_CHAPTER, currentChapterPos)
+                putInt(ARG_CURRENT_CHAPTER, currentChapterPos)
+                putBoolean(ARG_ALLOW_DOWNLOAD, allowDownload)
                 }
             }
     }

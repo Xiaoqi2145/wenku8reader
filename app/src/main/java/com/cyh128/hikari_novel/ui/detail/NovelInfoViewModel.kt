@@ -12,6 +12,8 @@ import com.cyh128.hikari_novel.data.repository.HorizontalReadRepository
 import com.cyh128.hikari_novel.data.repository.VerticalReadRepository
 import com.cyh128.hikari_novel.data.repository.VisitHistoryRepository
 import com.cyh128.hikari_novel.data.repository.Wenku8Repository
+import com.cyh128.hikari_novel.data.repository.ReaderRepository
+import com.cyh128.hikari_novel.data.model.ChapterRef
 import com.cyh128.hikari_novel.data.source.local.database.bookshelf.BookshelfEntity
 import com.cyh128.hikari_novel.data.source.local.database.visit_history.VisitHistoryEntity
 import com.cyh128.hikari_novel.util.TimeUtil
@@ -28,7 +30,8 @@ class NovelInfoViewModel @Inject constructor(
     private val visitHistoryRepository: VisitHistoryRepository,
     private val verticalReadRepository: VerticalReadRepository,
     private val horizontalReadRepository: HorizontalReadRepository,
-    private val bookshelfRepository: BookshelfRepository
+    private val bookshelfRepository: BookshelfRepository,
+    private val readerRepository: ReaderRepository
 ) : ViewModel() {
     var novelInfo: NovelInfo? = null
     lateinit var novel: Novel private set
@@ -107,7 +110,7 @@ class NovelInfoViewModel @Inject constructor(
     private suspend fun getChapter() {
         wenku8Repository.getChapter(chapterUrl)
             .onSuccess { success ->
-                novel = Novel(aid, success)
+                novel = Novel(aid, success, novelInfo?.title.orEmpty())
                 addVisitHistory()
                 isInBookshelf()
                 sendEvent(Event.LoadSuccessEvent,"event_novel_info_activity")
@@ -171,6 +174,18 @@ class NovelInfoViewModel @Inject constructor(
                 }.onFailure { failure ->
                     sendEvent(Event.NetworkErrorEvent(failure.message),"event_novel_info_activity")
                 }
+        }
+    }
+
+    fun enqueueDownloads(refs: List<ChapterRef>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val info = novelInfo ?: return@launch
+            readerRepository.enqueueDownloads(
+                refs,
+                info.title,
+                info.imgUrl,
+                novel.volume.sumOf { it.chapters.size }
+            )
         }
     }
 

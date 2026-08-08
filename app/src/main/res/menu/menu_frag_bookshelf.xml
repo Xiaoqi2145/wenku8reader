@@ -3,6 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/menu_f_bookshelf_download"
+        android:icon="@drawable/ic_arrow_down"
+        android:title="@string/download"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/menu_f_bookshelf_sync"
         android:icon="@drawable/ic_sync"
         android:title="@string/sync"

@@ -11,6 +11,7 @@ import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
 import com.cyh128.hikari_novel.R
@@ -23,6 +24,7 @@ import com.cyh128.hikari_novel.ui.other.LoadingView
 import com.cyh128.hikari_novel.ui.read.SelectColorActivity
 import com.cyh128.hikari_novel.ui.read.catalog.ReadChapterCatalogBottomSheet
 import com.cyh128.hikari_novel.util.getIsInDarkMode
+import com.cyh128.hikari_novel.util.startActivity
 import com.drake.channel.receiveEvent
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -65,6 +67,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
                 Event.LoadSuccessEvent -> {
                     lifecycle.withStarted { //在ui可见的情况下执行，否则先挂起
                         supportActionBar?.title = viewModel.chapterTitle
+                        supportActionBar?.subtitle = viewModel.novel?.title.orEmpty()
                         if (viewModel.appendCurrentChapter) {
                             (supportFragmentManager.findFragmentById(R.id.fcv_a_v_read) as? ReadFragment)
                                 ?.appendCurrentChapter()
@@ -198,6 +201,22 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
         binding.bAVReadConfig.setOnClickListener {
             bottomSheetDialog.show()
+        }
+        binding.bAVReadSettings.setOnClickListener { bottomSheetDialog.show() }
+        binding.bAVReadCatalog.setOnClickListener { showChapterCatalog() }
+        binding.bAVReadNight.setOnClickListener {
+            AppCompatDelegate.setDefaultNightMode(
+                if (getIsInDarkMode()) AppCompatDelegate.MODE_NIGHT_NO else AppCompatDelegate.MODE_NIGHT_YES
+            )
+        }
+        bottomViewBinding.bVReadConfigHorizontal.setOnClickListener {
+            lifecycleScope.launch {
+                viewModel.saveReadHistory()
+                startActivity<com.cyh128.hikari_novel.ui.read.horizontal.ReadActivity> {
+                    putExtra("data", ReadParcel(viewModel.novel!!, viewModel.curVolumePos, viewModel.curChapterPos, false))
+                }
+                finish()
+            }
         }
 
         bottomViewBinding.sVVReadConfigFontSize.addOnSliderTouchListener(
@@ -352,6 +371,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
     }
 
     fun autoLoadNextChapter(): Boolean {
+        lifecycleScope.launch { viewModel.saveReadHistory() }
         if (viewModel.curChapterPos == viewModel.curVolume.chapters.size - 1) {
             if (viewModel.curVolumePos == viewModel.novel!!.volume.size - 1) return false
             viewModel.curVolumePos++
