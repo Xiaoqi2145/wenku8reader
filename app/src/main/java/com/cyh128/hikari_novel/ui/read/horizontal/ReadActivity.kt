@@ -17,7 +17,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.graphics.toColorInt
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.withStarted
 import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.base.BaseActivity
@@ -174,6 +176,15 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
 
         initView()
         initListener()
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                while (true) {
+                    binding.tvAHReadStatus.text = ReaderStatusText.current(this@ReadActivity)
+                    delay(30_000)
+                }
+            }
+        }
 
         binding.pvAHRead.showLoadingTip()
         viewModel.getNovelContent()

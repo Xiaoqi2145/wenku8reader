@@ -11,8 +11,10 @@ import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.Lifecycle
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.withStarted
 import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.base.BaseActivity
@@ -122,6 +124,15 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
         initView()
         initListener()
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                while (true) {
+                    binding.tvAVReadStatus.text = ReaderStatusText.current(this@ReadActivity)
+                    delay(30_000)
+                }
+            }
+        }
 
         viewModel.getNovelContent()
     }
