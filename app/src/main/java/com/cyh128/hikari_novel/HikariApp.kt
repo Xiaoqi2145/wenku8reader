@@ -20,6 +20,10 @@ import okhttp3.OkHttpClient
 import okhttp3.Response
 import rxhttp.RxHttpPlugins
 import rxhttp.wrapper.cookie.CookieStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -31,6 +35,8 @@ import javax.net.ssl.SSLSession
 
 @HiltAndroidApp
 class HikariApp : Application() {
+
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     @Inject
     lateinit var appRepository: AppRepository
@@ -69,6 +75,7 @@ class HikariApp : Application() {
             )
 
         RxHttpPlugins.init(client)
+        applicationScope.launch { readerRepository.resumeQueuedDownloads() }
         CrashConfig.Builder.create()
             .errorActivity(CrashActivity::class.java)
             .apply()

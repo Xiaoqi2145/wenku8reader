@@ -1,117 +1,228 @@
 package com.cyh128.hikari_novel.data.repository
 
 import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
 import com.cyh128.hikari_novel.data.model.CachedChapter
 import com.cyh128.hikari_novel.data.model.ChapterRef
 import com.cyh128.hikari_novel.data.model.ContentSource
-import com.cyh128.hikari_novel.data.source.local.database.reader.ChapterCacheEntity
-import com.cyh128.hikari_novel.data.source.local.database.reader.ReaderDao
-import com.cyh128.hikari_novel.data.source.local.database.reader.DownloadTaskEntity
+import com.cyh128.hikari_novel.data.model.ReaderAnchor
+import com.cyh128.hikari_novel.data.model.ReaderOrientation
+import com.cyh128.hikari_novel.data.repository.reader.ChapterCache
+import com.cyh128.hikari_novel.data.repository.reader.ChapterLoader
+import com.cyh128.hikari_novel.data.repository.reader.ChapterPrefetcher
+import com.cyh128.hikari_novel.data.repository.reader.DefaultChapterLoader
+import com.cyh128.hikari_novel.data.repository.reader.DefaultChapterPrefetcher
+import com.cyh128.hikari_novel.data.repository.reader.ReaderDaoProgressStore
+import com.cyh128.hikari_novel.data.repository.reader.RoomChapterCache
+import com.cyh128.hikari_novel.data.repository.reader.ReaderProgressStore
+import com.cyh128.hikari_novel.data.repository.reader.Wenku8ChapterRemoteSource
 import com.cyh128.hikari_novel.data.source.local.database.reader.DownloadBookEntity
+import com.cyh128.hikari_novel.data.source.local.database.reader.DownloadTaskEntity
+import com.cyh128.hikari_novel.data.source.local.database.reader.ReaderDao
+import com.cyh128.hikari_novel.data.source.local.database.reader.ReaderProgressEntity
 import com.cyh128.hikari_novel.data.source.remote.Network
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
-import java.io.File
 
+/**
+ * Facade for reader data operations.
+ *
+ * Chapter resolution, cache storage, progress migration, and prefetching live
+ * in focused collaborators. The facade keeps the existing API used by the UI
+ * and owns only download-task orchestration for backwards compatibility.
+ */
 @Singleton
 class ReaderRepository @Inject constructor(
-    private val wenku8Repository: Wenku8Repository,
+    private val chapterLoader: ChapterLoader,
+    private val chapterCache: ChapterCache,
+    private val progressStore: ReaderProgressStore,
+    private val chapterPrefetcher: ChapterPrefetcher,
     private val dao: ReaderDao,
     private val network: Network,
     @ApplicationContext private val context: Context
 ) {
-    private val gson = Gson()
+    /**
+     * Source-compatible bridge for tests or integrations that used to construct
+     * the repository directly. Hilt uses the primary collaborator-based ctor.
+     */
+    @Deprecated("Use dependency injection with the collaborator-based constructor")
+    constructor(
+        wenku8Repository: Wenku8Repository,
+        dao: ReaderDao,
+        network: Network,
+        context: Context
+    ) : this(
+        chapterLoader = DefaultChapterLoader(
+            Wenku8ChapterRemoteSource(wenku8Repository),
+            RoomChapterCache(dao)
+        ),
+        chapterCache = RoomChapterCache(dao),
+        progressStore = ReaderDaoProgressStore(dao),
+        chapterPrefetcher = DefaultChapterPrefetcher(
+            DefaultChapterLoader(
+                Wenku8ChapterRemoteSource(wenku8Repository),
+                RoomChapterCache(dao)
+            )
+        ),
+        dao = dao,
+        network = network,
+        context = context
+    )
+
     private val downloadScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val downloadMutex = Mutex()
-    private val memory = object : LinkedHashMap<String, CachedChapter>(8, .75f, true) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, CachedChapter>?) = size > 8
-    }
-    private val memoryMutex = Mutex()
 
-    suspend fun cached(ref: ChapterRef): CachedChapter? = memoryMutex.withLock {
-        memory[ref.cid] ?: dao.getChapter(ref.cid)?.toModel(ref, gson)?.also { memory[ref.cid] = it }
-    }
+    /** Return cached content without making a network request. */
+    suspend fun cached(ref: ChapterRef): CachedChapter? = chapterCache.get(ref)?.chapter
 
-    suspend fun load(ref: ChapterRef, forceNetwork: Boolean = false): Result<Pair<CachedChapter, ContentSource>> {
-        val local = cached(ref)
-        if (local != null && !forceNetwork) return Result.success(local to ContentSource.DISK_CACHE)
-        return wenku8Repository.getNovelContent(ref.aid, ref.cid).map { response ->
-            val model = CachedChapter(ref, response.content, response.image, System.currentTimeMillis(), local?.isDownloaded == true)
-            dao.upsertChapter(model.toEntity(gson))
-            memoryMutex.withLock { memory[ref.cid] = model }
-            model to ContentSource.NETWORK
-        }.recoverCatching { error ->
-            if (local != null) local to ContentSource.STALE_CACHE else throw error
-        }
-    }
+    /** Resolve a chapter through cache and network according to [forceNetwork]. */
+    suspend fun load(
+        ref: ChapterRef,
+        forceNetwork: Boolean = false
+    ): Result<Pair<CachedChapter, ContentSource>> = chapterLoader.load(ref, forceNetwork)
 
-    suspend fun prefetch(ref: ChapterRef) {
-        if (cached(ref) == null) load(ref)
-    }
+    /** Best-effort prefetch of one caller-selected next chapter. */
+    suspend fun prefetch(ref: ChapterRef): Boolean = chapterPrefetcher.prefetch(ref)
 
     suspend fun enqueueDownloads(refs: List<ChapterRef>) {
-        if (refs.isEmpty()) return
+        val distinctRefs = refs.distinctBy { it.cid }
+        if (distinctRefs.isEmpty()) return
+
         val now = System.currentTimeMillis()
-        refs.forEach { ref ->
-            dao.upsertDownload(DownloadTaskEntity(ref.cid, ref.aid, ref.volumeIndex, ref.chapterIndex, ref.title, "QUEUED", 0, null, now))
+        distinctRefs.forEach { ref ->
+            dao.upsertDownload(
+                DownloadTaskEntity(
+                    cid = ref.cid,
+                    aid = ref.aid,
+                    volumeIndex = ref.volumeIndex,
+                    chapterIndex = ref.chapterIndex,
+                    title = ref.title,
+                    status = DOWNLOAD_QUEUED,
+                    progress = 0,
+                    error = null,
+                    updatedAt = now
+                )
+            )
         }
-        downloadScope.launch { runPendingDownloads(refs.first().aid) }
+        downloadScope.launch { runPendingDownloads(distinctRefs.first().aid) }
     }
 
-    suspend fun enqueueDownloads(refs: List<ChapterRef>, title: String, imageUrl: String?, totalChapters: Int) {
-        if (refs.isEmpty()) return
-        dao.upsertDownloadBook(DownloadBookEntity(refs.first().aid, title, imageUrl, totalChapters, System.currentTimeMillis()))
-        enqueueDownloads(refs)
+    suspend fun enqueueDownloads(
+        refs: List<ChapterRef>,
+        title: String,
+        imageUrl: String?,
+        totalChapters: Int
+    ) {
+        val distinctRefs = refs.distinctBy { it.cid }
+        if (distinctRefs.isEmpty()) return
+        dao.upsertDownloadBook(
+            DownloadBookEntity(
+                aid = distinctRefs.first().aid,
+                title = title,
+                imageUrl = imageUrl,
+                totalChapters = totalChapters,
+                updatedAt = System.currentTimeMillis()
+            )
+        )
+        enqueueDownloads(distinctRefs)
     }
 
+    /** Resume queued, failed, and interrupted (RUNNING) tasks after process restart. */
     suspend fun resumeQueuedDownloads() {
-        dao.pendingAids().forEach { aid -> downloadScope.launch { runPendingDownloads(aid) } }
+        dao.resetInterruptedDownloads(System.currentTimeMillis())
+        dao.pendingAids().forEach { aid ->
+            downloadScope.launch { runPendingDownloads(aid) }
+        }
     }
 
+    /**
+     * Execute one book's pending download tasks. This operation is serialized
+     * independently from normal chapter loading and treats every task as
+     * best-effort: a failed task is recorded while later tasks can continue.
+     */
     suspend fun runPendingDownloads(aid: String): Boolean = downloadMutex.withLock {
         var allSucceeded = true
         dao.pendingDownloads(aid).forEach { task ->
-            if (dao.getDownloadStatus(task.cid) == "PAUSED") return@forEach
-            dao.upsertDownload(task.copy(status = "RUNNING", progress = 5, error = null, updatedAt = System.currentTimeMillis()))
+            if (dao.getDownloadStatus(task.cid) == DOWNLOAD_PAUSED) return@forEach
+
+            dao.upsertDownload(
+                task.copy(
+                    status = DOWNLOAD_RUNNING,
+                    progress = 5,
+                    error = null,
+                    updatedAt = System.currentTimeMillis()
+                )
+            )
             val ref = ChapterRef(task.aid, task.cid, task.volumeIndex, task.chapterIndex, task.title)
+
             try {
+                // Downloads may use an already cached chapter, but never make
+                // the foreground reader wait for this queue's mutex.
                 val chapter = cached(ref) ?: load(ref, forceNetwork = true).getOrThrow().first
                 val localImages = downloadImages(chapter)
-                val downloaded = chapter.copy(images = localImages, isDownloaded = true, updatedAt = System.currentTimeMillis())
-                dao.upsertChapter(downloaded.toEntity(gson))
+                val downloaded = chapter.copy(
+                    images = localImages,
+                    isDownloaded = true,
+                    updatedAt = System.currentTimeMillis()
+                )
+                chapterCache.put(downloaded)
                 dao.markDownloaded(task.cid, true)
-                memoryMutex.withLock { memory[task.cid] = downloaded }
-                dao.upsertDownload(task.copy(status = "COMPLETED", progress = 100, error = null, updatedAt = System.currentTimeMillis()))
+                dao.upsertDownload(
+                    task.copy(
+                        status = DOWNLOAD_COMPLETED,
+                        progress = 100,
+                        error = null,
+                        updatedAt = System.currentTimeMillis()
+                    )
+                )
+            } catch (error: CancellationException) {
+                // Leave the task RUNNING so the next process start can recover it.
+                throw error
             } catch (error: Throwable) {
                 allSucceeded = false
-                dao.upsertDownload(task.copy(status = "FAILED", progress = 0, error = error.message, updatedAt = System.currentTimeMillis()))
+                dao.upsertDownload(
+                    task.copy(
+                        status = DOWNLOAD_FAILED,
+                        progress = 0,
+                        error = error.message,
+                        updatedAt = System.currentTimeMillis()
+                    )
+                )
             }
         }
         allSucceeded
     }
 
     fun observeDownloads(aid: String) = dao.observeDownloads(aid)
+
     fun observeDownloadBooks() = dao.observeDownloadBooks()
 
-    suspend fun pauseBook(aid: String) = dao.updateDownloadStatus(aid, "PAUSED", System.currentTimeMillis())
+    suspend fun pauseBook(aid: String) =
+        dao.updateDownloadStatus(aid, DOWNLOAD_PAUSED, System.currentTimeMillis())
+
     suspend fun resumeBook(aid: String) {
-        dao.updateDownloadStatus(aid, "QUEUED", System.currentTimeMillis())
+        dao.updateDownloadStatus(aid, DOWNLOAD_QUEUED, System.currentTimeMillis())
         downloadScope.launch { runPendingDownloads(aid) }
     }
+
     suspend fun retryBook(aid: String) = resumeBook(aid)
+
     suspend fun retryChapter(cid: String) {
-        dao.updateChapterStatus(cid, "QUEUED", System.currentTimeMillis())
-        dao.getChapterTaskAid(cid)?.let { downloadScope.launch { runPendingDownloads(it) } }
+        dao.updateChapterStatus(cid, DOWNLOAD_QUEUED, System.currentTimeMillis())
+        dao.getChapterTaskAid(cid)?.let { aid ->
+            downloadScope.launch { runPendingDownloads(aid) }
+        }
     }
+
     suspend fun deleteBookDownloads(aid: String) {
         dao.deleteDownloadTasks(aid)
         dao.deleteDownloadBook(aid)
@@ -119,42 +230,67 @@ class ReaderRepository @Inject constructor(
 
     suspend fun deleteChapterDownload(cid: String) {
         dao.deleteDownloadTask(cid)
-        dao.deleteChapterCache(cid)
+        chapterCache.remove(cid)
     }
 
-    private suspend fun downloadImages(chapter: CachedChapter): List<String> {
-        if (chapter.images.isEmpty()) return emptyList()
-        val directory = File(context.filesDir, "chapters/${chapter.ref.aid}/${chapter.ref.cid}").apply { mkdirs() }
-        return chapter.images.mapIndexed { index, url ->
-            if (url.startsWith(directory.absolutePath)) return@mapIndexed url
-            val target = File(directory, "image_$index")
-            val temporary = File(directory, "image_$index.tmp")
-            temporary.writeBytes(network.downloadBytes(url))
-            if (target.exists()) target.delete()
-            check(temporary.renameTo(target)) { "Unable to finalize image download" }
-            target.absolutePath
-        }
-    }
+    suspend fun clearExpiredCache(before: Long) = chapterCache.clearExpired(before)
 
-    suspend fun saveProgress(progress: com.cyh128.hikari_novel.data.model.ReaderAnchor, ref: ChapterRef) {
+    /** Save the new anchor and optionally mirror it to the legacy history table. */
+    suspend fun saveProgress(
+        progress: ReaderAnchor,
+        ref: ChapterRef,
+        orientation: ReaderOrientation? = null,
+        legacyLocation: Int? = null
+    ) {
+        // Keep the old facade contract: a stale anchor for another chapter is
+        // ignored instead of being rewritten under the current cid.
         if (progress.cid != ref.cid) return
-        dao.clearLatest(ref.aid)
-        dao.upsertProgress(com.cyh128.hikari_novel.data.source.local.database.reader.ReaderProgressEntity(
-            ref.cid, ref.aid, ref.volumeIndex, ref.chapterIndex, progress.paragraphIndex,
-            progress.charOffset, progress.normalizedPercent, progress.imageIndex,
-            System.currentTimeMillis(), true
-        ))
+        progressStore.save(progress, ref, orientation, legacyLocation)
     }
 
-    suspend fun getProgress(cid: String) = dao.getProgress(cid)
+    /** Legacy-compatible lookup by cid, including the new anchor table only. */
+    suspend fun getProgress(cid: String): ReaderProgressEntity? = progressStore.get(cid)
 
-    private fun ChapterCacheEntity.toModel(ref: ChapterRef, gson: Gson) = CachedChapter(
-        ref, content, gson.fromJson(imagesJson, object : TypeToken<List<String>>() {}.type) ?: emptyList(),
-        updatedAt, isDownloaded
-    )
+    /** Explicit startup hook for callers that do not own an application scope. */
+    suspend fun recoverInterruptedDownloads() = resumeQueuedDownloads()
 
-    private fun CachedChapter.toEntity(gson: Gson) = ChapterCacheEntity(
-        ref.cid, ref.aid, ref.volumeIndex, ref.chapterIndex, ref.title, content,
-        gson.toJson(images), updatedAt, isDownloaded, content.toByteArray().size.toLong()
-    )
+    /** Lookup with chapter metadata/content so old percentages become stable anchors. */
+    suspend fun getProgress(
+        ref: ChapterRef,
+        content: String? = null,
+        orientation: ReaderOrientation? = null
+    ): ReaderProgressEntity? = progressStore.get(ref, content, orientation)
+
+    fun observeProgress(aid: String) = progressStore.observe(aid)
+
+    private suspend fun downloadImages(chapter: CachedChapter): List<String> =
+        withContext(Dispatchers.IO) {
+            if (chapter.images.isEmpty()) return@withContext emptyList()
+            val directory = File(context.filesDir, "chapters/${chapter.ref.aid}/${chapter.ref.cid}")
+                .apply { mkdirs() }
+
+            chapter.images.mapIndexed { index, url ->
+                if (url.startsWith(directory.absolutePath)) return@mapIndexed url
+
+                val target = File(directory, "image_$index")
+                val temporary = File(directory, "image_$index.tmp")
+                try {
+                    temporary.writeBytes(network.downloadBytes(url))
+                    if (target.exists()) target.delete()
+                    check(temporary.renameTo(target)) { "Unable to finalize image download" }
+                    target.absolutePath
+                } catch (error: Throwable) {
+                    temporary.delete()
+                    throw error
+                }
+            }
+        }
+
+    private companion object {
+        const val DOWNLOAD_QUEUED = "QUEUED"
+        const val DOWNLOAD_RUNNING = "RUNNING"
+        const val DOWNLOAD_PAUSED = "PAUSED"
+        const val DOWNLOAD_COMPLETED = "COMPLETED"
+        const val DOWNLOAD_FAILED = "FAILED"
+    }
 }

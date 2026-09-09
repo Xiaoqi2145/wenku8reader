@@ -22,6 +22,13 @@ interface ReaderDao {
     @Upsert
     suspend fun upsertProgress(entity: ReaderProgressEntity)
 
+    /** Replace the latest marker and write the anchor atomically. */
+    @androidx.room.Transaction
+    suspend fun upsertLatestProgress(entity: ReaderProgressEntity) {
+        clearLatest(entity.aid)
+        upsertProgress(entity)
+    }
+
     @Query("UPDATE reader_progress SET isLatest = 0 WHERE aid = :aid")
     suspend fun clearLatest(aid: String)
 
@@ -61,11 +68,14 @@ interface ReaderDao {
     @Upsert
     suspend fun upsertDownload(entity: DownloadTaskEntity)
 
-    @Query("SELECT * FROM download_task WHERE aid = :aid AND status IN ('QUEUED', 'FAILED') ORDER BY volumeIndex, chapterIndex")
+    @Query("SELECT * FROM download_task WHERE aid = :aid AND status IN ('QUEUED', 'RUNNING', 'FAILED') ORDER BY volumeIndex, chapterIndex")
     suspend fun pendingDownloads(aid: String): List<DownloadTaskEntity>
 
-    @Query("SELECT DISTINCT aid FROM download_task WHERE status IN ('QUEUED', 'FAILED')")
+    @Query("SELECT DISTINCT aid FROM download_task WHERE status IN ('QUEUED', 'RUNNING', 'FAILED')")
     suspend fun pendingAids(): List<String>
+
+    @Query("UPDATE download_task SET status = 'QUEUED', error = NULL, updatedAt = :updatedAt WHERE status = 'RUNNING'")
+    suspend fun resetInterruptedDownloads(updatedAt: Long)
 
     @Query("UPDATE chapter_cache SET isDownloaded = :downloaded WHERE cid = :cid")
     suspend fun markDownloaded(cid: String, downloaded: Boolean)

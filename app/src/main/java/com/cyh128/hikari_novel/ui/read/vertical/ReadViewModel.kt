@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cyh128.hikari_novel.data.model.ChapterRef
 import com.cyh128.hikari_novel.data.model.ReaderAnchor
+import com.cyh128.hikari_novel.data.model.ReaderOrientation
 import com.cyh128.hikari_novel.reader.domain.ChapterNavigator
 import com.cyh128.hikari_novel.util.ReaderAnchorMapper
 import com.cyh128.hikari_novel.data.model.ReaderEffect
@@ -16,7 +17,6 @@ import com.cyh128.hikari_novel.data.repository.ReadColorRepository
 import com.cyh128.hikari_novel.data.repository.VerticalReadRepository
 import com.cyh128.hikari_novel.data.repository.Wenku8Repository
 import com.cyh128.hikari_novel.data.repository.ReaderRepository
-import com.cyh128.hikari_novel.data.source.local.database.read_history.vertical_read_history.VerticalReadHistoryEntity
 import com.drake.channel.sendEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -123,38 +123,34 @@ class ReadViewModel @Inject constructor(
         viewModelScope.launch { readerRepository.enqueueDownloads(refs) }
     }
 
-    private fun nextRef(): ChapterRef? = nextChapterLocation()?.chapter
+    private fun nextRef(): ChapterRef? = nextChapterLocation()
 
     //保存阅读记录
     suspend fun saveReadHistory() {
         if (curNovelContent.isNotBlank()) {
             val percent = progressText.value?.substringBefore("%")?.toIntOrNull()?.coerceIn(0, 100) ?: 0
-            verticalReadRepository.addOrReplace(
-                aid,
-                VerticalReadHistoryEntity(
-                    cid,
-                    aid,
-                    curVolumePos,
-                    curChapterPos,
-                    curReadPos,
-                    percent,
-                    true
-                )
-            )
             readerRepository.saveProgress(
-                ReaderAnchorMapper.fromPercent(cid, curNovelContent, percent),
-                currentRef()
+                progress = ReaderAnchorMapper.fromPercent(cid, curNovelContent, percent),
+                ref = currentRef(),
+                orientation = ReaderOrientation.Vertical,
+                legacyLocation = curReadPos
             )
         }
     }
 
     suspend fun saveReaderAnchor(anchor: ReaderAnchor) {
         if (curNovelContent.isNotBlank() && anchor.cid == cid) {
-            readerRepository.saveProgress(ReaderAnchorMapper.clamp(anchor, curNovelContent), currentRef())
+            readerRepository.saveProgress(
+                progress = ReaderAnchorMapper.clamp(anchor, curNovelContent),
+                ref = currentRef(),
+                orientation = ReaderOrientation.Vertical,
+                legacyLocation = null
+            )
         }
     }
 
-    suspend fun getReaderProgress() = readerRepository.getProgress(cid)
+    suspend fun getReaderProgress() =
+        readerRepository.getProgress(currentRef(), curNovelContent, ReaderOrientation.Vertical)
 
     fun setFontSize(size: Float) {
         viewModelScope.launch {
