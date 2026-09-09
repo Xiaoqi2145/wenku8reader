@@ -137,6 +137,7 @@ class ReaderRepository @Inject constructor(
     }
 
     suspend fun saveProgress(progress: com.cyh128.hikari_novel.data.model.ReaderAnchor, ref: ChapterRef) {
+        if (progress.cid != ref.cid) return
         dao.clearLatest(ref.aid)
         dao.upsertProgress(com.cyh128.hikari_novel.data.source.local.database.reader.ReaderProgressEntity(
             ref.cid, ref.aid, ref.volumeIndex, ref.chapterIndex, progress.paragraphIndex,

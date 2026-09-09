@@ -301,12 +301,13 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
     }
 
     private fun jumpToChapter(volumePos: Int, chapterPos: Int) {
-        if (viewModel.curVolumePos == volumePos && viewModel.curChapterPos == chapterPos) return
+        val target = viewModel.chapterNavigator().chapterAt(volumePos, chapterPos) ?: return
+        if (viewModel.curVolumePos == target.volumeIndex && viewModel.curChapterPos == target.chapterIndex) return
 
         viewModel.goToLatest = false
         viewModel.appendCurrentChapter = false
-        viewModel.curVolumePos = volumePos
-        viewModel.curChapterPos = chapterPos
+        viewModel.curVolumePos = target.volumeIndex
+        viewModel.curChapterPos = target.chapterIndex
         showLoading()
         viewModel.getNovelContent()
         setBottomBarIsEnable(false)
@@ -315,30 +316,23 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
     fun toPreviousChapter() { //切换至上一章
         lifecycleScope.launch {
             viewModel.appendCurrentChapter = false
-            if (viewModel.curChapterPos == 0) { //判断是不是该卷的第一章
-                if (viewModel.curVolumePos == 0) {
-                    Snackbar.make(
-                        binding.root,
-                        R.string.no_previous_chapter,
-                        Snackbar.LENGTH_INDEFINITE
-                    ).apply {
-                        setAnchorView(binding.llAVReadBottomBar) //使它出现在bottomAppBar的上面，避免遮挡内容
-                        setAction(R.string.ok) {}
-                        show()
-                    }
-                    return@launch
+            val target = viewModel.previousChapterLocation()
+            if (target == null) {
+                Snackbar.make(
+                    binding.root,
+                    R.string.no_previous_chapter,
+                    Snackbar.LENGTH_INDEFINITE
+                ).apply {
+                    setAnchorView(binding.llAVReadBottomBar)
+                    setAction(R.string.ok) {}
+                    show()
                 }
-                viewModel.curVolumePos--
-                viewModel.curChapterPos = viewModel.curVolume.chapters.size - 1
-                viewModel.goToLatest = false
-                showLoading()
-                viewModel.getNovelContent()
-                setBottomBarIsEnable(false)
                 return@launch
             }
-            showLoading()
-            viewModel.curChapterPos--
+            viewModel.curVolumePos = target.volumeIndex
+            viewModel.curChapterPos = target.chapterIndex
             viewModel.goToLatest = false
+            showLoading()
             viewModel.getNovelContent()
             setBottomBarIsEnable(false)
         }
@@ -347,27 +341,20 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
     fun toNextChapter() { //切换至下一章
         lifecycleScope.launch {
             viewModel.appendCurrentChapter = false
-            if (viewModel.curChapterPos == viewModel.curVolume.chapters.size - 1) { //判断是不是该卷的最后一章
-                if (viewModel.curVolumePos == viewModel.novel!!.volume.size - 1) {
-                    Snackbar.make(binding.root, R.string.no_next_chapter, Snackbar.LENGTH_INDEFINITE)
-                        .apply {
-                            setAnchorView(binding.llAVReadBottomBar) //使它出现在bottomAppBar的上面，避免遮挡内容
-                            setAction(R.string.ok) {}
-                            show()
-                        }
-                    return@launch
-                }
-                viewModel.curVolumePos++
-                viewModel.curChapterPos = 0
-                viewModel.goToLatest = false
-                showLoading()
-                viewModel.getNovelContent()
-                setBottomBarIsEnable(false)
+            val target = viewModel.nextChapterLocation()
+            if (target == null) {
+                Snackbar.make(binding.root, R.string.no_next_chapter, Snackbar.LENGTH_INDEFINITE)
+                    .apply {
+                        setAnchorView(binding.llAVReadBottomBar)
+                        setAction(R.string.ok) {}
+                        show()
+                    }
                 return@launch
             }
-            showLoading()
-            viewModel.curChapterPos++
+            viewModel.curVolumePos = target.volumeIndex
+            viewModel.curChapterPos = target.chapterIndex
             viewModel.goToLatest = false
+            showLoading()
             viewModel.getNovelContent()
             setBottomBarIsEnable(false)
         }
@@ -375,14 +362,9 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
     fun autoLoadNextChapter(): Boolean {
         lifecycleScope.launch { viewModel.saveReadHistory() }
-        if (viewModel.curChapterPos == viewModel.curVolume.chapters.size - 1) {
-            if (viewModel.curVolumePos == viewModel.novel!!.volume.size - 1) return false
-            viewModel.curVolumePos++
-            viewModel.curChapterPos = 0
-        } else {
-            viewModel.curChapterPos++
-        }
-
+        val target = viewModel.nextChapterLocation() ?: return false
+        viewModel.curVolumePos = target.volumeIndex
+        viewModel.curChapterPos = target.chapterIndex
         viewModel.goToLatest = false
         viewModel.appendCurrentChapter = true
         viewModel.getNovelContent()

@@ -4,6 +4,8 @@ import com.cyh128.hikari_novel.data.model.ReaderAnchor
 
 object ReaderAnchorMapper {
     fun fromPercent(cid: String, content: String, percent: Int): ReaderAnchor {
+        if (content.isEmpty()) return ReaderAnchor(cid, 0, 0, 0)
+
         val safePercent = percent.coerceIn(0, 100)
         val offset = (content.length * safePercent / 100f).toInt().coerceIn(0, content.length)
         return ReaderAnchor(cid, content.take(offset).count { it == '\n' }, offset, safePercent)

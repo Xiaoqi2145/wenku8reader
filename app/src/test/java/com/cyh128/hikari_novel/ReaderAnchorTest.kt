@@ -18,4 +18,11 @@ class ReaderAnchorTest {
         assertEquals(7, anchor.charOffset)
         assertEquals(100, anchor.normalizedPercent)
     }
+
+    @Test fun emptyContentAlwaysUsesZeroAnchor() {
+        val anchor = ReaderAnchorMapper.fromPercent("empty", "", 75)
+        assertEquals(0, anchor.paragraphIndex)
+        assertEquals(0, anchor.charOffset)
+        assertEquals(0, anchor.normalizedPercent)
+    }
 }

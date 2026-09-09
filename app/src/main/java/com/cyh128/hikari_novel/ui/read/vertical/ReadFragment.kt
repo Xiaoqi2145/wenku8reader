@@ -17,8 +17,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.base.BaseFragment
+import com.cyh128.hikari_novel.data.model.ChapterRef
 import com.cyh128.hikari_novel.data.model.Event
+import com.cyh128.hikari_novel.data.model.ReaderAnchor
 import com.cyh128.hikari_novel.databinding.FragmentVerticalReadBinding
+import com.cyh128.hikari_novel.reader.domain.ChapterBlockMapper
 import com.cyh128.hikari_novel.util.ReaderTapArea
 import com.cyh128.hikari_novel.util.ReaderTouchJudge
 import com.cyh128.hikari_novel.util.getIsInDarkMode
@@ -33,7 +36,6 @@ import java.text.DecimalFormat
 
 @AndroidEntryPoint
 class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
-    private data class ChapterBlock(val start: Int, val end: Int, val contentLength: Int)
     private val viewModel by lazy { ViewModelProvider(requireActivity())[ReadViewModel::class.java] }
     private lateinit var touchJudge: ReaderTouchJudge
     private var readAdapter: ReadAdapter? = null
@@ -43,8 +45,7 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
     private var ignoreCurrentGesture = false
     private var touchStartedOnInteractiveChild = false
     private var hasRequestedNextChapter = false
-    private var activeChapterStartOffset = 0
-    private val chapterBlocks = mutableListOf<ChapterBlock>()
+    private val chapterBlockMapper = ChapterBlockMapper()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -82,9 +83,12 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
             }
         }
         val chapterHeader = "\n\n${viewModel.chapterTitle}\n\n"
-        activeChapterStartOffset = chapterHeader.length
-        chapterBlocks.clear()
-        chapterBlocks += ChapterBlock(activeChapterStartOffset, activeChapterStartOffset + viewModel.curNovelContent.length, viewModel.curNovelContent.length)
+        chapterBlockMapper.clear()
+        chapterBlockMapper.append(
+            ref = currentChapterRef(),
+            content = viewModel.curNovelContent,
+            prefixLength = chapterHeader.length
+        )
         binding.tvFVRead.text = SpannableStringBuilder().apply {
             append(chapterHeader)
             setSpan(StyleSpan(Typeface.BOLD), 2, (2 + viewModel.chapterTitle.length).coerceAtMost(length), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
@@ -118,15 +122,22 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
 
                     lifecycleScope.launch {
                         viewModel.getReaderProgress()?.let { progress ->
-                            val offset = (activeChapterStartOffset + progress.charOffset)
-                                .coerceIn(activeChapterStartOffset, binding.tvFVRead.text.length)
-                            val layout = binding.tvFVRead.layout
-                            if (layout != null) {
-                                binding.nsvFVRead.scrollTo(0, layout.getLineTop(layout.getLineForOffset(offset)))
-                                binding.nsvFVRead.post { refreshProgressText() }
+                            val anchor = ReaderAnchor(
+                                cid = progress.cid,
+                                paragraphIndex = progress.paragraphIndex,
+                                charOffset = progress.charOffset,
+                                normalizedPercent = progress.normalizedPercent,
+                                imageIndex = progress.imageIndex
+                            )
+                            chapterBlockMapper.globalOffset(anchor)?.let { offset ->
+                                val layout = binding.tvFVRead.layout
+                                if (layout != null) {
+                                    binding.nsvFVRead.scrollTo(0, layout.getLineTop(layout.getLineForOffset(offset)))
+                                    binding.nsvFVRead.post { refreshProgressText() }
+                                }
+                                viewModel.goToLatest = false
+                                return@launch
                             }
-                            viewModel.goToLatest = false
-                            return@launch
                         }
                         viewModel.getByCid.take(1).last()?.let {
                             if (viewModel.goToLatest) {
@@ -164,10 +175,12 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
 
     fun appendCurrentChapter() {
         val prefix = "\n\n${viewModel.chapterTitle}\n\n"
-        val contentStart = binding.tvFVRead.text.length + prefix.length
-        activeChapterStartOffset = contentStart
+        chapterBlockMapper.append(
+            ref = currentChapterRef(),
+            content = viewModel.curNovelContent,
+            prefixLength = prefix.length
+        )
         binding.tvFVRead.append(prefix + viewModel.curNovelContent)
-        chapterBlocks += ChapterBlock(contentStart, contentStart + viewModel.curNovelContent.length, viewModel.curNovelContent.length)
         readAdapter?.appendImages(viewModel.curImages)
         binding.tvFVReadEndTip.text = getString(R.string.continue_reading)
         hasRequestedNextChapter = false
@@ -252,12 +265,13 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
             .coerceIn(0, binding.tvFVRead.height)
         val line = layout.getLineForVertical(visibleY)
         val absoluteOffset = layout.getOffsetForHorizontal(line, 0f)
-        val block = chapterBlocks.lastOrNull { absoluteOffset >= it.start } ?: chapterBlocks.firstOrNull() ?: return
+        val mapped = chapterBlockMapper.chapterAt(absoluteOffset) ?: return
+        val block = chapterBlockMapper.blocks.firstOrNull { it.ref.cid == mapped.ref.cid } ?: return
         val contentLength = block.contentLength.coerceAtLeast(1)
-        val localOffset = (absoluteOffset - block.start).coerceIn(0, contentLength)
+        val localOffset = mapped.localOffset.coerceIn(0, contentLength)
         val anchorPercent = localOffset * 100 / contentLength
-        val startLine = layout.getLineForOffset(block.start.coerceIn(0, binding.tvFVRead.text.length))
-        val endOffset = block.end.coerceIn(0, binding.tvFVRead.text.length)
+        val startLine = layout.getLineForOffset(block.startOffset.coerceIn(0, binding.tvFVRead.text.length))
+        val endOffset = block.endOffsetExclusive.coerceIn(0, binding.tvFVRead.text.length)
         val endLine = layout.getLineForOffset(endOffset)
         val startY = layout.getLineTop(startLine)
         val endY = layout.getLineBottom(endLine).coerceAtLeast(startY + 1)
@@ -265,6 +279,19 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
         val result = maxOf(anchorPercent, geometryPercent).coerceIn(0, 100).toString()
         viewModel.curReadPos = binding.nsvFVRead.scrollY
         viewModel.progressText.value = "$result%"
+    }
+
+    private fun currentChapterRef(): ChapterRef {
+        val novel = viewModel.novel ?: error("Reader novel is not initialized")
+        val volume = novel.volume[viewModel.curVolumePos]
+        val chapter = volume.chapters[viewModel.curChapterPos]
+        return ChapterRef(
+            aid = novel.aid,
+            cid = chapter.cid,
+            volumeIndex = viewModel.curVolumePos,
+            chapterIndex = viewModel.curChapterPos,
+            title = chapter.chapterTitle
+        )
     }
 
     private fun maybeAutoLoadNextChapter() {

@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cyh128.hikari_novel.data.model.ChapterRef
 import com.cyh128.hikari_novel.data.model.ReaderAnchor
+import com.cyh128.hikari_novel.reader.domain.ChapterNavigator
+import com.cyh128.hikari_novel.util.ReaderAnchorMapper
 import com.cyh128.hikari_novel.data.model.ReaderEffect
 import com.cyh128.hikari_novel.data.model.ReaderUiState
 import com.cyh128.hikari_novel.data.model.EmptyException
@@ -39,6 +41,7 @@ class ReadViewModel @Inject constructor(
     val readerState = _readerState.asStateFlow()
     val readerEffects = MutableSharedFlow<ReaderEffect>(extraBufferCapacity = 8)
     private var loadJob: Job? = null
+    private var loadGeneration = 0L
     var curChapterPos by Delegates.notNull<Int>()
     var curVolumePos by Delegates.notNull<Int>()
     var goToLatest = false //是否是上次阅读的章节
@@ -64,14 +67,37 @@ class ReadViewModel @Inject constructor(
 
     private fun currentRef(): ChapterRef = ChapterRef(aid, cid, curVolumePos, curChapterPos, chapterTitle)
 
+    fun currentChapterRef(): ChapterRef = currentRef()
+
+    fun chapterNavigator(): ChapterNavigator {
+        val currentNovel = novel ?: return ChapterNavigator(emptyList())
+        return ChapterNavigator(currentNovel.volume.mapIndexed { volumeIndex, volume ->
+            volume.chapters.mapIndexed { chapterIndex, chapter ->
+                ChapterRef(
+                    aid = currentNovel.aid,
+                    cid = chapter.cid,
+                    volumeIndex = volumeIndex,
+                    chapterIndex = chapterIndex,
+                    title = chapter.chapterTitle
+                )
+            }
+        })
+    }
+
+    fun nextChapterLocation() = chapterNavigator().next(currentRef())
+
+    fun previousChapterLocation() = chapterNavigator().previous(currentRef())
+
     fun getNovelContent(forceNetwork: Boolean = false) {
         curNovelContent = ""
         val ref = currentRef()
+        val generation = ++loadGeneration
         loadJob?.cancel()
         _readerState.value = ReaderUiState.Loading(ref)
         loadJob = viewModelScope.launch(Dispatchers.IO) {
             readerRepository.load(ref, forceNetwork)
                 .onSuccess { (chapter, source) ->
+                    if (!isCurrentLoad(generation, ref)) return@onSuccess
                     curNovelContent = chapter.content
                     curImages = chapter.images
                     _readerState.value = ReaderUiState.Ready(chapter, source)
@@ -80,6 +106,7 @@ class ReadViewModel @Inject constructor(
                         viewModelScope.launch(Dispatchers.IO) { readerRepository.prefetch(next) }
                     }
                 }.onFailure { failure ->
+                    if (!isCurrentLoad(generation, ref)) return@onFailure
                     _readerState.value = ReaderUiState.Error(ref, failure.message ?: "加载失败", hasCachedContent = false)
                     if (failure is EmptyException) sendEvent(Event.EmptyContentEvent, "event_vertical_read_activity")
                     else sendEvent(Event.NetworkErrorEvent(failure.message), "event_vertical_read_activity")
@@ -87,22 +114,16 @@ class ReadViewModel @Inject constructor(
         }
     }
 
+    private fun isCurrentLoad(generation: Long, ref: ChapterRef): Boolean =
+        generation == loadGeneration && novel != null && currentRef() == ref
+
     fun retryNovelContent() = getNovelContent(forceNetwork = true)
 
     fun enqueueDownloads(refs: List<ChapterRef>) {
         viewModelScope.launch { readerRepository.enqueueDownloads(refs) }
     }
 
-    private fun nextRef(): ChapterRef? {
-        val n = novel ?: return null
-        return if (curChapterPos < curVolume.chapters.lastIndex) {
-            val chapter = curVolume.chapters[curChapterPos + 1]
-            ChapterRef(aid, chapter.cid, curVolumePos, curChapterPos + 1, chapter.chapterTitle)
-        } else if (curVolumePos < n.volume.lastIndex && n.volume[curVolumePos + 1].chapters.isNotEmpty()) {
-            val chapter = n.volume[curVolumePos + 1].chapters.first()
-            ChapterRef(aid, chapter.cid, curVolumePos + 1, 0, chapter.chapterTitle)
-        } else null
-    }
+    private fun nextRef(): ChapterRef? = nextChapterLocation()?.chapter
 
     //保存阅读记录
     suspend fun saveReadHistory() {
@@ -120,16 +141,17 @@ class ReadViewModel @Inject constructor(
                     true
                 )
             )
-            val offset = (curNovelContent.length * percent / 100f).toInt().coerceIn(0, curNovelContent.length)
             readerRepository.saveProgress(
-                ReaderAnchor(cid, curNovelContent.take(offset).count { it == '\n' }, offset, percent),
+                ReaderAnchorMapper.fromPercent(cid, curNovelContent, percent),
                 currentRef()
             )
         }
     }
 
     suspend fun saveReaderAnchor(anchor: ReaderAnchor) {
-        if (curNovelContent.isNotBlank()) readerRepository.saveProgress(anchor, currentRef())
+        if (curNovelContent.isNotBlank() && anchor.cid == cid) {
+            readerRepository.saveProgress(ReaderAnchorMapper.clamp(anchor, curNovelContent), currentRef())
+        }
     }
 
     suspend fun getReaderProgress() = readerRepository.getProgress(cid)
