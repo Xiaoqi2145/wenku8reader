@@ -1,6 +1,5 @@
 package com.cyh128.hikari_novel.ui.read.vertical
 
-import android.content.Context
 import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -14,10 +13,9 @@ import com.bumptech.glide.request.target.Target
 import com.cyh128.hikari_novel.databinding.ItemVerticalReadImageBinding
 
 class ReadAdapter(
-    private val context: Context,
     private val imgUrl: MutableList<String>,
     val onImageClick: (imageUrl: String) -> Unit
-) : RecyclerView.Adapter<ReadAdapter.ViewHolder>() {
+) : RecyclerView.Adapter<ReadAdapter.ViewHolder>(), VerticalImageSink {
     inner class ViewHolder(val binding: ItemVerticalReadImageBinding) :
         RecyclerView.ViewHolder(binding.root)
 
@@ -34,7 +32,7 @@ class ReadAdapter(
         val p = position
 
         Glide.with(holder.binding.ivIVReadImage)
-            .load(imgUrl!![p])
+            .load(imgUrl[p])
             .diskCacheStrategy(DiskCacheStrategy.ALL)
             .addListener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(
@@ -76,7 +74,7 @@ class ReadAdapter(
         return 0
     }
 
-    fun appendImages(images: List<String>) {
+    override fun appendImages(images: List<String>) {
         if (images.isEmpty()) return
         val start = imgUrl.size
         imgUrl.addAll(images)

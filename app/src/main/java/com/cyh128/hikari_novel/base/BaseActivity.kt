@@ -1,6 +1,5 @@
 package com.cyh128.hikari_novel.base
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatActivity
@@ -33,9 +32,9 @@ abstract class BaseActivity<VB : ViewBinding> : AppCompatActivity() {
     }
 
     private fun recreateActivity() {
-        val intent = Intent(this, this::class.java)
-        startActivity(intent)
-        finish()
+        // Use Android recreation so the existing ViewModel/session and intent
+        // extras (including ReadParcel) survive theme/language changes.
+        recreate()
     }
 
 }

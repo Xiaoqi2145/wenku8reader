@@ -3,6 +3,23 @@ package com.cyh128.hikari_novel.data.model
 sealed class Event {
     data object LoadSuccessEvent: Event() //加载内容成功
     data class NetworkErrorEvent(val msg: String?): Event() //网络错误
+
+    /** Scoped vertical-reader load events; unlike LoadSuccessEvent these cannot
+     * be consumed by a different reader instance. */
+    data class VerticalReaderLoadSuccessEvent(
+        val aid: String,
+        val cid: String,
+        val generation: Long,
+        val append: Boolean
+    ): Event()
+
+    data class VerticalReaderLoadErrorEvent(
+        val aid: String,
+        val cid: String,
+        val generation: Long,
+        val message: String?,
+        val empty: Boolean
+    ): Event()
     data class VoteSuccessEvent(val msg: String?): Event() //投票成功
     data object InBookshelfEvent: Event() //此书在书架中
     data object NotInBookshelfEvent: Event() //此书不在书架中

@@ -2,14 +2,7 @@ package com.cyh128.hikari_novel.ui.read.vertical
 
 import android.annotation.SuppressLint
 import android.graphics.Color
-import android.graphics.Rect
-import android.text.SpannableStringBuilder
-import android.text.Spanned
-import android.text.style.RelativeSizeSpan
-import android.text.style.StyleSpan
-import android.graphics.Typeface
 import android.os.Bundle
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewTreeObserver
 import androidx.lifecycle.ViewModelProvider
@@ -17,12 +10,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.base.BaseFragment
-import com.cyh128.hikari_novel.data.model.ChapterRef
+import com.cyh128.hikari_novel.data.model.CachedChapter
 import com.cyh128.hikari_novel.data.model.Event
 import com.cyh128.hikari_novel.data.model.ReaderAnchor
 import com.cyh128.hikari_novel.databinding.FragmentVerticalReadBinding
-import com.cyh128.hikari_novel.reader.domain.ChapterBlockMapper
-import com.cyh128.hikari_novel.util.ReaderTapArea
+import com.cyh128.hikari_novel.reader.domain.ReaderPosition
 import com.cyh128.hikari_novel.util.ReaderTouchJudge
 import com.cyh128.hikari_novel.util.getIsInDarkMode
 import com.cyh128.hikari_novel.util.startActivity
@@ -32,20 +24,24 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
-import java.text.DecimalFormat
 
+/**
+ * Vertical reader UI shell.
+ *
+ * Chapter composition, mapping, progress sampling, restoration, and touch
+ * classification live in the focused collaborators in this package. This
+ * Fragment only wires their callbacks to the existing Activity/ViewModel APIs.
+ */
 @AndroidEntryPoint
 class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
     private val viewModel by lazy { ViewModelProvider(requireActivity())[ReadViewModel::class.java] }
-    private lateinit var touchJudge: ReaderTouchJudge
     private var readAdapter: ReadAdapter? = null
-    private val interactiveChildRect = Rect()
-    private var touchStartX = 0f
-    private var touchStartY = 0f
-    private var ignoreCurrentGesture = false
-    private var touchStartedOnInteractiveChild = false
-    private var hasRequestedNextChapter = false
-    private val chapterBlockMapper = ChapterBlockMapper()
+    private var readerController: VerticalReaderController? = null
+    private var contentRenderer: VerticalContentRenderer? = null
+    private var progressReporter: VerticalProgressReporter? = null
+    private var scrollRestorer: VerticalScrollRestorer? = null
+    private var touchHandler: VerticalReaderTouchHandler? = null
+    private val renderedChapterCids = mutableSetOf<String>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -53,58 +49,87 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
         receiveEvent<Event>("event_vertical_read_fragment") { event ->
             when (event) {
                 is Event.ChangeFontSizeEvent -> {
+                    val anchor = progressReporter?.latest()?.anchor
                     binding.tvFVRead.textSize = event.value
+                    anchor?.let { scrollRestorer?.restoreAfterLayout(it) }
                 }
-
                 is Event.ChangeLineSpacingEvent -> {
+                    val anchor = progressReporter?.latest()?.anchor
                     binding.tvFVRead.setLineSpacing(event.value, 1f)
+                    anchor?.let { scrollRestorer?.restoreAfterLayout(it) }
                 }
-
-                else -> {}
+                else -> Unit
             }
         }
 
         initView()
+        initReaderCollaborators()
         initListener()
+        restoreInitialPosition()
     }
 
     override fun onDestroyView() {
-        readAdapter = null //防止内存泄漏
+        progressReporter?.flush()
+        progressReporter?.cancel()
+        touchHandler?.cancel()
+        scrollRestorer?.clear()
+        readAdapter = null
+        readerController = null
+        contentRenderer = null
+        progressReporter = null
+        scrollRestorer = null
+        touchHandler = null
         super.onDestroyView()
     }
 
     private fun initView() {
+        val controller = viewModel.verticalController()
+        val renderer = VerticalContentRenderer()
+        readerController = controller
+        contentRenderer = renderer
+
+        val existingSession = controller.loadedChapters
+        val session = existingSession.ifEmpty {
+            listOf(viewModel.currentCachedChapter())
+        }
+        val initialRender = if (existingSession.isEmpty()) {
+            controller.acceptLoaded(session.first(), append = false)
+        } else {
+            controller.render(session.first())
+                ?: error("Vertical session is missing its first chapter block")
+        }
+
         readAdapter = ReadAdapter(
-            requireContext(),
-            viewModel.curImages.toMutableList()
+            session.flatMap { it.images }.toMutableList()
         ) { imageUrl ->
             startActivity<com.cyh128.hikari_novel.ui.other.PhotoViewActivity> {
                 putExtra("url", imageUrl)
             }
         }
-        val chapterHeader = "\n\n${viewModel.chapterTitle}\n\n"
-        chapterBlockMapper.clear()
-        chapterBlockMapper.append(
-            ref = currentChapterRef(),
-            content = viewModel.curNovelContent,
-            prefixLength = chapterHeader.length
-        )
-        binding.tvFVRead.text = SpannableStringBuilder().apply {
-            append(chapterHeader)
-            setSpan(StyleSpan(Typeface.BOLD), 2, (2 + viewModel.chapterTitle.length).coerceAtMost(length), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            setSpan(RelativeSizeSpan(1.08f), 2, (2 + viewModel.chapterTitle.length).coerceAtMost(length), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            append(viewModel.curNovelContent)
+
+        renderer.setInitialText(binding.tvFVRead, initialRender)
+        renderedChapterCids.clear()
+        renderedChapterCids += session.first().ref.cid
+        session.drop(1).forEach { chapter ->
+            controller.render(chapter)?.let { render ->
+                renderer.appendText(binding.tvFVRead, render)
+            }
+            renderedChapterCids += chapter.ref.cid
+        }
+        // Rendering a retained session completes any pending append request.
+        controller.onChapterAppended()
+        if (session.size > 1) {
+            binding.tvFVReadEndTip.text = getString(R.string.continue_reading)
         }
         binding.rvFVRead.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = readAdapter
         }
 
-        //初始化阅读器参数
         binding.tvFVRead.textSize = viewModel.getFontSize()
         binding.tvFVRead.setLineSpacing(viewModel.getLineSpacing(), 1f)
 
-        if (getIsInDarkMode()) { //夜间模式
+        if (getIsInDarkMode()) {
             binding.tvFVRead.setTextColor(Color.parseColor("#" + viewModel.getTextColorNight()))
             binding.tvFVReadEndTip.setTextColor(Color.parseColor("#" + viewModel.getTextColorNight()))
             binding.root.setBackgroundColor(Color.parseColor("#" + viewModel.getBgColorNight()))
@@ -113,90 +138,85 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
             binding.tvFVReadEndTip.setTextColor(Color.parseColor("#" + viewModel.getTextColorDay()))
             binding.root.setBackgroundColor(Color.parseColor("#" + viewModel.getBgColorDay()))
         }
-
-        binding.nsvFVRead.viewTreeObserver.addOnGlobalLayoutListener(
-            object : ViewTreeObserver.OnGlobalLayoutListener {
-                override fun onGlobalLayout() {
-                    binding.nsvFVRead.viewTreeObserver.removeOnGlobalLayoutListener(this) //确保只调用一次
-                    refreshProgressText()
-
-                    lifecycleScope.launch {
-                        viewModel.getReaderProgress()?.let { progress ->
-                            val anchor = ReaderAnchor(
-                                cid = progress.cid,
-                                paragraphIndex = progress.paragraphIndex,
-                                charOffset = progress.charOffset,
-                                normalizedPercent = progress.normalizedPercent,
-                                imageIndex = progress.imageIndex
-                            )
-                            chapterBlockMapper.globalOffset(anchor)?.let { offset ->
-                                val layout = binding.tvFVRead.layout
-                                if (layout != null) {
-                                    binding.nsvFVRead.scrollTo(0, layout.getLineTop(layout.getLineForOffset(offset)))
-                                    binding.nsvFVRead.post { refreshProgressText() }
-                                }
-                                viewModel.goToLatest = false
-                                return@launch
-                            }
-                        }
-                        viewModel.getByCid.take(1).last()?.let {
-                            if (viewModel.goToLatest) {
-                                binding.nsvFVRead.scrollTo(0, it.location) //滚动到指定位置
-                            } else {
-                                if (viewModel.getIsShowChapterReadHistory()) {
-                                    if (viewModel.getIsShowChapterReadHistoryWithoutConfirm()) {
-                                        binding.nsvFVRead.scrollTo(0, it.location) //滚动到指定位置
-                                    } else {
-                                        MaterialAlertDialogBuilder(requireContext())
-                                            .setTitle(R.string.history)
-                                            .setIcon(R.drawable.ic_history)
-                                            .setMessage(R.string.history_restore_tip)
-                                            .setCancelable(false)
-                                            .setNeutralButton(
-                                                R.string.not_restore_and_close_forever
-                                            ) { _, _ ->
-                                                viewModel.setIsShowChapterReadHistory(false)
-                                                (requireActivity() as ReadActivity).setRestoreChapterReadHistoryDisable()
-                                            }
-                                            .setNegativeButton(R.string.not_restore) { _, _ -> }
-                                            .setPositiveButton(R.string.restore_chapter_read_history_with_confirm) { _, _ ->
-                                                binding.nsvFVRead.scrollTo(0, it.location) //滚动到指定位置
-                                            }
-                                            .show()
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        )
     }
 
-    fun appendCurrentChapter() {
-        val prefix = "\n\n${viewModel.chapterTitle}\n\n"
-        chapterBlockMapper.append(
-            ref = currentChapterRef(),
-            content = viewModel.curNovelContent,
-            prefixLength = prefix.length
+    private fun initReaderCollaborators() {
+        val controller = readerController ?: return
+        val saveScope = lifecycleScope
+
+        progressReporter = VerticalProgressReporter(
+            scrollView = binding.nsvFVRead,
+            textView = binding.tvFVRead,
+            controller = controller,
+            scope = saveScope,
+            onProgress = { progress ->
+                viewModel.updateVerticalProgress(
+                    position = ReaderPosition(progress.chapter, progress.anchor),
+                    displayPercent = progress.displayPercent,
+                    content = progress.content
+                )
+            },
+            onPersist = { progress ->
+                // A continuous session can report either the old or new block.
+                // Persist the mapped ref/content pair, never the ViewModel's
+                // transient loading chapter.
+                viewModel.persistPosition(
+                    position = ReaderPosition(progress.chapter, progress.anchor),
+                    content = progress.content
+                )
+            }
         )
-        binding.tvFVRead.append(prefix + viewModel.curNovelContent)
-        readAdapter?.appendImages(viewModel.curImages)
+
+        scrollRestorer = VerticalScrollRestorer(
+            scrollView = binding.nsvFVRead,
+            textView = binding.tvFVRead,
+            controller = controller
+        ) {
+            progressReporter?.report()
+        }
+
+    }
+
+    /** Flush the latest anchor before Activity navigation or lifecycle stop. */
+    fun flushProgress() {
+        progressReporter?.flush()
+    }
+
+    fun appendCurrentChapter(): Boolean {
+        val controller = readerController ?: return false
+        val renderer = contentRenderer ?: return false
+        val chapter = viewModel.currentCachedChapter()
+        if (renderedChapterCids.contains(chapter.ref.cid)) return true
+
+        val rendered = controller.render(chapter)
+            ?: controller.acceptLoaded(chapter, append = true)
+        renderer.appendText(binding.tvFVRead, rendered)
+        renderer.appendImages(readAdapter, chapter.images)
+        renderedChapterCids += chapter.ref.cid
+        controller.onChapterAppended()
         binding.tvFVReadEndTip.text = getString(R.string.continue_reading)
-        hasRequestedNextChapter = false
-        binding.nsvFVRead.post { refreshProgressText() }
+        binding.nsvFVRead.post { progressReporter?.report() }
+        return true
     }
 
     @SuppressLint("ClickableViewAccessibility")
     private fun initListener() {
-        touchJudge = ReaderTouchJudge(requireContext())
+        touchHandler = VerticalReaderTouchHandler(
+            touchTarget = binding.nsvFVRead,
+            interactiveChildren = listOf(
+                binding.bFVReadPreviousChapter,
+                binding.rvFVRead,
+                binding.bFVReadNextChapter
+            ),
+            touchJudge = ReaderTouchJudge(requireContext()),
+            onCenterTap = ::toggleReaderBar
+        )
         binding.nsvFVRead.setOnTouchListener { _, event ->
-            handleReaderTouch(event)
-            false
+            touchHandler?.onTouch(event) ?: false
         }
 
         binding.nsvFVRead.setOnScrollChangeListener { _, _, _, _, _ ->
-            refreshProgressText()
+            progressReporter?.report()
             maybeAutoLoadNextChapter()
         }
 
@@ -209,45 +229,72 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
         }
     }
 
-    private fun handleReaderTouch(event: MotionEvent) {
-        when (event.actionMasked) {
-            MotionEvent.ACTION_DOWN -> {
-                touchStartX = event.x
-                touchStartY = event.y
-                ignoreCurrentGesture = false
-                touchStartedOnInteractiveChild = isInteractiveChildTouch(event)
-            }
+    private fun restoreInitialPosition() {
+        binding.nsvFVRead.viewTreeObserver.addOnGlobalLayoutListener(
+            object : ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    binding.nsvFVRead.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    lifecycleScope.launch {
+                        viewModel.latestVerticalPosition()?.let { position ->
+                            if (readerController?.contains(position.anchor.cid) == true) {
+                                scrollRestorer?.restore(position.anchor)
+                                viewModel.goToLatest = false
+                                return@launch
+                            }
+                        }
 
-            MotionEvent.ACTION_POINTER_DOWN -> {
-                ignoreCurrentGesture = true
-            }
+                        val progress = viewModel.getReaderProgress()
+                        if (progress != null) {
+                            scrollRestorer?.restore(
+                                ReaderAnchor(
+                                    cid = progress.cid,
+                                    paragraphIndex = progress.paragraphIndex,
+                                    charOffset = progress.charOffset,
+                                    normalizedPercent = progress.normalizedPercent,
+                                    imageIndex = progress.imageIndex
+                                )
+                            )
+                            viewModel.goToLatest = false
+                            return@launch
+                        }
 
-            MotionEvent.ACTION_UP -> {
-                val deltaX = event.x - touchStartX
-                val deltaY = event.y - touchStartY
-                if (!ignoreCurrentGesture &&
-                    !touchStartedOnInteractiveChild &&
-                    touchJudge.isTap(deltaX, deltaY) &&
-                    touchJudge.tapArea(touchStartX, binding.nsvFVRead.width) == ReaderTapArea.Center
-                ) {
-                    toggleReaderBar()
+                        viewModel.getByCid.take(1).last()
+                            ?.takeIf { it.aid == viewModel.novel?.aid }
+                            ?.let { history ->
+                            if (viewModel.goToLatest) {
+                                scrollRestorer?.restoreLegacy(history.location)
+                                viewModel.goToLatest = false
+                            } else if (viewModel.getIsShowChapterReadHistory()) {
+                                if (viewModel.getIsShowChapterReadHistoryWithoutConfirm()) {
+                                    scrollRestorer?.restoreLegacy(history.location)
+                                } else {
+                                    MaterialAlertDialogBuilder(requireContext())
+                                        .setTitle(R.string.history)
+                                        .setIcon(R.drawable.ic_history)
+                                        .setMessage(R.string.history_restore_tip)
+                                        .setCancelable(false)
+                                        .setNeutralButton(R.string.not_restore_and_close_forever) { _, _ ->
+                                            viewModel.setIsShowChapterReadHistory(false)
+                                            (requireActivity() as ReadActivity)
+                                                .setRestoreChapterReadHistoryDisable()
+                                        }
+                                        .setNegativeButton(R.string.not_restore) { _, _ ->
+                                            progressReporter?.report()
+                                        }
+                                        .setPositiveButton(R.string.restore_chapter_read_history_with_confirm) { _, _ ->
+                                            scrollRestorer?.restoreLegacy(history.location)
+                                        }
+                                        .show()
+                                }
+                            } else {
+                                progressReporter?.report()
+                            }
+                        } ?: progressReporter?.report()
+                    }
                 }
-                ignoreCurrentGesture = false
-                touchStartedOnInteractiveChild = false
             }
-
-            MotionEvent.ACTION_CANCEL -> {
-                ignoreCurrentGesture = false
-                touchStartedOnInteractiveChild = false
-            }
-        }
+        )
     }
-
-    private fun isInteractiveChildTouch(event: MotionEvent): Boolean =
-        listOf(binding.bFVReadPreviousChapter, binding.rvFVRead, binding.bFVReadNextChapter).any {
-            it.getGlobalVisibleRect(interactiveChildRect) &&
-                interactiveChildRect.contains(event.rawX.toInt(), event.rawY.toInt())
-        }
 
     private fun toggleReaderBar() {
         if (viewModel.isBarShown) {
@@ -259,54 +306,29 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
         }
     }
 
-    private fun refreshProgressText() {
-        val layout = binding.tvFVRead.layout ?: return
-        val visibleY = (binding.nsvFVRead.scrollY + binding.nsvFVRead.height / 2 - binding.tvFVRead.top)
-            .coerceIn(0, binding.tvFVRead.height)
-        val line = layout.getLineForVertical(visibleY)
-        val absoluteOffset = layout.getOffsetForHorizontal(line, 0f)
-        val mapped = chapterBlockMapper.chapterAt(absoluteOffset) ?: return
-        val block = chapterBlockMapper.blocks.firstOrNull { it.ref.cid == mapped.ref.cid } ?: return
-        val contentLength = block.contentLength.coerceAtLeast(1)
-        val localOffset = mapped.localOffset.coerceIn(0, contentLength)
-        val anchorPercent = localOffset * 100 / contentLength
-        val startLine = layout.getLineForOffset(block.startOffset.coerceIn(0, binding.tvFVRead.text.length))
-        val endOffset = block.endOffsetExclusive.coerceIn(0, binding.tvFVRead.text.length)
-        val endLine = layout.getLineForOffset(endOffset)
-        val startY = layout.getLineTop(startLine)
-        val endY = layout.getLineBottom(endLine).coerceAtLeast(startY + 1)
-        val geometryPercent = ((visibleY - startY) * 100 / (endY - startY)).coerceIn(0, 100)
-        val result = maxOf(anchorPercent, geometryPercent).coerceIn(0, 100).toString()
-        viewModel.curReadPos = binding.nsvFVRead.scrollY
-        viewModel.progressText.value = "$result%"
-    }
-
-    private fun currentChapterRef(): ChapterRef {
-        val novel = viewModel.novel ?: error("Reader novel is not initialized")
-        val volume = novel.volume[viewModel.curVolumePos]
-        val chapter = volume.chapters[viewModel.curChapterPos]
-        return ChapterRef(
-            aid = novel.aid,
-            cid = chapter.cid,
-            volumeIndex = viewModel.curVolumePos,
-            chapterIndex = viewModel.curChapterPos,
-            title = chapter.chapterTitle
-        )
-    }
-
     private fun maybeAutoLoadNextChapter() {
-        if (hasRequestedNextChapter) return
+        val controller = readerController ?: return
+        if (!controller.canRequestNextChapter()) return
 
         val contentView = binding.nsvFVRead.getChildAt(0) ?: return
-        // 短章不自动连锁追加，避免连续触发把整本书一次性展开。
+        // Short chapters do not recursively append the entire book in one pass.
         if (contentView.height <= binding.nsvFVRead.height) return
-        val thresholdPx = maxOf((binding.nsvFVRead.height * 0.8f).toInt(), (resources.displayMetrics.density * 320).toInt())
+
+        val thresholdPx = maxOf(
+            (binding.nsvFVRead.height * 0.8f).toInt(),
+            (resources.displayMetrics.density * 320).toInt()
+        )
         val distanceToBottom =
             contentView.height - binding.nsvFVRead.height - binding.nsvFVRead.scrollY
 
         if (distanceToBottom <= thresholdPx) {
-            hasRequestedNextChapter = (requireActivity() as ReadActivity).autoLoadNextChapter()
+            // Set the guard before starting the load. A memory-cache hit may
+            // complete synchronously, so marking it after the request races the
+            // controller's append acknowledgement.
+            controller.markNextChapterRequested()
+            if (!(requireActivity() as ReadActivity).autoLoadNextChapter()) {
+                controller.onChapterAppended()
+            }
         }
     }
-
 }

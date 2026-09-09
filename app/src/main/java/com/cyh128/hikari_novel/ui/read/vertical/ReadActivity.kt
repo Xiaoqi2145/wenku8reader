@@ -19,6 +19,7 @@ import androidx.lifecycle.withStarted
 import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.base.BaseActivity
 import com.cyh128.hikari_novel.data.model.Event
+import com.cyh128.hikari_novel.data.model.ReaderUiState
 import com.cyh128.hikari_novel.data.model.ReadParcel
 import com.cyh128.hikari_novel.databinding.ActivityVerticalReadBinding
 import com.cyh128.hikari_novel.databinding.ViewVerticalReadConfigBinding
@@ -35,7 +36,6 @@ import com.google.android.material.slider.Slider
 import com.google.android.material.snackbar.Snackbar
 import com.gyf.immersionbar.ImmersionBar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.properties.Delegates
@@ -46,18 +46,20 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
     private lateinit var bottomSheetDialog: BottomSheetDialog
     private val viewModel by lazy { ViewModelProvider(this)[ReadViewModel::class.java] }
     private var showBarColor by Delegates.notNull<Int>()
-    private var saveReadHistoryJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         if (viewModel.novel == null) {
-            intent.getParcelableExtra<ReadParcel>("data")!!.also {
-                viewModel.novel = it.novel
-                viewModel.curVolumePos = it.curVolumePos
-                viewModel.curChapterPos = it.curChapterPos
-                viewModel.goToLatest = it.goToLatest
+            val parcel = intent.getParcelableExtra<ReadParcel>("data")
+            if (parcel == null) {
+                finish()
+                return
             }
+            viewModel.novel = parcel.novel
+            viewModel.curVolumePos = parcel.curVolumePos
+            viewModel.curChapterPos = parcel.curChapterPos
+            viewModel.goToLatest = parcel.goToLatest
         }
 
         setSupportActionBar(binding.tbAVRead)
@@ -67,58 +69,72 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
         receiveEvent<Event>("event_vertical_read_activity") { event ->
             when (event) {
-                Event.LoadSuccessEvent -> {
-                    lifecycle.withStarted { //在ui可见的情况下执行，否则先挂起
-                        supportActionBar?.title = viewModel.chapterTitle
-                        supportActionBar?.subtitle = viewModel.novel?.title.orEmpty()
-                        if (viewModel.appendCurrentChapter) {
-                            (supportFragmentManager.findFragmentById(R.id.fcv_a_v_read) as? ReadFragment)
-                                ?.appendCurrentChapter()
-                            viewModel.appendCurrentChapter = false
+                is Event.VerticalReaderLoadSuccessEvent -> {
+                    if (viewModel.acceptsLoadEvent(event.aid, event.cid, event.generation)) {
+                        lifecycle.withStarted {
+                            if (!viewModel.acceptsLoadEvent(event.aid, event.cid, event.generation)) {
+                                return@withStarted
+                            }
+                            supportActionBar?.title = viewModel.chapterTitle
+                            supportActionBar?.subtitle = viewModel.novel?.title.orEmpty()
+                            if (event.append) {
+                                val fragment = supportFragmentManager
+                                    .findFragmentById(R.id.fcv_a_v_read) as? ReadFragment
+                                if (fragment == null || fragment.view == null ||
+                                    !fragment.appendCurrentChapter()
+                                ) {
+                                    // The ViewModel has already accepted the chapter
+                                    // into its durable session; a new Fragment can
+                                    // render the complete session safely.
+                                    showContent()
+                                }
+                                setBottomBarIsEnable(true)
+                                return@withStarted
+                            }
+                            showContent()
+                            if (viewModel.curImages.isNotEmpty()) {
+                                Snackbar.make(
+                                    binding.root,
+                                    R.string.have_image_tip,
+                                    Snackbar.LENGTH_INDEFINITE
+                                ).apply {
+                                    setAnchorView(binding.llAVReadBottomBar)
+                                    setAction(R.string.ok) {}
+                                    show()
+                                }
+                            }
                             setBottomBarIsEnable(true)
-                            return@withStarted
+                            hideBar()
                         }
-                        showContent()
-                        if (viewModel.curImages.isNotEmpty()) {
+                    }
+                }
+
+                is Event.VerticalReaderLoadErrorEvent -> {
+                    if (viewModel.acceptsLoadEvent(event.aid, event.cid, event.generation)) {
+                        if (event.empty) {
+                            MaterialAlertDialogBuilder(this@ReadActivity)
+                                .setTitle(R.string.empty_content)
+                                .setIcon(R.drawable.ic_warning)
+                                .setMessage(R.string.server_empty_content)
+                                .setCancelable(false)
+                                .setPositiveButton(R.string.ok) { _, _ -> finish() }
+                                .show()
+                        } else {
                             Snackbar.make(
                                 binding.root,
-                                R.string.have_image_tip,
+                                event.message ?: getString(R.string.network_error_msg),
                                 Snackbar.LENGTH_INDEFINITE
                             ).apply {
-                                setAnchorView(binding.llAVReadBottomBar) //使它出现在bottomAppBar的上面，避免遮挡内容
-                                setAction(R.string.ok) {}
+                                setAnchorView(binding.llAVReadBottomBar)
+                                setAction(R.string.retry) { viewModel.retryNovelContent() }
                                 show()
                             }
                         }
-                        setBottomBarIsEnable(true)
-                        hideBar()
+                        setBottomBarIsEnable(false)
                     }
                 }
 
-                Event.EmptyContentEvent -> {
-                    MaterialAlertDialogBuilder(this@ReadActivity)
-                        .setTitle(R.string.empty_content)
-                        .setIcon(R.drawable.ic_warning)
-                        .setMessage(R.string.server_empty_content)
-                        .setCancelable(false)
-                        .setPositiveButton(R.string.ok) { _, _ -> finish() }
-                        .show()
-                }
-
-                is Event.NetworkErrorEvent -> {
-                    Snackbar.make(
-                        binding.root,
-                        event.msg ?: getString(R.string.network_error_msg),
-                        Snackbar.LENGTH_INDEFINITE
-                    ).apply {
-                        setAnchorView(binding.llAVReadBottomBar)
-                        setAction(R.string.retry) { viewModel.retryNovelContent() }
-                        show()
-                    }
-                    setBottomBarIsEnable(false)
-                }
-
-                else -> {}
+                else -> Unit
             }
         }
 
@@ -134,7 +150,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
             }
         }
 
-        viewModel.getNovelContent()
+        viewModel.loadInitialContentIfNeeded()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -173,7 +189,11 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
         setBottomBarIsEnable(false)
         showBar()
         setProgressTipColor()
-        showLoading()
+        if (viewModel.readerState.value is ReaderUiState.Ready) {
+            showContent()
+        } else if (viewModel.readerState.value !is ReaderUiState.Loading) {
+            showLoading()
+        }
     }
 
     private fun initListener() {
@@ -188,14 +208,10 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
             }
         }
 
+        // ProgressReporter owns throttling and anchor persistence. The Activity
+        // only mirrors the display value and no longer schedules a second write.
         viewModel.progressText.observe(this) {
             binding.tvAVReadProgress.text = it
-
-            saveReadHistoryJob?.cancel()
-            saveReadHistoryJob = lifecycleScope.launch {
-                delay(400)
-                viewModel.saveReadHistory()
-            }
         }
 
         //设置底栏菜单按钮监听
@@ -218,8 +234,9 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
             )
         }
         bottomViewBinding.bVReadConfigHorizontal.setOnClickListener {
+            (supportFragmentManager.findFragmentById(R.id.fcv_a_v_read) as? ReadFragment)
+                ?.flushProgress()
             lifecycleScope.launch {
-                viewModel.saveReadHistory()
                 startActivity<com.cyh128.hikari_novel.ui.read.horizontal.ReadActivity> {
                     putExtra("data", ReadParcel(viewModel.novel!!, viewModel.curVolumePos, viewModel.curChapterPos, false))
                 }
@@ -295,27 +312,25 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
     }
 
     override fun onStop() {
-        saveReadHistoryJob?.cancel()
-        lifecycleScope.launch { viewModel.saveReadHistory() }
+        flushReaderProgress()
         super.onStop()
     }
 
-    private fun jumpToChapter(volumePos: Int, chapterPos: Int) {
-        val target = viewModel.chapterNavigator().chapterAt(volumePos, chapterPos) ?: return
-        if (viewModel.curVolumePos == target.volumeIndex && viewModel.curChapterPos == target.chapterIndex) return
+    private fun flushReaderProgress() {
+        (supportFragmentManager.findFragmentById(R.id.fcv_a_v_read) as? ReadFragment)
+            ?.flushProgress()
+    }
 
-        viewModel.goToLatest = false
-        viewModel.appendCurrentChapter = false
-        viewModel.curVolumePos = target.volumeIndex
-        viewModel.curChapterPos = target.chapterIndex
+    private fun jumpToChapter(volumePos: Int, chapterPos: Int) {
+        flushReaderProgress()
+        if (!viewModel.selectChapter(volumePos, chapterPos)) return
         showLoading()
-        viewModel.getNovelContent()
         setBottomBarIsEnable(false)
     }
 
     fun toPreviousChapter() { //切换至上一章
+        flushReaderProgress()
         lifecycleScope.launch {
-            viewModel.appendCurrentChapter = false
             val target = viewModel.previousChapterLocation()
             if (target == null) {
                 Snackbar.make(
@@ -329,18 +344,15 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
                 }
                 return@launch
             }
-            viewModel.curVolumePos = target.volumeIndex
-            viewModel.curChapterPos = target.chapterIndex
-            viewModel.goToLatest = false
+            if (!viewModel.loadChapter(target)) return@launch
             showLoading()
-            viewModel.getNovelContent()
             setBottomBarIsEnable(false)
         }
     }
 
     fun toNextChapter() { //切换至下一章
+        flushReaderProgress()
         lifecycleScope.launch {
-            viewModel.appendCurrentChapter = false
             val target = viewModel.nextChapterLocation()
             if (target == null) {
                 Snackbar.make(binding.root, R.string.no_next_chapter, Snackbar.LENGTH_INDEFINITE)
@@ -351,25 +363,18 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
                     }
                 return@launch
             }
-            viewModel.curVolumePos = target.volumeIndex
-            viewModel.curChapterPos = target.chapterIndex
-            viewModel.goToLatest = false
+            if (!viewModel.loadChapter(target)) return@launch
             showLoading()
-            viewModel.getNovelContent()
             setBottomBarIsEnable(false)
         }
     }
 
     fun autoLoadNextChapter(): Boolean {
-        lifecycleScope.launch { viewModel.saveReadHistory() }
-        val target = viewModel.nextChapterLocation() ?: return false
-        viewModel.curVolumePos = target.volumeIndex
-        viewModel.curChapterPos = target.chapterIndex
-        viewModel.goToLatest = false
-        viewModel.appendCurrentChapter = true
-        viewModel.getNovelContent()
-        setBottomBarIsEnable(true)
-        return true
+        (supportFragmentManager.findFragmentById(R.id.fcv_a_v_read) as? ReadFragment)
+            ?.flushProgress()
+        val requested = viewModel.requestNextChapterLoad()
+        if (requested) setBottomBarIsEnable(true)
+        return requested
     }
 
     private fun showContent() { //显示小说正文内容

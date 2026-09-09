@@ -60,6 +60,9 @@ class ChapterBlockMapper {
     val renderedLength: Int
         get() = totalLength
 
+    /** Return the original chapter content for UI adapters that persist a mapped anchor. */
+    fun content(cid: String): String? = contentByCid[cid]
+
     fun clear() {
         mutableBlocks.clear()
         contentByCid.clear()
