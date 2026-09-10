@@ -23,6 +23,14 @@ class ReaderProgressMapperTest {
     }
 
     @Test
+    fun nonDivisibleLegacyPercentRemainsTheDisplayPercentage() {
+        val progress = ReaderProgressMapper.fromLegacy(ref, "0123456789", 33, 42L)
+
+        assertEquals(3, progress.charOffset)
+        assertEquals(33, progress.normalizedPercent)
+    }
+
+    @Test
     fun legacyPercentIsClampedWithoutContent() {
         val progress = ReaderProgressMapper.fromLegacy(ref, null, 150, 42L)
 

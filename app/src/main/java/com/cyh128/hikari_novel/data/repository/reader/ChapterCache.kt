@@ -30,7 +30,11 @@ data class ChapterCacheHit(
 interface ChapterCache {
     suspend fun get(ref: ChapterRef): ChapterCacheHit?
     suspend fun put(chapter: CachedChapter)
+    /** Legacy cid-only removal; prefer the book-scoped overload. */
     suspend fun remove(cid: String)
+    suspend fun remove(ref: ChapterRef) {
+        remove(ref.cid)
+    }
     suspend fun clearExpired(before: Long)
 }
 
@@ -55,7 +59,7 @@ class RoomChapterCache @Inject constructor(
             return ChapterCacheHit(chapter, ContentSource.MEMORY_CACHE)
         }
 
-        val entity = dao.getChapter(ref.cid) ?: return null
+        val entity = dao.getChapter(ref.aid, ref.cid) ?: return null
         // Keep the legacy cid-only schema from leaking another book's cache.
         if (entity.aid != ref.aid) {
             return null
@@ -67,7 +71,7 @@ class RoomChapterCache @Inject constructor(
             // loader can then retry the network instead of failing the reader.
             if (error is CancellationException) throw error
             try {
-                dao.deleteChapterCache(ref.cid)
+                dao.deleteChapterCache(ref.aid, ref.cid)
             } catch (cleanupError: Throwable) {
                 if (cleanupError is CancellationException) throw cleanupError
             }
@@ -86,6 +90,11 @@ class RoomChapterCache @Inject constructor(
     override suspend fun remove(cid: String) {
         memoryMutex.withLock { memory.keys.removeAll { it.endsWith(":" + cid) } }
         dao.deleteChapterCache(cid)
+    }
+
+    override suspend fun remove(ref: ChapterRef) {
+        memoryMutex.withLock { memory.remove(cacheKey(ref)) }
+        dao.deleteChapterCache(ref.aid, ref.cid)
     }
 
     override suspend fun clearExpired(before: Long) {

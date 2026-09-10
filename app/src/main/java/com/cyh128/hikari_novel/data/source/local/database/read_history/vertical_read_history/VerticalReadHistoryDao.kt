@@ -11,6 +11,9 @@ interface VerticalReadHistoryDao {
     @Query("SELECT * FROM vertical_read_history WHERE cid = (:cid)")
     fun getByCid(cid: String): Flow<VerticalReadHistoryEntity?>
 
+    @Query("SELECT * FROM vertical_read_history WHERE aid = (:aid) AND cid = (:cid)")
+    fun getByAidAndCid(aid: String, cid: String): Flow<VerticalReadHistoryEntity?>
+
     @Query("SELECT * FROM vertical_read_history WHERE aid = (:aid) AND volume = (:volume)")
     fun getByVolume(aid: String, volume: Int): Flow<List<VerticalReadHistoryEntity>?>
 
@@ -34,6 +37,9 @@ interface VerticalReadHistoryDao {
 
     @Query("DELETE FROM vertical_read_history WHERE cid = (:cid)")
     suspend fun delete(cid: String)
+
+    @Query("DELETE FROM vertical_read_history WHERE aid = (:aid) AND cid = (:cid)")
+    suspend fun delete(aid: String, cid: String)
 
     @Query("DELETE FROM vertical_read_history WHERE aid = (:aid)")
     suspend fun deleteAll(aid: String)

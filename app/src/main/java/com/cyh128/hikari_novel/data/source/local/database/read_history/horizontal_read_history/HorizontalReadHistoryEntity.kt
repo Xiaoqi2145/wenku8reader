@@ -2,13 +2,11 @@ package com.cyh128.hikari_novel.data.source.local.database.read_history.horizont
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 import com.cyh128.hikari_novel.data.source.local.database.read_history.BaseReadHistoryEntity
 
 //名称和表的结构不要修改，除非做数据迁移Migration，否则数据会丢失
-@Entity(tableName = "horizontal_read_history")
+@Entity(tableName = "horizontal_read_history", primaryKeys = ["aid", "cid"])
 data class HorizontalReadHistoryEntity (
-    @PrimaryKey
     @ColumnInfo(name = "cid")
     override val cid: String,
 

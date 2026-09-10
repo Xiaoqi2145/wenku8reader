@@ -8,10 +8,19 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
 class FakeVerticalReadHistoryDao : VerticalReadHistoryDao {
+    var failReads = false
     var item: VerticalReadHistoryEntity? = null
     val writes = mutableListOf<VerticalReadHistoryEntity>()
 
-    override fun getByCid(cid: String): Flow<VerticalReadHistoryEntity?> = flowOf(item?.takeIf { it.cid == cid })
+    override fun getByCid(cid: String): Flow<VerticalReadHistoryEntity?> {
+        check(!failReads) { "vertical history read failed" }
+        return flowOf(item?.takeIf { it.cid == cid })
+    }
+
+    override fun getByAidAndCid(aid: String, cid: String): Flow<VerticalReadHistoryEntity?> {
+        check(!failReads) { "vertical history read failed" }
+        return flowOf(item?.takeIf { it.aid == aid && it.cid == cid })
+    }
 
     override fun getByVolume(aid: String, volume: Int): Flow<List<VerticalReadHistoryEntity>?> =
         flowOf(listOfNotNull(item?.takeIf { it.aid == aid && it.volume == volume }))
@@ -37,16 +46,29 @@ class FakeVerticalReadHistoryDao : VerticalReadHistoryDao {
         if (item?.cid == cid) item = null
     }
 
+    override suspend fun delete(aid: String, cid: String) {
+        if (item?.aid == aid && item?.cid == cid) item = null
+    }
+
     override suspend fun deleteAll(aid: String) {
         if (item?.aid == aid) item = null
     }
 }
 
 class FakeHorizontalReadHistoryDao : HorizontalReadHistoryDao {
+    var failReads = false
     var item: HorizontalReadHistoryEntity? = null
     val writes = mutableListOf<HorizontalReadHistoryEntity>()
 
-    override fun getByCid(cid: String): Flow<HorizontalReadHistoryEntity?> = flowOf(item?.takeIf { it.cid == cid })
+    override fun getByCid(cid: String): Flow<HorizontalReadHistoryEntity?> {
+        check(!failReads) { "horizontal history read failed" }
+        return flowOf(item?.takeIf { it.cid == cid })
+    }
+
+    override fun getByAidAndCid(aid: String, cid: String): Flow<HorizontalReadHistoryEntity?> {
+        check(!failReads) { "horizontal history read failed" }
+        return flowOf(item?.takeIf { it.aid == aid && it.cid == cid })
+    }
 
     override fun getByVolume(aid: String, volume: Int): Flow<List<HorizontalReadHistoryEntity>?> =
         flowOf(listOfNotNull(item?.takeIf { it.aid == aid && it.volume == volume }))
@@ -70,6 +92,10 @@ class FakeHorizontalReadHistoryDao : HorizontalReadHistoryDao {
 
     override suspend fun delete(cid: String) {
         if (item?.cid == cid) item = null
+    }
+
+    override suspend fun delete(aid: String, cid: String) {
+        if (item?.aid == aid && item?.cid == cid) item = null
     }
 
     override suspend fun deleteAll(aid: String) {

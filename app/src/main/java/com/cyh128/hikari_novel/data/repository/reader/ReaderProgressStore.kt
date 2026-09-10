@@ -13,11 +13,15 @@ import com.cyh128.hikari_novel.data.source.local.database.reader.ReaderProgressE
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /** Unified progress storage for both reader orientations. */
 interface ReaderProgressStore {
+    /** Legacy compatibility only; cid is not globally scoped. */
+    @Deprecated("Use get(ref, content, orientation) to validate the book aid")
     suspend fun get(cid: String): ReaderProgressEntity?
 
     suspend fun get(
@@ -46,13 +50,17 @@ class RoomReaderProgressStore @Inject constructor(
     private val verticalDao: VerticalReadHistoryDao,
     private val horizontalDao: HorizontalReadHistoryDao
 ) : ReaderProgressStore {
-    override suspend fun get(cid: String): ReaderProgressEntity? {
-        readerDao.getProgress(cid)?.let { return it }
+    /** Serialize migration reads with saves so stale legacy data cannot win. */
+    private val progressMutex = Mutex()
+    /**
+     * Legacy compatibility lookup without an aid. New reader code must use the
+     * metadata-aware overload below because cid is not globally scoped.
+     */
+    @Deprecated("Use get(ref, content, orientation) to validate the book aid")
+    override suspend fun get(cid: String): ReaderProgressEntity? = progressMutex.withLock {
+        safeReaderRead { readerDao.getProgress(cid) }?.let { return@withLock it }
 
-        // The old orientation-specific tables do not contain an anchor. Build
-        // a conservative percentage anchor first; a metadata-aware lookup can
-        // refine it to a character offset once chapter content is available.
-        val legacy = findLegacy(cid, orientation = null) ?: return null
+        val legacy = findLegacy(cid, orientation = null) ?: return@withLock null
         val ref = ChapterRef(
             aid = legacy.aid,
             cid = legacy.cid,
@@ -60,38 +68,39 @@ class RoomReaderProgressStore @Inject constructor(
             chapterIndex = legacy.chapter,
             title = ""
         )
-        val migrated = ReaderProgressMapper.fromLegacy(
+        ReaderProgressMapper.fromLegacy(
             ref = ref,
             content = null,
             progressPercent = legacy.progressPercent,
             updatedAt = System.currentTimeMillis()
         )
-        // Do not persist a content-less migration: charOffset=0 is only a
-        // percentage placeholder and would later clamp a real chapter to 0%.
-        return migrated
     }
 
     override suspend fun get(
         ref: ChapterRef,
         content: String?,
         orientation: ReaderOrientation?
-    ): ReaderProgressEntity? {
-        readerDao.getProgress(ref.cid)?.let { current ->
-            // The legacy schema uses cid as its key; refuse a row belonging to
-            // another book rather than leaking its anchor across books.
-            if (current.aid != ref.aid) return null
-            return if (content == null) current else ReaderProgressMapper.clamp(current, content)
+    ): ReaderProgressEntity? = progressMutex.withLock {
+        safeReaderRead { readerDao.getProgressForBook(ref.aid, ref.cid) }?.let { current ->
+            return@withLock if (content.isNullOrBlank()) {
+                current
+            } else {
+                val repaired = ReaderProgressMapper.clamp(current, content)
+                if (repaired != current) persistMigration(repaired)
+                repaired
+            }
         }
 
-        val legacy = findLegacy(ref.cid, orientation, ref.aid) ?: return null
+        val legacy = findLegacy(ref.cid, orientation, ref.aid) ?: return@withLock null
+        val usableContent = content?.takeIf { it.isNotBlank() }
         val migrated = ReaderProgressMapper.fromLegacy(
             ref = ref,
-            content = content,
+            content = usableContent,
             progressPercent = legacy.progressPercent,
             updatedAt = System.currentTimeMillis()
         )
-        if (content != null) persistMigration(migrated)
-        return migrated
+        if (usableContent != null) persistMigration(migrated)
+        migrated
     }
 
     override suspend fun save(
@@ -99,8 +108,8 @@ class RoomReaderProgressStore @Inject constructor(
         ref: ChapterRef,
         orientation: ReaderOrientation?,
         legacyLocation: Int?
-    ) {
-        if (anchor.cid != ref.cid) return
+    ) = progressMutex.withLock {
+        if (anchor.cid != ref.cid) return@withLock
         val normalized = ReaderProgressMapper.normalize(anchor, ref.cid)
         val progress = ReaderProgressEntity(
             cid = ref.cid,
@@ -119,7 +128,7 @@ class RoomReaderProgressStore @Inject constructor(
         // Keep the legacy stores current for old app versions only when the
         // caller supplied a real legacy position. Anchor-only saves must not
         // write a character offset into a page/scrollY column.
-        if (legacyLocation == null) return
+        if (legacyLocation == null) return@withLock
         try {
             when (orientation) {
                 ReaderOrientation.Vertical -> verticalDao.addOrReplace(
@@ -174,25 +183,42 @@ class RoomReaderProgressStore @Inject constructor(
         orientation: ReaderOrientation?,
         aid: String? = null
     ): BaseReadHistoryEntity? {
+        suspend fun vertical(): VerticalReadHistoryEntity? = safeLegacyRead {
+            if (aid == null) verticalDao.getByCid(cid).first()
+            else verticalDao.getByAidAndCid(aid, cid).first()
+        }
+
+        suspend fun horizontal(): HorizontalReadHistoryEntity? = safeLegacyRead {
+            if (aid == null) horizontalDao.getByCid(cid).first()
+            else horizontalDao.getByAidAndCid(aid, cid).first()
+        }
+
         val candidates = when (orientation) {
-            ReaderOrientation.Vertical -> listOf(
-                verticalDao.getByCid(cid).first(),
-                horizontalDao.getByCid(cid).first()
-            )
-
-            ReaderOrientation.Horizontal -> listOf(
-                horizontalDao.getByCid(cid).first(),
-                verticalDao.getByCid(cid).first()
-            )
-
-            null -> listOf(
-                verticalDao.getByCid(cid).first(),
-                horizontalDao.getByCid(cid).first()
-            )
+            ReaderOrientation.Vertical -> listOf(vertical(), horizontal())
+            ReaderOrientation.Horizontal -> listOf(horizontal(), vertical())
+            null -> listOf(vertical(), horizontal())
         }
-        return candidates.firstOrNull { candidate ->
-            candidate != null && (aid == null || candidate.aid == aid)
-        }
+        return candidates.firstOrNull { it != null }
+    }
+
+    private suspend fun <T> safeReaderRead(
+        read: suspend () -> T?
+    ): T? = try {
+        read()
+    } catch (error: CancellationException) {
+        throw error
+    } catch (_: Throwable) {
+        null
+    }
+
+    private suspend fun <T : BaseReadHistoryEntity> safeLegacyRead(
+        read: suspend () -> T?
+    ): T? = try {
+        read()
+    } catch (error: CancellationException) {
+        throw error
+    } catch (_: Throwable) {
+        null
     }
 }
 
@@ -203,6 +229,7 @@ class RoomReaderProgressStore @Inject constructor(
 internal class ReaderDaoProgressStore(
     private val dao: ReaderDao
 ) : ReaderProgressStore {
+    @Deprecated("Use the metadata-aware progress lookup")
     override suspend fun get(cid: String): ReaderProgressEntity? = dao.getProgress(cid)
 
     override suspend fun get(
@@ -210,9 +237,8 @@ internal class ReaderDaoProgressStore(
         content: String?,
         orientation: ReaderOrientation?
     ): ReaderProgressEntity? {
-        val progress = dao.getProgress(ref.cid) ?: return null
-        if (progress.aid != ref.aid) return null
-        return if (content == null) progress else ReaderProgressMapper.clamp(progress, content)
+        val progress = dao.getProgressForBook(ref.aid, ref.cid) ?: return null
+        return if (content.isNullOrBlank()) progress else ReaderProgressMapper.clamp(progress, content)
     }
 
     override suspend fun save(
@@ -279,20 +305,30 @@ object ReaderProgressMapper {
     )
 
     fun clamp(progress: ReaderProgressEntity, content: String): ReaderProgressEntity {
-        val anchor = com.cyh128.hikari_novel.util.ReaderAnchorMapper.clamp(
+        // Rows written by an early migration could contain a percentage with a
+        // zero offset because content was unavailable. Reconstruct that offset
+        // once content is present instead of permanently restoring to the start.
+        val sourceAnchor = if (progress.charOffset == 0 && progress.normalizedPercent > 0) {
+            com.cyh128.hikari_novel.util.ReaderAnchorMapper.fromPercent(
+                progress.cid,
+                content,
+                progress.normalizedPercent
+            )
+        } else {
             ReaderAnchor(
                 cid = progress.cid,
                 paragraphIndex = progress.paragraphIndex,
                 charOffset = progress.charOffset,
                 normalizedPercent = progress.normalizedPercent,
                 imageIndex = progress.imageIndex
-            ),
-            content
-        )
+            )
+        }
+        val anchor = com.cyh128.hikari_novel.util.ReaderAnchorMapper.clamp(sourceAnchor, content)
         return progress.copy(
             paragraphIndex = anchor.paragraphIndex,
             charOffset = anchor.charOffset,
-            normalizedPercent = anchor.normalizedPercent
+            normalizedPercent = anchor.normalizedPercent,
+            imageIndex = progress.imageIndex?.coerceAtLeast(0)
         )
     }
 }

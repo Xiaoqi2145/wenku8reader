@@ -6,7 +6,7 @@ import androidx.room.RoomDatabase
 //version不要修改，除非做数据迁移Migration，否则数据会丢失
 @Database(
     entities = [VerticalReadHistoryEntity::class],
-    version = 1
+    version = 2
 )
 abstract class VerticalReadHistoryDatabase: RoomDatabase() {
     abstract fun verticalReadHistoryDao(): VerticalReadHistoryDao

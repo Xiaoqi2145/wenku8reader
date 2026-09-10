@@ -43,9 +43,9 @@ class NovelInfoViewModel @Inject constructor(
     val readOrientation = appRepository.getReaderOrientation()
 
     fun getReadHistoryByCidFlow(cid: String) = if (readOrientation == ReaderOrientation.Vertical) {
-        verticalReadRepository.getByCid(cid)
+        verticalReadRepository.getByCid(aid, cid)
     } else {
-        horizontalReadRepository.getByCid(cid)
+        horizontalReadRepository.getByCid(aid, cid)
     }
 
     fun getReadHistoryByVolumeFlow(volume: Int) = if (readOrientation == ReaderOrientation.Vertical) {
@@ -75,8 +75,8 @@ class NovelInfoViewModel @Inject constructor(
 
     fun deleteReadHistory(cid: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            if (readOrientation == ReaderOrientation.Vertical) verticalReadRepository.delete(cid)
-            else horizontalReadRepository.delete(cid)
+            if (readOrientation == ReaderOrientation.Vertical) verticalReadRepository.delete(aid, cid)
+            else horizontalReadRepository.delete(aid, cid)
         }
     }
 

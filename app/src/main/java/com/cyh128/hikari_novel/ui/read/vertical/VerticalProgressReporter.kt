@@ -16,7 +16,9 @@ data class VerticalProgress(
     val anchor: ReaderAnchor,
     val displayPercent: Int,
     val globalOffset: Int,
-    val scrollY: Int
+    val scrollY: Int,
+    /** Per-chapter legacy scroll coordinate for older app versions. */
+    val legacyLocation: Int
 )
 
 /**
@@ -42,9 +44,19 @@ class VerticalProgressReporter(
         persist = onPersist
     )
     private var latestProgress: VerticalProgress? = null
+    private var lastReportedGlobalOffset: Int? = null
+    private var lastReportedImageIndex: Int? = null
 
     fun report(imageIndex: Int? = null) {
         calculate(imageIndex)?.let { progress ->
+            val progressImageIndex = progress.anchor.imageIndex
+            if (progress.globalOffset == lastReportedGlobalOffset &&
+                progressImageIndex == lastReportedImageIndex
+            ) {
+                return
+            }
+            lastReportedGlobalOffset = progress.globalOffset
+            lastReportedImageIndex = progressImageIndex
             latestProgress = progress
             onProgress(progress)
             persistence.submit(progress)
@@ -59,6 +71,8 @@ class VerticalProgressReporter(
     fun cancel() {
         persistence.cancel()
         latestProgress = null
+        lastReportedGlobalOffset = null
+        lastReportedImageIndex = null
     }
 
     fun latest(): VerticalProgress? = latestProgress
@@ -83,6 +97,8 @@ class VerticalProgressReporter(
         )
         val startY = layout.getLineTop(startLine)
         val endY = layout.getLineBottom(endLine).coerceAtLeast(startY + 1)
+        val legacyLocation = (scrollView.scrollY - textView.top - startY)
+            .coerceIn(0, (endY - startY).coerceAtLeast(0))
         val geometryPercent = ((visibleY - startY) * 100 / (endY - startY))
             .coerceIn(0, 100)
 
@@ -100,7 +116,8 @@ class VerticalProgressReporter(
             anchor = mapped.anchor,
             displayPercent = mapped.displayPercent,
             globalOffset = mapped.globalOffset,
-            scrollY = mapped.scrollY
+            scrollY = mapped.scrollY,
+            legacyLocation = legacyLocation
         )
     }
 

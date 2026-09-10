@@ -12,14 +12,15 @@
 
 ReadViewModel 现在持有 controller 和连续阅读章节列表，因此 Fragment 重建、主题重建和旋转时可以重新渲染已经追加的章节，而不是只恢复当前章节。加载结果带有 aid/cid/generation/append 信息，Activity 不再处理无作用域的通用加载事件。手动跳章和自动追加通过 ViewModel API 发起。
 
-阅读位置以 ReaderPosition/ReaderAnchor 为主，不再把 ScrollView 像素作为新的持久化位置。旧 vertical_read_history 仅作为没有锚点时的只读回退，锚点表是当前版本的恢复来源。
+阅读位置以 ReaderPosition/ReaderAnchor 为主，不再把全局 ScrollView 像素作为新位置。reporter 仅在可计算章节局部坐标时镜像旧 vertical_read_history；旧表仍是没有锚点时的回退，锚点表是当前版本的恢复来源。
 
 ## JVM 覆盖
 
 新增：
 
-- VerticalReaderControllerTest
+- VerticalReaderControllerTest（含连续会话上限）
 - VerticalReaderCoreTest
+- ReaderSessionCoordinatorTest
 - VerticalRenderModelTest
 - DebouncedPersistenceTest
 - VerticalRenderModelFactoryTest

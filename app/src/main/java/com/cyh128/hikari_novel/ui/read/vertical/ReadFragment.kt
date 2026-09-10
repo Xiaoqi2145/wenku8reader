@@ -153,7 +153,8 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
                 viewModel.updateVerticalProgress(
                     position = ReaderPosition(progress.chapter, progress.anchor),
                     displayPercent = progress.displayPercent,
-                    content = progress.content
+                    content = progress.content,
+                    legacyLocation = progress.legacyLocation
                 )
             },
             onPersist = { progress ->
@@ -162,7 +163,8 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
                 // transient loading chapter.
                 viewModel.persistPosition(
                     position = ReaderPosition(progress.chapter, progress.anchor),
-                    content = progress.content
+                    content = progress.content,
+                    legacyLocation = progress.legacyLocation
                 )
             }
         )
@@ -321,7 +323,7 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
         val distanceToBottom =
             contentView.height - binding.nsvFVRead.height - binding.nsvFVRead.scrollY
 
-        if (distanceToBottom <= thresholdPx) {
+        if (distanceToBottom <= thresholdPx && !viewModel.sessionLimitReached()) {
             // Set the guard before starting the load. A memory-cache hit may
             // complete synchronously, so marking it after the request races the
             // controller's append acknowledgement.

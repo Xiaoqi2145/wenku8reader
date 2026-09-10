@@ -498,14 +498,8 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
     }
 
     private fun jumpToChapter(volumePos: Int, chapterPos: Int) {
-        val target = viewModel.chapterNavigator().chapterAt(volumePos, chapterPos) ?: return
-        if (viewModel.curVolumePos == target.volumeIndex && viewModel.curChapterPos == target.chapterIndex) return
-
-        viewModel.goToLatest = false
-        viewModel.curVolumePos = target.volumeIndex
-        viewModel.curChapterPos = target.chapterIndex
+        if (!viewModel.selectChapter(volumePos, chapterPos)) return
         binding.pvAHRead.showLoadingTip()
-        viewModel.getNovelContent()
         setBottomBarIsEnable(false)
     }
 
@@ -524,11 +518,8 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
                 }
                 return@launch
             }
-            viewModel.curVolumePos = target.volumeIndex
-            viewModel.curChapterPos = target.chapterIndex
-            viewModel.goToLatest = false
+            if (!viewModel.loadChapter(target.chapter)) return@launch
             binding.pvAHRead.showLoadingTip()
-            viewModel.getNovelContent()
             setBottomBarIsEnable(false)
         }
     }
@@ -545,11 +536,8 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
                     }
                 return@launch
             }
-            viewModel.curVolumePos = target.volumeIndex
-            viewModel.curChapterPos = target.chapterIndex
-            viewModel.goToLatest = false
+            if (!viewModel.loadChapter(target.chapter)) return@launch
             binding.pvAHRead.showLoadingTip()
-            viewModel.getNovelContent()
             setBottomBarIsEnable(false)
         }
     }

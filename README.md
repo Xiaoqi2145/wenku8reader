@@ -4,6 +4,20 @@
 ### 📢如果你不会编译的话，可以看这位的项目（[light-novel-library_Wenku8_Android](https://github.com/MewX/light-novel-library_Wenku8_Android)）📢
 <hr>
 
+## 阅读器核心重构状态
+
+当前仓库正在按 [plan.md](./plan.md) 完成阅读核心渐进式重构，阶段一至阶段四已落地，阶段五至阶段七的共享会话、兼容迁移和验证清单正在实现。阅读进度以 ReaderAnchor 为新模型，旧横向/竖向历史会通过非破坏性迁移保留；详见 [阶段六迁移契约](./docs/reader-data-migration-phase6.md) 和 [阶段七验证清单](./docs/reader-validation-phase7.md)。
+
+### 构建与测试
+
+在可访问 Google/Maven Central/JitPack 依赖的环境中执行：
+
+    .\gradlew.bat :app:testDebugUnitTest --no-daemon
+    .\gradlew.bat :app:compileDebugKotlin --no-daemon
+    .\gradlew.bat :app:connectedDebugAndroidTest --no-daemon
+
+本地环境目前会在 `dataBindingMergeDependencyArtifactsDebug` 阶段因多个 JitPack 依赖无法解析而停止；不要把历史 `app/build` 报告当作当前验证结果。纯 Kotlin 领域测试可独立编译运行，设备、Room migration 和性能验证仍需依赖可用的 Android 环境。
+
 <div align="center">
 
   <div align="center">

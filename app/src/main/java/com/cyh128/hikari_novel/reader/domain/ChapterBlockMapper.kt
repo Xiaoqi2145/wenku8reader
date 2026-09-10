@@ -49,6 +49,7 @@ typealias ChapterOffset = MappedChapterOffset
 class ChapterBlockMapper {
     private val mutableBlocks = mutableListOf<ChapterBlock>()
     private val contentByCid = mutableMapOf<String, String>()
+    private val newlineOffsetsByCid = mutableMapOf<String, IntArray>()
 
     val blocks: List<ChapterBlock>
         get() = mutableBlocks.toList()
@@ -66,6 +67,7 @@ class ChapterBlockMapper {
     fun clear() {
         mutableBlocks.clear()
         contentByCid.clear()
+        newlineOffsetsByCid.clear()
     }
 
     /**
@@ -89,6 +91,9 @@ class ChapterBlockMapper {
         )
         mutableBlocks += block
         contentByCid[ref.cid] = content
+        newlineOffsetsByCid[ref.cid] = content.mapIndexedNotNull { index, char ->
+            index.takeIf { char == '\n' }
+        }.toIntArray()
         return block
     }
 
@@ -116,7 +121,7 @@ class ChapterBlockMapper {
         val localOffset = mapped.localOffset.coerceIn(0, content.length)
         return ReaderAnchor(
             cid = mapped.ref.cid,
-            paragraphIndex = content.take(localOffset).count { it == '\n' },
+            paragraphIndex = paragraphCount(mapped.ref.cid, localOffset),
             charOffset = localOffset,
             normalizedPercent = percent(localOffset, content.length)
         )
@@ -134,7 +139,7 @@ class ChapterBlockMapper {
         val content = contentByCid[block.ref.cid] ?: return null
         val offset = anchor.charOffset.coerceIn(0, content.length)
         return anchor.copy(
-            paragraphIndex = content.take(offset).count { it == '\n' },
+            paragraphIndex = paragraphCount(anchor.cid, offset),
             charOffset = offset,
             normalizedPercent = percent(offset, content.length)
         )
@@ -168,6 +173,18 @@ class ChapterBlockMapper {
 
     private fun localOffset(block: ChapterBlock, globalOffset: Int): Int =
         (globalOffset - block.startOffset).coerceIn(0, block.contentLength)
+
+    /** Count paragraph separators before the local UTF-16 offset in O(log n). */
+    private fun paragraphCount(cid: String, offset: Int): Int {
+        val newlineOffsets = newlineOffsetsByCid[cid] ?: return 0
+        var low = 0
+        var high = newlineOffsets.size
+        while (low < high) {
+            val middle = (low + high) ushr 1
+            if (newlineOffsets[middle] < offset) low = middle + 1 else high = middle
+        }
+        return low
+    }
 
     private fun percent(offset: Int, length: Int): Int =
         if (length <= 0) 0 else (offset * 100 / length).coerceIn(0, 100)

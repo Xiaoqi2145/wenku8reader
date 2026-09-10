@@ -13,6 +13,8 @@ class VerticalReadRepository @Inject constructor(
 ) {
     fun getByCid(cid: String) = verticalReadHistoryDao.getByCid(cid)
 
+    fun getByCid(aid: String, cid: String) = verticalReadHistoryDao.getByAidAndCid(aid, cid)
+
     fun getByVolume(aid: String, volume: Int) = verticalReadHistoryDao.getByVolume(aid, volume)
 
     suspend fun addOrReplace(
@@ -23,6 +25,8 @@ class VerticalReadRepository @Inject constructor(
     fun getLatestChapter(aid: String) = verticalReadHistoryDao.getLatestChapter(aid)
 
     suspend fun delete(cid: String) = verticalReadHistoryDao.delete(cid)
+
+    suspend fun delete(aid: String, cid: String) = verticalReadHistoryDao.delete(aid, cid)
 
     suspend fun deleteAll(aid: String) = verticalReadHistoryDao.deleteAll(aid)
 

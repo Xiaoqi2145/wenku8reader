@@ -9,20 +9,22 @@ import com.cyh128.hikari_novel.data.model.ReaderAnchor
 import com.cyh128.hikari_novel.data.model.ReaderOrientation
 import com.cyh128.hikari_novel.reader.domain.ChapterNavigator
 import com.cyh128.hikari_novel.reader.domain.ReaderPosition
+import com.cyh128.hikari_novel.reader.domain.ReaderSessionCoordinator
 import com.cyh128.hikari_novel.util.ReaderAnchorMapper
 import com.cyh128.hikari_novel.data.model.ReaderEffect
 import com.cyh128.hikari_novel.data.model.ReaderUiState
 import com.cyh128.hikari_novel.data.model.EmptyException
 import com.cyh128.hikari_novel.data.model.Event
 import com.cyh128.hikari_novel.data.model.Novel
+import com.cyh128.hikari_novel.data.model.chapterRefAt
+import com.cyh128.hikari_novel.data.model.chapterRefs
 import com.cyh128.hikari_novel.data.repository.ReadColorRepository
 import com.cyh128.hikari_novel.data.repository.VerticalReadRepository
-import com.cyh128.hikari_novel.data.repository.ReaderRepository
 import com.drake.channel.sendEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,14 +35,14 @@ import kotlin.properties.Delegates
 class ReadViewModel @Inject constructor(
     private val verticalReadRepository: VerticalReadRepository,
     private val readColorRepository: ReadColorRepository,
-    private val readerRepository: ReaderRepository
+    private val sessionCoordinator: ReaderSessionCoordinator
 ) : ViewModel() {
     private val _readerState = MutableStateFlow<ReaderUiState>(ReaderUiState.Idle)
     val readerState = _readerState.asStateFlow()
     val readerEffects = MutableSharedFlow<ReaderEffect>(extraBufferCapacity = 8)
     private var loadJob: Job? = null
-    private var loadGeneration = 0L
     private var lastLoadWasAppend = false
+
     var curChapterPos by Delegates.notNull<Int>()
     var curVolumePos by Delegates.notNull<Int>()
     var goToLatest = false //是否是上次阅读的章节
@@ -56,12 +58,12 @@ class ReadViewModel @Inject constructor(
     val curVolume get() = novel!!.volume[curVolumePos]
 
     var isBarShown = false //上下栏是否显示
-
     var progressText = MutableLiveData<String>()
 
     private data class VerticalProgressPosition(
         val position: ReaderPosition,
-        val content: String
+        val content: String,
+        val legacyLocation: Int?
     )
 
     /** Latest mapped position in the rendered vertical session. */
@@ -69,11 +71,25 @@ class ReadViewModel @Inject constructor(
     private var loadedChapter: CachedChapter? = null
     private val verticalSessionController = VerticalReaderController()
 
-    val getByCid get() = verticalReadRepository.getByCid(cid)
+    val getByCid get() = verticalReadRepository.getByCid(aid, cid)
 
-    private fun currentRef(): ChapterRef = ChapterRef(aid, cid, curVolumePos, curChapterPos, chapterTitle)
+    private fun currentRefOrNull(): ChapterRef? {
+        val currentNovel = novel ?: return null
+        val volumeIndex = runCatching { curVolumePos }.getOrNull() ?: return null
+        val chapterIndex = runCatching { curChapterPos }.getOrNull() ?: return null
+        return currentNovel.chapterRefAt(volumeIndex, chapterIndex)
+    }
+
+    private fun currentRef(): ChapterRef =
+        currentRefOrNull() ?: error("Reader chapter has not been initialized")
+
+    private fun configureSession() {
+        sessionCoordinator.configure(novel?.chapterRefs().orEmpty(), currentRefOrNull())
+    }
 
     fun currentChapterRef(): ChapterRef = currentRef()
+
+    fun sessionLimitReached(): Boolean = verticalSessionController.sessionLimitReached
 
     /** Controller/session retained across Fragment recreation and configuration changes. */
     fun verticalController(): VerticalReaderController = verticalSessionController
@@ -95,18 +111,8 @@ class ReadViewModel @Inject constructor(
             )
 
     fun chapterNavigator(): ChapterNavigator {
-        val currentNovel = novel ?: return ChapterNavigator(emptyList())
-        return ChapterNavigator(currentNovel.volume.mapIndexed { volumeIndex, volume ->
-            volume.chapters.mapIndexed { chapterIndex, chapter ->
-                ChapterRef(
-                    aid = currentNovel.aid,
-                    cid = chapter.cid,
-                    volumeIndex = volumeIndex,
-                    chapterIndex = chapterIndex,
-                    title = chapter.chapterTitle
-                )
-            }
-        })
+        configureSession()
+        return sessionCoordinator.chapterNavigator()
     }
 
     fun nextChapterLocation() = chapterNavigator().next(currentRef())
@@ -148,6 +154,7 @@ class ReadViewModel @Inject constructor(
     ) {
         val appendResult = append
         lastLoadWasAppend = appendResult
+        configureSession()
         curNovelContent = ""
         if (!appendResult) {
             latestVerticalPosition = null
@@ -156,38 +163,42 @@ class ReadViewModel @Inject constructor(
         }
         progressText.value = "0%"
         val ref = currentRef()
-        val generation = ++loadGeneration
+        val request = sessionCoordinator.beginLoad(ref, append = appendResult)
         loadJob?.cancel()
         _readerState.value = ReaderUiState.Loading(ref)
         loadJob = viewModelScope.launch(Dispatchers.IO) {
-            readerRepository.load(ref, forceNetwork)
-                .onSuccess { (chapter, source) ->
-                    if (!isCurrentLoad(generation, ref)) return@onSuccess
-                    curNovelContent = chapter.content
-                    curImages = chapter.images
-                    loadedChapter = chapter
-                    verticalSessionController.acceptLoaded(chapter, append = appendResult)
-                    _readerState.value = ReaderUiState.Ready(chapter, source)
+            sessionCoordinator.load(request, forceNetwork)
+                .onSuccess { loaded ->
+                    if (!sessionCoordinator.isCurrent(request)) return@onSuccess
+                    curNovelContent = loaded.chapter.content
+                    curImages = loaded.chapter.images
+                    loadedChapter = loaded.chapter
+                    verticalSessionController.acceptLoaded(loaded.chapter, append = appendResult)
+                    _readerState.value = ReaderUiState.Ready(loaded.chapter, loaded.source)
                     sendEvent(
                         Event.VerticalReaderLoadSuccessEvent(
                             aid = ref.aid,
                             cid = ref.cid,
-                            generation = generation,
+                            generation = request.generation,
                             append = appendResult
                         ),
                         "event_vertical_read_activity"
                     )
-                    nextRef()?.let { next ->
-                        viewModelScope.launch(Dispatchers.IO) { readerRepository.prefetch(next) }
+                    viewModelScope.launch(Dispatchers.IO) {
+                        sessionCoordinator.prefetchNext(request)
                     }
                 }.onFailure { failure ->
-                    if (!isCurrentLoad(generation, ref)) return@onFailure
-                    _readerState.value = ReaderUiState.Error(ref, failure.message ?: "加载失败", hasCachedContent = false)
+                    if (!sessionCoordinator.isCurrent(request)) return@onFailure
+                    _readerState.value = ReaderUiState.Error(
+                        ref,
+                        failure.message ?: "加载失败",
+                        hasCachedContent = false
+                    )
                     sendEvent(
                         Event.VerticalReaderLoadErrorEvent(
                             aid = ref.aid,
                             cid = ref.cid,
-                            generation = generation,
+                            generation = request.generation,
                             message = failure.message,
                             empty = failure is EmptyException
                         ),
@@ -197,11 +208,8 @@ class ReadViewModel @Inject constructor(
         }
     }
 
-    private fun isCurrentLoad(generation: Long, ref: ChapterRef): Boolean =
-        generation == loadGeneration && novel != null && currentRef() == ref
-
     fun acceptsLoadEvent(aid: String, cid: String, generation: Long): Boolean =
-        generation == loadGeneration && novel?.aid == aid && novel?.let { currentRef().cid == cid } == true
+        sessionCoordinator.acceptsLoadEvent(generation, aid, cid)
 
     fun retryNovelContent() = getNovelContent(forceNetwork = true, append = lastLoadWasAppend)
 
@@ -216,24 +224,22 @@ class ReadViewModel @Inject constructor(
     }
 
     fun enqueueDownloads(refs: List<ChapterRef>) {
-        viewModelScope.launch { readerRepository.enqueueDownloads(refs) }
+        viewModelScope.launch { sessionCoordinator.enqueueDownloads(refs) }
     }
-
-    private fun nextRef(): ChapterRef? = nextChapterLocation()
 
     /** Retain the mapped chapter/content pair and update the visible percentage. */
     fun updateVerticalProgress(
         position: ReaderPosition,
         displayPercent: Int,
-        content: String
+        content: String,
+        legacyLocation: Int? = null
     ) {
         progressText.value = "${displayPercent.coerceIn(0, 100)}%"
         if (position.chapter.aid == novel?.aid && position.anchor.cid == position.chapter.cid) {
             latestVerticalPosition = VerticalProgressPosition(
-                position = position.copy(
-                    anchor = ReaderAnchorMapper.clamp(position.anchor, content)
-                ),
-                content = content
+                position = position,
+                content = content,
+                legacyLocation = legacyLocation
             )
         }
     }
@@ -242,12 +248,12 @@ class ReadViewModel @Inject constructor(
     suspend fun saveReadHistory() {
         val mapped = latestVerticalPosition
         if (mapped != null && mapped.content.isNotBlank()) {
-            readerRepository.saveProgress(
-                progress = ReaderAnchorMapper.clamp(mapped.position.anchor, mapped.content),
+            sessionCoordinator.saveProgress(
+                progress = mapped.position.anchor,
                 ref = mapped.position.chapter,
                 orientation = ReaderOrientation.Vertical,
-                // ScrollView pixels are deliberately not persisted.
-                legacyLocation = null
+                // The reporter supplies a chapter-local legacy position when available.
+                legacyLocation = mapped.legacyLocation
             )
             return
         }
@@ -255,7 +261,7 @@ class ReadViewModel @Inject constructor(
 
         val ref = currentRef()
         val percent = progressText.value?.substringBefore("%")?.toIntOrNull()?.coerceIn(0, 100) ?: 0
-        readerRepository.saveProgress(
+        sessionCoordinator.saveProgress(
             progress = ReaderAnchorMapper.fromPercent(ref.cid, curNovelContent, percent),
             ref = ref,
             orientation = ReaderOrientation.Vertical,
@@ -279,27 +285,29 @@ class ReadViewModel @Inject constructor(
 
     suspend fun savePosition(
         position: ReaderPosition,
-        content: String
+        content: String,
+        legacyLocation: Int? = null
     ) {
         if (position.anchor.cid != position.chapter.cid || content.isBlank()) return
-        readerRepository.saveProgress(
+        sessionCoordinator.saveProgress(
             progress = ReaderAnchorMapper.clamp(position.anchor, content),
             ref = position.chapter,
             orientation = ReaderOrientation.Vertical,
-            legacyLocation = null
+            legacyLocation = legacyLocation
         )
     }
 
     /** Persist from the ViewModel scope so Fragment recreation cannot cancel the write. */
     fun persistPosition(
         position: ReaderPosition,
-        content: String
+        content: String,
+        legacyLocation: Int? = null
     ): Job = viewModelScope.launch(Dispatchers.IO) {
-        savePosition(position, content)
+        savePosition(position, content, legacyLocation)
     }
 
     suspend fun getReaderProgress() =
-        readerRepository.getProgress(currentRef(), curNovelContent, ReaderOrientation.Vertical)
+        sessionCoordinator.getProgress(currentRef(), curNovelContent, ReaderOrientation.Vertical)
 
     fun setFontSize(size: Float) {
         viewModelScope.launch {

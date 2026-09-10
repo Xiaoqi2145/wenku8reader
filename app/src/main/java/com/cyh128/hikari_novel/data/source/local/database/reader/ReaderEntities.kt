@@ -3,9 +3,9 @@ package com.cyh128.hikari_novel.data.source.local.database.reader
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "chapter_cache")
+@Entity(tableName = "chapter_cache", primaryKeys = ["aid", "cid"])
 data class ChapterCacheEntity(
-    @PrimaryKey val cid: String,
+    val cid: String,
     val aid: String,
     val volumeIndex: Int,
     val chapterIndex: Int,
@@ -17,9 +17,9 @@ data class ChapterCacheEntity(
     val sizeBytes: Long
 )
 
-@Entity(tableName = "reader_progress")
+@Entity(tableName = "reader_progress", primaryKeys = ["aid", "cid"])
 data class ReaderProgressEntity(
-    @PrimaryKey val cid: String,
+    val cid: String,
     val aid: String,
     val volumeIndex: Int,
     val chapterIndex: Int,
@@ -31,9 +31,9 @@ data class ReaderProgressEntity(
     val isLatest: Boolean
 )
 
-@Entity(tableName = "download_task")
+@Entity(tableName = "download_task", primaryKeys = ["aid", "cid"])
 data class DownloadTaskEntity(
-    @PrimaryKey val cid: String,
+    val cid: String,
     val aid: String,
     val volumeIndex: Int,
     val chapterIndex: Int,

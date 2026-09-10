@@ -34,7 +34,7 @@ class DefaultChapterPrefetcher @Inject constructor(
         if (!semaphore.tryAcquire()) return false
         var registered = false
         try {
-            registered = stateMutex.withLock { inFlight.add(ref.cid) }
+            registered = stateMutex.withLock { inFlight.add(ref.aid + ":" + ref.cid) }
             if (!registered) return false
 
             return try {
@@ -47,7 +47,7 @@ class DefaultChapterPrefetcher @Inject constructor(
             }
         } finally {
             withContext(NonCancellable) {
-                stateMutex.withLock { inFlight.remove(ref.cid) }
+                stateMutex.withLock { inFlight.remove(ref.aid + ":" + ref.cid) }
                 semaphore.release()
             }
         }

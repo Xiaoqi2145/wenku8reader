@@ -9,7 +9,9 @@ import com.cyh128.hikari_novel.data.repository.reader.DefaultChapterPrefetcher
 import com.cyh128.hikari_novel.data.repository.reader.RoomChapterCache
 import com.cyh128.hikari_novel.data.repository.reader.RoomReaderProgressStore
 import com.cyh128.hikari_novel.data.repository.reader.ReaderProgressStore
+import com.cyh128.hikari_novel.data.repository.reader.ReaderRepositorySessionDataSource
 import com.cyh128.hikari_novel.data.repository.reader.Wenku8ChapterRemoteSource
+import com.cyh128.hikari_novel.reader.domain.ReaderSessionDataSource
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -38,4 +40,10 @@ abstract class ReaderDataModule {
     @Binds
     @Singleton
     abstract fun bindReaderProgressStore(implementation: RoomReaderProgressStore): ReaderProgressStore
+
+    /** Unscoped on purpose: every reader ViewModel gets an isolated session. */
+    @Binds
+    abstract fun bindReaderSessionDataSource(
+        implementation: ReaderRepositorySessionDataSource
+    ): ReaderSessionDataSource
 }

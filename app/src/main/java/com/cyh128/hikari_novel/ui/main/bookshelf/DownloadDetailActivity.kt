@@ -21,7 +21,10 @@ import kotlinx.coroutines.launch
 class DownloadDetailActivity : AppCompatActivity() {
     @Inject lateinit var repository: ReaderRepository
     private lateinit var binding: ActivityDownloadDetailBinding
-    private val adapter = ChapterTaskAdapter({ cid -> lifecycleScope.launch { repository.retryChapter(cid) } }, { cid -> lifecycleScope.launch { repository.deleteChapterDownload(cid) } })
+    private val adapter = ChapterTaskAdapter(
+        onRetry = { task -> lifecycleScope.launch { repository.retryChapter(task.aid, task.cid) } },
+        onDelete = { task -> lifecycleScope.launch { repository.deleteChapterDownload(task.aid, task.cid) } }
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,7 +42,10 @@ class DownloadDetailActivity : AppCompatActivity() {
     }
 }
 
-private class ChapterTaskAdapter(private val onRetry: (String) -> Unit, private val onDelete: (String) -> Unit) : RecyclerView.Adapter<ChapterTaskAdapter.Holder>() {
+private class ChapterTaskAdapter(
+    private val onRetry: (DownloadTaskEntity) -> Unit,
+    private val onDelete: (DownloadTaskEntity) -> Unit
+) : RecyclerView.Adapter<ChapterTaskAdapter.Holder>() {
     private var tasks = emptyList<DownloadTaskEntity>()
     fun submitList(value: List<DownloadTaskEntity>) { tasks = value; notifyDataSetChanged() }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = Holder(ItemDownloadChapterBinding.inflate(LayoutInflater.from(parent.context), parent, false))
@@ -50,7 +56,9 @@ private class ChapterTaskAdapter(private val onRetry: (String) -> Unit, private 
             binding.tvDownloadChapterTitle.text = task.title
             binding.tvDownloadChapterStatus.text = "${task.progress}% · ${task.status}"
             binding.bDownloadChapterAction.text = if (task.status == "COMPLETED") "删除" else "重试"
-            binding.bDownloadChapterAction.setOnClickListener { if (task.status == "COMPLETED") onDelete(task.cid) else onRetry(task.cid) }
+            binding.bDownloadChapterAction.setOnClickListener {
+                if (task.status == "COMPLETED") onDelete(task) else onRetry(task)
+            }
         }
     }
 }

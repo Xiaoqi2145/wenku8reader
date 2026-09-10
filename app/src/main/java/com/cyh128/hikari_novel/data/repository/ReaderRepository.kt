@@ -94,7 +94,7 @@ class ReaderRepository @Inject constructor(
     suspend fun prefetch(ref: ChapterRef): Boolean = chapterPrefetcher.prefetch(ref)
 
     suspend fun enqueueDownloads(refs: List<ChapterRef>) {
-        val distinctRefs = refs.distinctBy { it.cid }
+        val distinctRefs = refs.distinctBy { it.aid to it.cid }
         if (distinctRefs.isEmpty()) return
 
         val now = System.currentTimeMillis()
@@ -122,7 +122,7 @@ class ReaderRepository @Inject constructor(
         imageUrl: String?,
         totalChapters: Int
     ) {
-        val distinctRefs = refs.distinctBy { it.cid }
+        val distinctRefs = refs.distinctBy { it.aid to it.cid }
         if (distinctRefs.isEmpty()) return
         dao.upsertDownloadBook(
             DownloadBookEntity(
@@ -152,7 +152,7 @@ class ReaderRepository @Inject constructor(
     suspend fun runPendingDownloads(aid: String): Boolean = downloadMutex.withLock {
         var allSucceeded = true
         dao.pendingDownloads(aid).forEach { task ->
-            if (dao.getDownloadStatus(task.cid) == DOWNLOAD_PAUSED) return@forEach
+            if (dao.getDownloadStatus(task.aid, task.cid) == DOWNLOAD_PAUSED) return@forEach
 
             dao.upsertDownload(
                 task.copy(
@@ -175,7 +175,7 @@ class ReaderRepository @Inject constructor(
                     updatedAt = System.currentTimeMillis()
                 )
                 chapterCache.put(downloaded)
-                dao.markDownloaded(task.cid, true)
+                dao.markDownloaded(task.aid, task.cid, true)
                 dao.upsertDownload(
                     task.copy(
                         status = DOWNLOAD_COMPLETED,
@@ -216,6 +216,8 @@ class ReaderRepository @Inject constructor(
 
     suspend fun retryBook(aid: String) = resumeBook(aid)
 
+    /** Legacy cid-only retry; use the aid-scoped overload when possible. */
+    @Deprecated("Use retryChapter(aid, cid)")
     suspend fun retryChapter(cid: String) {
         dao.updateChapterStatus(cid, DOWNLOAD_QUEUED, System.currentTimeMillis())
         dao.getChapterTaskAid(cid)?.let { aid ->
@@ -223,14 +225,26 @@ class ReaderRepository @Inject constructor(
         }
     }
 
+    suspend fun retryChapter(aid: String, cid: String) {
+        dao.updateChapterStatus(aid, cid, DOWNLOAD_QUEUED, System.currentTimeMillis())
+        downloadScope.launch { runPendingDownloads(aid) }
+    }
+
     suspend fun deleteBookDownloads(aid: String) {
         dao.deleteDownloadTasks(aid)
         dao.deleteDownloadBook(aid)
     }
 
+    /** Legacy cid-only deletion; use the aid-scoped overload when possible. */
+    @Deprecated("Use deleteChapterDownload(aid, cid)")
     suspend fun deleteChapterDownload(cid: String) {
         dao.deleteDownloadTask(cid)
         chapterCache.remove(cid)
+    }
+
+    suspend fun deleteChapterDownload(aid: String, cid: String) {
+        dao.deleteDownloadTask(aid, cid)
+        chapterCache.remove(ChapterRef(aid, cid, 0, 0, ""))
     }
 
     suspend fun clearExpiredCache(before: Long) = chapterCache.clearExpired(before)
@@ -248,7 +262,11 @@ class ReaderRepository @Inject constructor(
         progressStore.save(progress, ref, orientation, legacyLocation)
     }
 
-    /** Legacy-compatible lookup by cid, including the new anchor table only. */
+    /**
+     * Legacy-compatible lookup by cid. New reader code must use the ref-aware
+     * overload because chapter ids are only unique within a book.
+     */
+    @Deprecated("Use getProgress(ref, content, orientation)")
     suspend fun getProgress(cid: String): ReaderProgressEntity? = progressStore.get(cid)
 
     /** Explicit startup hook for callers that do not own an application scope. */

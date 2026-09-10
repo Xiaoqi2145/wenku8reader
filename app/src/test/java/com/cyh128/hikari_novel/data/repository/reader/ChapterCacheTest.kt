@@ -58,7 +58,7 @@ class ChapterCacheTest {
         )
 
         assertNull(RoomChapterCache(dao).get(ref("bad")))
-        assertTrue("bad" !in dao.chapters)
+        assertTrue(dao.chapters.values.none { it.cid == "bad" })
     }
 
     @Test
@@ -70,8 +70,8 @@ class ChapterCacheTest {
 
         cache.clearExpired(before = 100L)
 
-        assertTrue("old" !in dao.chapters)
-        assertTrue("downloaded" in dao.chapters)
+        assertTrue(dao.chapters.values.none { it.cid == "old" })
+        assertTrue(dao.chapters.values.any { it.cid == "downloaded" })
     }
 
     @Test

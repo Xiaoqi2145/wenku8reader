@@ -25,8 +25,12 @@ data class VerticalChapterRender(
  * [start]; continuous reading calls [append].
  */
 class VerticalReaderController(
-    val blockMapper: ChapterBlockMapper = ChapterBlockMapper()
+    val blockMapper: ChapterBlockMapper = ChapterBlockMapper(),
+    private val maxLoadedChapters: Int = DEFAULT_MAX_LOADED_CHAPTERS
 ) {
+    init {
+        require(maxLoadedChapters > 0) { "maxLoadedChapters must be positive" }
+    }
     private val mutableChapters = linkedMapOf<String, CachedChapter>()
     private var nextChapterRequested = false
 
@@ -80,7 +84,12 @@ class VerticalReaderController(
     fun globalOffset(anchor: ReaderAnchor): Int? = blockMapper.globalOffset(anchor)
 
     /** True until the caller has accepted an automatic next-chapter request. */
-    fun canRequestNextChapter(): Boolean = !nextChapterRequested
+    fun canRequestNextChapter(): Boolean =
+        !nextChapterRequested && mutableChapters.size < maxLoadedChapters
+
+    /** Stop unbounded TextView growth; a manual chapter jump starts a new session. */
+    val sessionLimitReached: Boolean
+        get() = mutableChapters.size >= maxLoadedChapters
 
     fun markNextChapterRequested() {
         nextChapterRequested = true
@@ -103,6 +112,9 @@ class VerticalReaderController(
     }
 
     companion object {
+        /** Bound the retained TextView session until virtualized rendering lands. */
+        const val DEFAULT_MAX_LOADED_CHAPTERS = 24
+
         /** Keep the prefix in one place so mapper offsets and rendered text agree. */
         fun chapterPrefix(title: String): String = "\n\n$title\n\n"
     }

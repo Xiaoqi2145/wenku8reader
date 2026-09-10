@@ -7,14 +7,22 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ReaderDao {
-    @Query("SELECT * FROM chapter_cache WHERE cid = :cid LIMIT 1")
+    /** Legacy cid-only cache lookup; use the book-scoped overload for reader code. */
+    @Deprecated("Use getChapter(aid, cid) to validate the book")
+    @Query("SELECT * FROM chapter_cache WHERE cid = :cid ORDER BY updatedAt DESC LIMIT 1")
     suspend fun getChapter(cid: String): ChapterCacheEntity?
+
+    @Query("SELECT * FROM chapter_cache WHERE aid = :aid AND cid = :cid LIMIT 1")
+    suspend fun getChapter(aid: String, cid: String): ChapterCacheEntity?
 
     @Upsert
     suspend fun upsertChapter(entity: ChapterCacheEntity)
 
-    @Query("SELECT * FROM reader_progress WHERE cid = :cid LIMIT 1")
+    @Query("SELECT * FROM reader_progress WHERE cid = :cid ORDER BY updatedAt DESC LIMIT 1")
     suspend fun getProgress(cid: String): ReaderProgressEntity?
+
+    @Query("SELECT * FROM reader_progress WHERE aid = :aid AND cid = :cid LIMIT 1")
+    suspend fun getProgressForBook(aid: String, cid: String): ReaderProgressEntity?
 
     @Query("SELECT * FROM reader_progress WHERE aid = :aid ORDER BY updatedAt DESC")
     fun observeProgress(aid: String): Flow<List<ReaderProgressEntity>>
@@ -53,17 +61,36 @@ interface ReaderDao {
     @Query("UPDATE download_task SET status = :status, error = NULL, updatedAt = :updatedAt WHERE cid = :cid")
     suspend fun updateChapterStatus(cid: String, status: String, updatedAt: Long)
 
+
+
     @Query("SELECT aid FROM download_task WHERE cid = :cid LIMIT 1")
     suspend fun getChapterTaskAid(cid: String): String?
+
+    @Query("SELECT aid FROM download_task WHERE aid = :aid AND cid = :cid LIMIT 1")
+    suspend fun getChapterTaskAid(aid: String, cid: String): String?
+
+    @Query("DELETE FROM download_task WHERE aid = :aid AND cid = :cid")
+    suspend fun deleteDownloadTask(aid: String, cid: String)
+
+    @Query("UPDATE download_task SET status = :status, error = NULL, updatedAt = :updatedAt WHERE aid = :aid AND cid = :cid")
+    suspend fun updateChapterStatus(aid: String, cid: String, status: String, updatedAt: Long)
 
     @Query("DELETE FROM download_task WHERE cid = :cid")
     suspend fun deleteDownloadTask(cid: String)
 
+
+
     @Query("DELETE FROM chapter_cache WHERE cid = :cid")
     suspend fun deleteChapterCache(cid: String)
 
+    @Query("DELETE FROM chapter_cache WHERE aid = :aid AND cid = :cid")
+    suspend fun deleteChapterCache(aid: String, cid: String)
+
     @Query("SELECT status FROM download_task WHERE cid = :cid LIMIT 1")
     suspend fun getDownloadStatus(cid: String): String?
+
+    @Query("SELECT status FROM download_task WHERE aid = :aid AND cid = :cid LIMIT 1")
+    suspend fun getDownloadStatus(aid: String, cid: String): String?
 
     @Upsert
     suspend fun upsertDownload(entity: DownloadTaskEntity)
@@ -79,6 +106,9 @@ interface ReaderDao {
 
     @Query("UPDATE chapter_cache SET isDownloaded = :downloaded WHERE cid = :cid")
     suspend fun markDownloaded(cid: String, downloaded: Boolean)
+
+    @Query("UPDATE chapter_cache SET isDownloaded = :downloaded WHERE aid = :aid AND cid = :cid")
+    suspend fun markDownloaded(aid: String, cid: String, downloaded: Boolean)
 
     @Query("DELETE FROM chapter_cache WHERE isDownloaded = 0 AND updatedAt < :before")
     suspend fun deleteExpiredCache(before: Long)

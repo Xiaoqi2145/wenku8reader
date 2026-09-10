@@ -49,6 +49,16 @@ class VerticalReaderControllerTest {
         assertEquals(listOf("image://one"), render.chapter.images)
     }
 
+    @Test
+    fun automaticSessionStopsAtConfiguredChapterLimit() {
+        val controller = VerticalReaderController(maxLoadedChapters = 2)
+        controller.start(chapter("c1", 0, "One", "one"))
+        controller.append(chapter("c2", 1, "Two", "two"))
+
+        assertTrue(controller.sessionLimitReached)
+        assertFalse(controller.canRequestNextChapter())
+    }
+
     @Test(expected = IllegalArgumentException::class)
     fun duplicateChapterIsRejectedByMapper() {
         val controller = VerticalReaderController()
