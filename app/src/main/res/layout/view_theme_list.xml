@@ -14,14 +14,14 @@
 
         <com.google.android.material.chip.Chip
             android:id="@+id/c_v_theme_list_dynamic_color"
-            style="@style/Widget.Material3.Chip.Filter"
+            style="@style/Widget.GalIsland.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/dynamic_color" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/c_v_theme_list_green_apple"
-            style="@style/Widget.Material3.Chip.Filter"
+            style="@style/Widget.GalIsland.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/green_apple"
@@ -31,7 +31,7 @@
 
         <com.google.android.material.chip.Chip
             android:id="@+id/c_v_theme_list_lavender"
-            style="@style/Widget.Material3.Chip.Filter"
+            style="@style/Widget.GalIsland.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/lavender"
@@ -41,7 +41,7 @@
 
         <com.google.android.material.chip.Chip
             android:id="@+id/c_v_theme_list_midnightdusk"
-            style="@style/Widget.Material3.Chip.Filter"
+            style="@style/Widget.GalIsland.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/midnight_dusk"
@@ -51,7 +51,7 @@
 
         <com.google.android.material.chip.Chip
             android:id="@+id/c_v_theme_list_strawberry"
-            style="@style/Widget.Material3.Chip.Filter"
+            style="@style/Widget.GalIsland.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/strawberry_daiquiri"
@@ -61,7 +61,7 @@
 
         <com.google.android.material.chip.Chip
             android:id="@+id/c_v_theme_list_tako"
-            style="@style/Widget.Material3.Chip.Filter"
+            style="@style/Widget.GalIsland.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/tako"
@@ -71,7 +71,7 @@
 
         <com.google.android.material.chip.Chip
             android:id="@+id/c_v_theme_list_tealturquoise"
-            style="@style/Widget.Material3.Chip.Filter"
+            style="@style/Widget.GalIsland.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/teal_turquoise"
@@ -81,7 +81,7 @@
 
         <com.google.android.material.chip.Chip
             android:id="@+id/c_v_theme_list_tidalwave"
-            style="@style/Widget.Material3.Chip.Filter"
+            style="@style/Widget.GalIsland.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/tidal_wave"
@@ -91,7 +91,7 @@
 
         <com.google.android.material.chip.Chip
             android:id="@+id/c_v_theme_list_yinyang"
-            style="@style/Widget.Material3.Chip.Filter"
+            style="@style/Widget.GalIsland.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/yin_yang"
@@ -101,13 +101,23 @@
 
         <com.google.android.material.chip.Chip
             android:id="@+id/c_v_theme_list_yotsuba"
-            style="@style/Widget.Material3.Chip.Filter"
+            style="@style/Widget.GalIsland.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/yotsuba"
             android:textColor="?colorOnPrimary"
             app:checkedIconTint="?colorOnPrimary"
             app:chipBackgroundColor="@color/yotsuba_primary" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/c_v_theme_list_galisland"
+            style="@style/Widget.GalIsland.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/galisland"
+            android:textColor="?colorOnPrimary"
+            app:checkedIconTint="?colorOnPrimary"
+            app:chipBackgroundColor="@color/galisland_primary" />
 
     </com.google.android.material.chip.ChipGroup>
 

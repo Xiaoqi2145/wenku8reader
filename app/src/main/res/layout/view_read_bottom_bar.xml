@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ 阅读页共用底栏：横排与竖排阅读均通过 include 复用，保证交互与观感一致
+  ~ 结构：进度行（上一章 / 滑块 / 下一章）+ 操作行（夜间 / 设置 / 目录）
+  ~ 状态行（时间 / 电量 / 百分比）是独立的常显层，见 view_read_status_bar.xml
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/read_bottom_bar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:background="@drawable/bg_read_bottom_bar"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/read_progress_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingLeft="@dimen/gi_space_inset"
+            android:paddingRight="@dimen/gi_space_inset"
+            app:layout_constraintBottom_toTopOf="@id/read_action_row"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/read_previous_chapter"
+                style="@style/Widget.GalIsland.Button.IconButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/previous_chapter"
+                app:icon="@drawable/ic_skip_previous" />
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/read_progress_slider"
+                style="@style/Widget.GalIsland.Slider"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:stepSize="1"
+                android:value="0"
+                android:valueFrom="0"
+                android:valueTo="100" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/read_next_chapter"
+                style="@style/Widget.GalIsland.Button.IconButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/next_chapter"
+                app:icon="@drawable/ic_skip_next" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/read_action_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/read_progress_row">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/read_night"
+                style="@style/Widget.GalIsland.Button.Text.Icon"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/night_mode"
+                app:icon="@drawable/ic_dark_mode"
+                app:iconGravity="textTop" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/read_settings"
+                style="@style/Widget.GalIsland.Button.Text.Icon"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/setting"
+                app:icon="@drawable/ic_setting"
+                app:iconGravity="textTop" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/read_catalog"
+                style="@style/Widget.GalIsland.Button.Text.Icon"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/chapter_catalog"
+                app:icon="@drawable/ic_view_list"
+                app:iconGravity="textTop" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/read_config"
+                style="@style/Widget.GalIsland.Button.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/more_setting"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>

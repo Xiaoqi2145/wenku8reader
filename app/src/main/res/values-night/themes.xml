@@ -1,6 +1,17 @@
 <resources>
     <!-- Base application theme. -->
     <style name="Base.Theme.HikariNovel" parent="Theme.Material3.DynamicColors.DayNight.NoActionBar">
+        <!-- GalIsland 视觉体系 -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.GalIsland.Small</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.GalIsland.Medium</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.GalIsland.Large</item>
+        <item name="materialCardViewStyle">@style/Widget.GalIsland.CardView</item>
+        <item name="materialButtonStyle">@style/Widget.GalIsland.Button</item>
+        <item name="chipStyle">@style/Widget.GalIsland.Chip</item>
+        <item name="tabStyle">@style/Widget.GalIsland.TabLayout</item>
+        <item name="snackbarStyle">@style/Widget.GalIsland.Snackbar</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.GalIsland.MaterialAlertDialog</item>
+
         <!-- Customize your dark theme here. -->
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
     </style>

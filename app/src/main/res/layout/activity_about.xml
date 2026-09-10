@@ -38,7 +38,7 @@
 
 
         <com.google.android.material.divider.MaterialDivider
-            style="@style/Widget.MaterialComponents.MaterialDivider"
+            style="@style/Widget.Material3.MaterialDivider"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 

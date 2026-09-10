@@ -8,11 +8,11 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="@dimen/gi_toolbar_height"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingLeft="20dp"
-        android:paddingRight="8dp">
+        android:paddingLeft="@dimen/gi_space_lg"
+        android:paddingRight="@dimen/gi_space_sm">
 
         <TextView
             android:id="@+id/tv_f_read_chapter_catalog_title"
@@ -22,12 +22,11 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:text="@string/chapter_catalog"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            style="@style/TextAppearance.GalIsland.SheetTitle" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/b_f_read_chapter_catalog_select_all"
-            style="@style/Widget.Material3.Button.TextButton"
+            style="@style/Widget.GalIsland.Button.Text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/select_all"
@@ -35,14 +34,14 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/b_f_read_chapter_catalog_download"
-            style="@style/Widget.Material3.Button.TextButton"
+            style="@style/Widget.GalIsland.Button.Text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/download_selected" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/b_f_read_chapter_catalog_close"
-            style="@style/Widget.Material3.Button.IconButton"
+            style="@style/Widget.GalIsland.Button.IconButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:icon="@drawable/ic_close" />
@@ -55,6 +54,6 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:paddingBottom="24dp" />
+        android:paddingBottom="@dimen/gi_space_xl" />
 
 </LinearLayout>

@@ -197,6 +197,9 @@
     <string name="advanced_settings">高级</string>
     <string name="paging_settings">翻页</string>
     <string name="read_progress">阅读进度</string>
+    <string name="read_status_time">当前时间</string>
+    <string name="read_status_battery">剩余电量</string>
+    <string name="read_status_progress">阅读进度</string>
     <string name="fontsize">字体大小</string>
     <string name="line_spacing">行距</string>
     <string name="hide_bar">隐藏上下栏</string>
@@ -293,6 +296,7 @@
     <string name="tidal_wave">浪潮</string>
     <string name="yin_yang">阴阳</string>
     <string name="yotsuba">四叶草</string>
+    <string name="galisland">粉屿 GalIsland</string>
     <string name="dark_mode">暗色模式</string>
     <string name="enable">启用</string>
     <string name="disable">禁用</string>

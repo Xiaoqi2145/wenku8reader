@@ -3,6 +3,20 @@
     <style name="Base.Theme.HikariNovel" parent="Theme.Material3.DynamicColors.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
 
+        <!-- GalIsland 视觉体系 -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.GalIsland.Small</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.GalIsland.Medium</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.GalIsland.Large</item>
+        <item name="materialCardViewStyle">@style/Widget.GalIsland.CardView</item>
+        <item name="materialButtonStyle">@style/Widget.GalIsland.Button</item>
+        <item name="chipStyle">@style/Widget.GalIsland.Chip</item>
+        <item name="tabStyle">@style/Widget.GalIsland.TabLayout</item>
+        <item name="toolbarStyle">@style/Widget.GalIsland.Toolbar</item>
+        <item name="sliderStyle">@style/Widget.GalIsland.Slider</item>
+        <item name="textInputStyle">@style/Widget.GalIsland.TextInputLayout.OutlinedBox</item>
+        <item name="snackbarStyle">@style/Widget.GalIsland.Snackbar</item>
+        <item name="snackbarTextViewStyle">@style/Widget.GalIsland.Snackbar.TextView</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.GalIsland.MaterialAlertDialog</item>
     </style>
 
     <!--== Green Apple Theme ==-->
@@ -321,6 +335,61 @@
         <item name="colorSurfaceContainerHighest">@color/tidalwave_surfaceContainerHighest</item>
         <item name="colorSurfaceContainerLow">@color/tidalwave_surfaceContainerLow</item>
         <item name="colorSurfaceContainerLowest">@color/tidalwave_surfaceContainerLowest</item>
+    </style>
+
+    <!--== GalIsland Theme ==-->
+    <style name="Theme.HikariNovel.GalIsland">
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.GalIsland.Large</item>
+        <item name="tabStyle">@style/Widget.GalIsland.TabLayout</item>
+        <item name="toolbarStyle">@style/Widget.GalIsland.Toolbar</item>
+        <item name="snackbarStyle">@style/Widget.GalIsland.Snackbar</item>
+        <item name="snackbarTextViewStyle">@style/Widget.GalIsland.Snackbar.TextView</item>
+        <item name="sliderStyle">@style/Widget.GalIsland.Slider</item>
+        <item name="colorControlHighlight">@color/galisland_interaction</item>
+        <item name="motionDurationShort2">140</item>
+        <item name="motionDurationMedium1">180</item>
+        <!-- Theme Colors -->
+        <item name="colorPrimary">@color/galisland_primary</item>
+        <item name="colorOnPrimary">@color/galisland_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/galisland_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/galisland_onPrimaryContainer</item>
+        <item name="colorPrimaryInverse">@color/galisland_inversePrimary</item>
+        <item name="colorSecondary">@color/galisland_secondary</item>
+        <item name="colorOnSecondary">@color/galisland_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/galisland_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/galisland_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/galisland_tertiary</item>
+        <item name="colorOnTertiary">@color/galisland_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/galisland_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/galisland_onTertiaryContainer</item>
+        <item name="android:colorBackground">@color/galisland_background</item>
+        <item name="colorOnBackground">@color/galisland_onBackground</item>
+        <item name="colorSurface">@color/galisland_surface</item>
+        <item name="colorOnSurface">@color/galisland_onSurface</item>
+        <item name="colorSurfaceVariant">@color/galisland_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/galisland_onSurfaceVariant</item>
+        <item name="colorSurfaceInverse">@color/galisland_inverseSurface</item>
+        <item name="colorOnSurfaceInverse">@color/galisland_inverseOnSurface</item>
+        <item name="colorError">@color/galisland_error</item>
+        <item name="colorOnError">@color/galisland_onError</item>
+        <item name="colorErrorContainer">@color/galisland_errorContainer</item>
+        <item name="colorOnErrorContainer">@color/galisland_onErrorContainer</item>
+        <item name="colorOutline">@color/galisland_outline</item>
+        <item name="colorOutlineVariant">@color/galisland_outlineVariant</item>
+        <item name="scrimBackground">@color/galisland_scrim</item>
+        <item name="colorSurfaceBright">@color/galisland_surfaceBright</item>
+        <item name="colorSurfaceDim">@color/galisland_surfaceDim</item>
+        <item name="colorSurfaceContainer">@color/galisland_surfaceContainer</item>
+        <item name="colorSurfaceContainerHigh">@color/galisland_surfaceContainerHigh</item>
+        <item name="colorSurfaceContainerHighest">@color/galisland_surfaceContainerHighest</item>
+        <item name="colorSurfaceContainerLow">@color/galisland_surfaceContainerLow</item>
+        <item name="colorSurfaceContainerLowest">@color/galisland_surfaceContainerLowest</item>
+        <item name="materialCardViewStyle">@style/Widget.GalIsland.CardView</item>
+        <item name="materialButtonStyle">@style/Widget.GalIsland.Button</item>
+        <item name="chipStyle">@style/Widget.GalIsland.Chip</item>
+        <item name="textInputStyle">@style/Widget.GalIsland.TextInputLayout.OutlinedBox</item>
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.GalIsland.Small</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.GalIsland.Medium</item>
     </style>
 
 </resources>

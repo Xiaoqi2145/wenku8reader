@@ -58,7 +58,7 @@ class AppConfig @Inject constructor() {
         }
 
     var appTheme: Int
-        get() = cursor.decodeInt("app_theme", AppTheme.Dynamic.ordinal)
+        get() = cursor.decodeInt("app_theme", AppTheme.GalIsland.ordinal)
         set(value) {
             cursor.encode("app_theme", value)
         }

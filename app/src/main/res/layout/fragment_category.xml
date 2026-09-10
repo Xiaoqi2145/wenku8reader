@@ -25,7 +25,7 @@
                 android:layout_marginRight="20dp"
                 android:layout_marginBottom="10dp"
                 android:hint="@string/category"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+                style="@style/Widget.GalIsland.TextInputLayout.OutlinedBox.Dropdown">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
                     android:id="@+id/act_f_category"
@@ -57,28 +57,28 @@
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/c_f_category_sort_by_update"
-                        style="@style/Widget.Material3.Chip.Filter"
+                        style="@style/Widget.GalIsland.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/sort_by_update"/>
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/c_f_category_sort_by_heat"
-                        style="@style/Widget.Material3.Chip.Filter"
+                        style="@style/Widget.GalIsland.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/sort_by_heat"/>
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/c_f_category_sort_by_completion"
-                        style="@style/Widget.Material3.Chip.Filter"
+                        style="@style/Widget.GalIsland.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/sort_by_completion"/>
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/c_f_category_sort_by_animated"
-                        style="@style/Widget.Material3.Chip.Filter"
+                        style="@style/Widget.GalIsland.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/sort_by_animated"/>

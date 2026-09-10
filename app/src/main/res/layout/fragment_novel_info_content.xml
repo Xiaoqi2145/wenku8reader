@@ -23,14 +23,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                app:cardCornerRadius="4dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="0dp">
+                style="@style/Widget.GalIsland.CardView.Cover">
 
                 <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/iv_f_novel_info_content"
                     android:layout_width="120dp"
-                    android:layout_height="170dp"
+                    android:layout_height="150dp"
                     android:foreground="?selectableItemBackground"
                     android:scaleType="centerCrop" />
 
@@ -49,7 +47,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="3dp"
                     android:layout_marginBottom="10dp"
-                    android:textSize="16sp"
+                    android:letterSpacing="0"
+                    android:textSize="20sp"
                     android:textStyle="bold"
                     tools:text="title" />
 
@@ -91,6 +90,7 @@
 
                     <TextView
                         android:id="@+id/tv_f_novel_info_content_status"
+                        style="@style/TextAppearance.GalIsland.Meta"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         tools:text="status" />
@@ -111,6 +111,7 @@
 
                     <TextView
                         android:id="@+id/tv_f_novel_info_content_fin_update"
+                        style="@style/TextAppearance.GalIsland.Meta"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         tools:text="finUpdate" />
@@ -132,6 +133,7 @@
 
                     <TextView
                         android:id="@+id/tv_f_novel_info_content_is_animated"
+                        style="@style/TextAppearance.GalIsland.Meta"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         tools:text="isAnimated" />
@@ -152,6 +154,7 @@
 
                     <TextView
                         android:id="@+id/tv_f_novel_info_content_heat"
+                        style="@style/TextAppearance.GalIsland.Meta"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         tools:text="heat" />
@@ -171,6 +174,7 @@
 
                     <TextView
                         android:id="@+id/tv_f_novel_info_content_trending"
+                        style="@style/TextAppearance.GalIsland.Meta"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         tools:text="treanding" />
@@ -181,17 +185,25 @@
 
         </LinearLayout>
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="18dp"
+            android:layout_marginRight="20dp"
+            android:background="?attr/colorOutlineVariant" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="14dp"
             android:layout_marginRight="10dp"
             android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/b_f_novel_info_content_bookshelf"
-                style="@style/Widget.Material3.Button.TextButton.Icon"
+                style="@style/Widget.GalIsland.Button.Text.Icon"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -203,7 +215,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/b_f_novel_info_content_vote"
-                style="@style/Widget.Material3.Button.TextButton.Icon"
+                style="@style/Widget.GalIsland.Button.Text.Icon"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -215,7 +227,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/b_f_novel_info_content_comment"
-                style="@style/Widget.Material3.Button.TextButton.Icon"
+                style="@style/Widget.GalIsland.Button.Text.Icon"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -227,7 +239,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/b_f_novel_info_content_download"
-                style="@style/Widget.Material3.Button.TextButton.Icon"
+                style="@style/Widget.GalIsland.Button.Text.Icon"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -246,8 +258,10 @@
             android:layout_marginLeft="20dp"
             android:layout_marginTop="10dp"
             android:layout_marginRight="20dp"
-            android:layout_marginBottom="10dp"
-            android:textSize="14sp"
+            android:layout_marginBottom="12dp"
+            style="@style/TextAppearance.GalIsland.Meta"
+            android:textColor="?attr/colorOnSurface"
+            android:lineSpacingMultiplier="1.6"
             app:ep_max_line="3"
             app:ep_need_animation="true"
             app:ep_need_contract="true" />

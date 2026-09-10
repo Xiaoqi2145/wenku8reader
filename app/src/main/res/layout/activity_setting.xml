@@ -127,10 +127,10 @@
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
                 android:layout_marginBottom="10dp"
-                app:cardCornerRadius="8dp">
+                style="@style/Widget.GalIsland.CardView">
 
                 <LinearLayout
-                    android:padding="10dp"
+                    android:padding="12dp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="horizontal">
@@ -204,10 +204,10 @@
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
                 android:layout_marginBottom="10dp"
-                app:cardCornerRadius="8dp">
+                style="@style/Widget.GalIsland.CardView">
 
                 <LinearLayout
-                    android:padding="10dp"
+                    android:padding="12dp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="horizontal">
@@ -373,10 +373,10 @@
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
                 android:layout_marginBottom="10dp"
-                app:cardCornerRadius="8dp">
+                style="@style/Widget.GalIsland.CardView">
 
                 <LinearLayout
-                    android:padding="10dp"
+                    android:padding="12dp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="horizontal">
@@ -502,10 +502,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
-                app:cardCornerRadius="8dp">
+                style="@style/Widget.GalIsland.CardView">
 
                 <LinearLayout
-                    android:padding="10dp"
+                    android:padding="12dp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="horizontal">

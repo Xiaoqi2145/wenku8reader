@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ 阅读页常显状态行：左侧时间 + 电量，右侧阅读百分比
+  ~ 独立于底栏存在，底栏收起后依然常驻在屏幕底部
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/read_status_bar"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/gi_status_bar_height"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingLeft="@dimen/gi_space_lg"
+    android:paddingRight="@dimen/gi_space_lg">
+
+    <ImageView
+        android:layout_width="@dimen/gi_status_icon"
+        android:layout_height="@dimen/gi_status_icon"
+        android:contentDescription="@string/read_status_time"
+        android:src="@drawable/ic_schedule"
+        app:tint="?attr/colorOnSurfaceVariant" />
+
+    <TextView
+        android:id="@+id/read_status_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/gi_space_xs"
+        style="@style/TextAppearance.GalIsland.StatusText"
+        tools:text="21:26" />
+
+    <ImageView
+        android:layout_width="@dimen/gi_status_icon"
+        android:layout_height="@dimen/gi_status_icon"
+        android:layout_marginLeft="@dimen/gi_space_md"
+        android:contentDescription="@string/read_status_battery"
+        android:src="@drawable/ic_battery"
+        app:tint="?attr/colorOnSurfaceVariant" />
+
+    <TextView
+        android:id="@+id/read_status_battery"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/gi_space_xs"
+        style="@style/TextAppearance.GalIsland.StatusText"
+        tools:text="87%" />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_weight="1" />
+
+    <ImageView
+        android:layout_width="@dimen/gi_status_icon"
+        android:layout_height="@dimen/gi_status_icon"
+        android:contentDescription="@string/read_status_progress"
+        android:src="@drawable/ic_reader"
+        app:tint="?attr/colorOnSurfaceVariant" />
+
+    <TextView
+        android:id="@+id/read_status_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/gi_space_xs"
+        style="@style/TextAppearance.GalIsland.StatusText"
+        tools:text="52%" />
+
+</LinearLayout>

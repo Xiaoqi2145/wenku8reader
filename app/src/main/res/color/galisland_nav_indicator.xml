@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- accent-soft：16% 主色，对应模板 nav-item.is-active 底色 -->
+    <item android:alpha="0.16" android:color="?attr/colorPrimary" />
+</selector>

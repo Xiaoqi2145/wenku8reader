@@ -27,6 +27,7 @@ object ThemeHelper {
             AppTheme.TidalWave -> R.style.Theme_HikariNovel_TidalWave
             AppTheme.YinYang -> R.style.Theme_HikariNovel_YinYang
             AppTheme.Yotsuba -> R.style.Theme_HikariNovel_Yotsuba
+            AppTheme.GalIsland -> R.style.Theme_HikariNovel_GalIsland
         }
         sendEvent(Event.ThemeChangedEvent, "event_theme_changed")
     }

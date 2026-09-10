@@ -184,6 +184,20 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
         progressReporter?.flush()
     }
 
+    /**
+     * 滚动到已加载内容的指定百分比位置，供底栏进度滑块调用。
+     * 连续章节是按滚动比例上报进度的，这里按同一比例反推 scrollY。
+     */
+    fun scrollToPercent(percent: Int) {
+        val scrollView = binding.nsvFVRead
+        val content = scrollView.getChildAt(0) ?: return
+        val range = content.height - scrollView.height
+        if (range <= 0) return
+        val target = (range * percent.coerceIn(0, 100) / 100f).toInt()
+        scrollView.scrollTo(0, target)
+        scrollView.post { progressReporter?.report() }
+    }
+
     fun appendCurrentChapter(): Boolean {
         val controller = readerController ?: return false
         val renderer = contentRenderer ?: return false

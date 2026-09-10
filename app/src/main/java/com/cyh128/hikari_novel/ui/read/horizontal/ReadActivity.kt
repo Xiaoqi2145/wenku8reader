@@ -136,7 +136,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
                                 R.string.have_image_tip,
                                 Snackbar.LENGTH_INDEFINITE
                             ).apply {
-                                setAnchorView(binding.llAHReadBottomBar) //使它出现在bottomAppBar的上面，避免遮挡内容
+                                setAnchorView(binding.barAHRead.root) //使它出现在bottomAppBar的上面，避免遮挡内容
                                 setAction(R.string.ok) {}
                                 show()
                             }
@@ -152,7 +152,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
                         event.msg ?: getString(R.string.network_error_msg),
                         Snackbar.LENGTH_INDEFINITE
                     ).apply {
-                        setAnchorView(binding.llAHReadBottomBar)
+                        setAnchorView(binding.barAHRead.root)
                         setAction(R.string.retry) { viewModel.retryNovelContent() }
                         show()
                     }
@@ -180,7 +180,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 while (true) {
-                    binding.tvAHReadStatus.text = ReaderStatusText.current(this@ReadActivity)
+                    refreshStatusBar()
                     delay(30_000)
                 }
             }
@@ -219,7 +219,8 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
     }
 
     private fun initView() {
-        binding.tvAHReadStatus.text = ReaderStatusText.current(this)
+        refreshStatusBar()
+        binding.statusAHRead.readStatusProgress.text = "0%"
         //初始化阅读器的背景颜色和字体颜色
         binding.pvAHRead.backgroundcolor =
             if (ThemeHelper.isDarkMode()) ("#" + viewModel.getBgColorNight()).toColorInt()
@@ -346,16 +347,17 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
 
                 try {
                     if (binding.pvAHRead.maxPageNum == 1) {
-                        binding.sAHReadProgress.visibility = View.INVISIBLE
+                        binding.barAHRead.readProgressSlider.visibility = View.INVISIBLE
                         return
                     } else {
-                        binding.sAHReadProgress.visibility = View.VISIBLE
+                        binding.barAHRead.readProgressSlider.visibility = View.VISIBLE
                     }
 
-                    binding.sAHReadProgress.valueTo = binding.pvAHRead.maxPageNum.toFloat()
-                    binding.sAHReadProgress.value = index.toFloat()
+                    binding.barAHRead.readProgressSlider.valueTo = binding.pvAHRead.maxPageNum.toFloat()
+                    binding.barAHRead.readProgressSlider.value = index.toFloat()
+                    updateProgressPercent(index, binding.pvAHRead.maxPageNum)
                 } catch (e: IllegalArgumentException) { //防止历史记录的页数大于当前章节的最大页数
-                    binding.sAHReadProgress.value = 1f
+                    binding.barAHRead.readProgressSlider.value = 1f
                     binding.pvAHRead.pageNum = 1
 
                     saveReadHistoryJob?.cancel()
@@ -366,11 +368,12 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             }
         }
 
-        binding.sAHReadProgress.addOnSliderTouchListener(
+        binding.barAHRead.readProgressSlider.addOnSliderTouchListener(
             object : Slider.OnSliderTouchListener {
                 override fun onStartTrackingTouch(slider: Slider) {}
                 override fun onStopTrackingTouch(slider: Slider) {
                     binding.pvAHRead.pageNum = slider.value.toInt()
+                    updateProgressPercent(slider.value.toInt(), binding.pvAHRead.maxPageNum)
                 }
             }
         )
@@ -417,10 +420,10 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             )
         }
 
-        binding.bAHReadConfig.setOnClickListener { bottomSheetDialog.show() }
-        binding.bAHReadSettings.setOnClickListener { bottomSheetDialog.show() }
-        binding.bAHReadCatalog.setOnClickListener { showChapterCatalog() }
-        binding.bAHReadNight.setOnClickListener {
+        binding.barAHRead.readConfig.setOnClickListener { bottomSheetDialog.show() }
+        binding.barAHRead.readSettings.setOnClickListener { bottomSheetDialog.show() }
+        binding.barAHRead.readCatalog.setOnClickListener { showChapterCatalog() }
+        binding.barAHRead.readNight.setOnClickListener {
             AppCompatDelegate.setDefaultNightMode(
                 if (getIsInDarkMode()) AppCompatDelegate.MODE_NIGHT_NO else AppCompatDelegate.MODE_NIGHT_YES
             )
@@ -435,9 +438,9 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             }
         }
 
-        binding.bAHReadNextChapter.setOnClickListener { toNextChapter() }
+        binding.barAHRead.readNextChapter.setOnClickListener { toNextChapter() }
 
-        binding.bAHReadPreviousChapter.setOnClickListener { toPreviousChapter() }
+        binding.barAHRead.readPreviousChapter.setOnClickListener { toPreviousChapter() }
 
         bottomViewBinding.sVHReadConfigKeyDownSwitchChapter.setOnCheckedChangeListener { _, isChecked ->
             viewModel.setKeyDownSwitchChapter(isChecked)
@@ -512,13 +515,13 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
                     R.string.no_previous_chapter,
                     Snackbar.LENGTH_INDEFINITE
                 ).apply {
-                    setAnchorView(binding.llAHReadBottomBar)
+                    setAnchorView(binding.barAHRead.root)
                     setAction(R.string.ok) {}
                     show()
                 }
                 return@launch
             }
-            if (!viewModel.loadChapter(target.chapter)) return@launch
+            if (!viewModel.loadChapter(target)) return@launch
             binding.pvAHRead.showLoadingTip()
             setBottomBarIsEnable(false)
         }
@@ -530,13 +533,13 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             if (target == null) {
                 Snackbar.make(binding.root, R.string.no_next_chapter, Snackbar.LENGTH_INDEFINITE)
                     .apply {
-                        setAnchorView(binding.llAHReadBottomBar)
+                        setAnchorView(binding.barAHRead.root)
                         setAction(R.string.ok) {}
                         show()
                     }
                 return@launch
             }
-            if (!viewModel.loadChapter(target.chapter)) return@launch
+            if (!viewModel.loadChapter(target)) return@launch
             binding.pvAHRead.showLoadingTip()
             setBottomBarIsEnable(false)
         }
@@ -559,12 +562,13 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
                 override fun onAnimationCancel(animation: Animator) {}
                 override fun onAnimationRepeat(animation: Animator) {}
             })
-        binding.llAHReadBottomBar.animate().translationY(0f)
+        binding.barAHRead.root.animate().translationY(0f)
             .setInterpolator(AccelerateDecelerateInterpolator())
+        viewModel.isBarShown = true
     }
 
     private fun hideBar() { //隐藏上下栏
-        binding.tbAHRead.animate().translationY(-(binding.tbAHRead.height.toFloat()))
+        binding.tbAHRead.animate().translationY(-(binding.tbAHRead.bottom.toFloat()))
             .setInterpolator(AccelerateDecelerateInterpolator())
             .setListener(object : Animator.AnimatorListener {
                 override fun onAnimationStart(animation: Animator) {}
@@ -580,8 +584,11 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
                 override fun onAnimationCancel(animation: Animator) {}
                 override fun onAnimationRepeat(animation: Animator) {}
             })
-        binding.llAHReadBottomBar.animate().translationY(binding.llAHReadBottomBar.height.toFloat())
+        //按实际位置计算，保证底栏（含底部边距）完全移出屏幕
+        binding.barAHRead.root.animate()
+            .translationY((binding.root.height - binding.barAHRead.root.top).toFloat())
             .setInterpolator(AccelerateDecelerateInterpolator())
+        viewModel.isBarShown = false
     }
 
     private fun getHideBarColor() = getIsInDarkMode().let {
@@ -593,10 +600,23 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
     }
 
     private fun setBottomBarIsEnable(value: Boolean) {
-        binding.bAHReadConfig.isEnabled = value
-        binding.bAHReadNextChapter.isEnabled = value
-        binding.bAHReadPreviousChapter.isEnabled = value
-        binding.sAHReadProgress.isEnabled = value
+        binding.barAHRead.readConfig.isEnabled = value
+        binding.barAHRead.readNextChapter.isEnabled = value
+        binding.barAHRead.readPreviousChapter.isEnabled = value
+        binding.barAHRead.readProgressSlider.isEnabled = value
+    }
+
+    /** 与竖排保持一致，用百分比文字补充说明滑块进度 */
+    private fun updateProgressPercent(pageNum: Int, maxPageNum: Int) {
+        val percent = if (maxPageNum > 0) (pageNum * 100 / maxPageNum).coerceIn(0, 100) else 0
+        binding.statusAHRead.readStatusProgress.text = "$percent%"
+    }
+
+    /** 常显状态行：时间与电量，每 30 秒刷新一次 */
+    private fun refreshStatusBar() {
+        binding.statusAHRead.readStatusTime.text = ReaderStatusText.time()
+        val battery = ReaderStatusText.batteryLevel(this)
+        binding.statusAHRead.readStatusBattery.text = if (battery == null) "--" else "$battery%"
     }
 
     private fun validatePageNum(data: HorizontalReadHistoryEntity) {

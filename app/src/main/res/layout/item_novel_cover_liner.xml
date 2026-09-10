@@ -4,10 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="5dp"
-    app:cardCornerRadius="6dp"
-    app:cardElevation="0dp"
-    app:strokeWidth="0dp">
+    android:layout_margin="@dimen/gi_card_margin"
+    style="@style/Widget.GalIsland.CardView.Novel">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -24,14 +22,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                app:cardCornerRadius="6dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="0dp">
+                style="@style/Widget.GalIsland.CardView.Novel.Cover.Liner">
 
                 <ImageView
                     android:id="@+id/iv_i_novel_cover_liner"
-                    android:layout_width="112dp"
-                    android:layout_height="160dp"
+                    android:layout_width="@dimen/gi_cover_width"
+                    android:layout_height="@dimen/gi_cover_height"
                     android:scaleType="centerCrop"
                     tools:ignore="ContentDescription" />
 
@@ -42,9 +38,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_marginLeft="10dp"
-                android:padding="5dp"
-                style="@style/TextAppearance.Material3.TitleMedium"
+                android:layout_marginLeft="@dimen/gi_space_sm"
+                android:layout_marginRight="@dimen/gi_space_sm"
+                android:ellipsize="end"
+                android:padding="@dimen/gi_card_padding"
+                android:singleLine="true"
+                style="@style/TextAppearance.GalIsland.NovelTitle"
                 tools:text="title" />
 
         </LinearLayout>

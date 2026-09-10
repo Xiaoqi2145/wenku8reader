@@ -10,9 +10,9 @@
         android:layout_height="wrap_content" />
 
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:padding="12dp" android:orientation="horizontal">
-        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/read_mode" android:textSize="16sp" />
-        <com.google.android.material.button.MaterialButton android:id="@+id/b_h_read_config_horizontal" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/horizontal" />
-        <com.google.android.material.button.MaterialButton android:id="@+id/b_h_read_config_vertical" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/vertical" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/read_mode" style="@style/TextAppearance.GalIsland.ConfigLabel" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/b_h_read_config_horizontal" style="@style/Widget.GalIsland.Button.Outlined" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/horizontal" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/b_h_read_config_vertical" style="@style/Widget.GalIsland.Button.Outlined" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/vertical" />
     </LinearLayout>
 
     <LinearLayout
@@ -35,7 +35,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/font_size"
-                android:textSize="16sp" />
+                style="@style/TextAppearance.GalIsland.ConfigLabel" />
 
             <com.google.android.material.slider.Slider
                 android:id="@+id/s_v_h_read_config_font_size"
@@ -61,7 +61,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/line_spacing"
-                android:textSize="16sp" />
+                style="@style/TextAppearance.GalIsland.ConfigLabel" />
 
             <com.google.android.material.slider.Slider
                 android:id="@+id/s_v_h_read_config_line_spacing"
@@ -87,7 +87,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/progress_text_size"
-                android:textSize="16sp" />
+                style="@style/TextAppearance.GalIsland.ConfigLabel" />
 
             <com.google.android.material.slider.Slider
                 android:id="@+id/s_v_h_read_config_bottom_text_size"
@@ -115,7 +115,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/keep_screen_on"
-                android:textSize="16sp" />
+                style="@style/TextAppearance.GalIsland.ConfigLabel" />
 
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/s_v_h_read_config_keep_screen_on"
@@ -138,7 +138,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/tablet_double_page"
-                android:textSize="16sp" />
+                style="@style/TextAppearance.GalIsland.ConfigLabel" />
 
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/s_v_h_read_config_tablet_double_page"
@@ -161,7 +161,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/key_down_switch_chapter"
-                android:textSize="16sp" />
+                style="@style/TextAppearance.GalIsland.ConfigLabel" />
 
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/s_v_h_read_config_key_down_switch_chapter"
@@ -184,7 +184,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/switch_animation"
-                android:textSize="16sp" />
+                style="@style/TextAppearance.GalIsland.ConfigLabel" />
 
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/s_v_h_read_config_switch_animation"
@@ -207,7 +207,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/restore_chapter_read_history_with_confirm"
-                android:textSize="16sp" />
+                style="@style/TextAppearance.GalIsland.ConfigLabel" />
 
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/s_v_h_read_config_restore_chapter_read_history"
@@ -230,7 +230,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/restore_chapter_read_history_without_confirm"
-                android:textSize="16sp" />
+                style="@style/TextAppearance.GalIsland.ConfigLabel" />
 
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/s_v_h_read_config_restore_chapter_read_history_without_confirm"
@@ -253,7 +253,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/font_color_bg_color"
-                android:textSize="16sp" />
+                style="@style/TextAppearance.GalIsland.ConfigLabel" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/b_v_h_read_config_color"

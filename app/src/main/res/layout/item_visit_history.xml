@@ -17,14 +17,12 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="6dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp">
+            style="@style/Widget.GalIsland.CardView.Cover">
 
             <ImageView
                 android:id="@+id/iv_i_visit_history"
                 android:layout_width="90dp"
-                android:layout_height="130dp"
+                android:layout_height="112dp"
                 android:scaleType="centerCrop"/>
 
         </com.google.android.material.card.MaterialCardView>
@@ -41,14 +39,17 @@
                 android:id="@+id/tv_i_visit_history_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/TextAppearance.Material3.TitleMedium"
-                android:layout_marginBottom="10dp"
+                style="@style/TextAppearance.GalIsland.CardTitle"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:layout_marginBottom="6dp"
                 tools:text="title"/>
 
             <TextView
                 android:id="@+id/tv_i_visit_history_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                style="@style/TextAppearance.GalIsland.CardSubtitle"
                 tools:text="time"/>
 
         </LinearLayout>

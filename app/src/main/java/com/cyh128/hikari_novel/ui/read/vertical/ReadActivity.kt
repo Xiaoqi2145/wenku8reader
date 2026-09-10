@@ -2,7 +2,6 @@ package com.cyh128.hikari_novel.ui.read.vertical
 
 import android.animation.Animator
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -46,6 +45,8 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
     private lateinit var bottomSheetDialog: BottomSheetDialog
     private val viewModel by lazy { ViewModelProvider(this)[ReadViewModel::class.java] }
     private var showBarColor by Delegates.notNull<Int>()
+    /** 用户正在拖动进度滑块时暂停外部回写，避免抖动 */
+    private var progressSliderTracking = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,7 +99,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
                                     R.string.have_image_tip,
                                     Snackbar.LENGTH_INDEFINITE
                                 ).apply {
-                                    setAnchorView(binding.llAVReadBottomBar)
+                                    setAnchorView(binding.barAVRead.root)
                                     setAction(R.string.ok) {}
                                     show()
                                 }
@@ -125,7 +126,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
                                 event.message ?: getString(R.string.network_error_msg),
                                 Snackbar.LENGTH_INDEFINITE
                             ).apply {
-                                setAnchorView(binding.llAVReadBottomBar)
+                                setAnchorView(binding.barAVRead.root)
                                 setAction(R.string.retry) { viewModel.retryNovelContent() }
                                 show()
                             }
@@ -144,7 +145,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 while (true) {
-                    binding.tvAVReadStatus.text = ReaderStatusText.current(this@ReadActivity)
+                    refreshStatusBar()
                     delay(30_000)
                 }
             }
@@ -159,7 +160,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
     }
 
     private fun initView() {
-        binding.tvAVReadStatus.text = ReaderStatusText.current(this)
+        refreshStatusBar()
         TypedValue().also {  //上下栏颜色初始化
             theme.resolveAttribute(
                 com.google.android.material.R.attr.colorSurfaceContainer,
@@ -188,7 +189,6 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
         setBottomBarIsEnable(false)
         showBar()
-        setProgressTipColor()
         if (viewModel.readerState.value is ReaderUiState.Ready) {
             showContent()
         } else if (viewModel.readerState.value !is ReaderUiState.Loading) {
@@ -211,24 +211,41 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
         // ProgressReporter owns throttling and anchor persistence. The Activity
         // only mirrors the display value and no longer schedules a second write.
         viewModel.progressText.observe(this) {
-            binding.tvAVReadProgress.text = it
+            binding.statusAVRead.readStatusProgress.text = it
+            if (!progressSliderTracking) {
+                binding.barAVRead.readProgressSlider.value = parsePercent(it)
+            }
         }
 
+        // 竖排为连续滚动，滑块按已加载内容的滚动比例定位
+        binding.barAVRead.readProgressSlider.addOnSliderTouchListener(
+            object : Slider.OnSliderTouchListener {
+                override fun onStartTrackingTouch(slider: Slider) {
+                    progressSliderTracking = true
+                }
+
+                override fun onStopTrackingTouch(slider: Slider) {
+                    progressSliderTracking = false
+                    scrollToPercent(slider.value.toInt())
+                }
+            }
+        )
+
         //设置底栏菜单按钮监听
-        binding.bAVReadPreviousChapter.setOnClickListener {
+        binding.barAVRead.readPreviousChapter.setOnClickListener {
             toPreviousChapter()
         }
 
-        binding.bAVReadNextChapter.setOnClickListener {
+        binding.barAVRead.readNextChapter.setOnClickListener {
             toNextChapter()
         }
 
-        binding.bAVReadConfig.setOnClickListener {
+        binding.barAVRead.readConfig.setOnClickListener {
             bottomSheetDialog.show()
         }
-        binding.bAVReadSettings.setOnClickListener { bottomSheetDialog.show() }
-        binding.bAVReadCatalog.setOnClickListener { showChapterCatalog() }
-        binding.bAVReadNight.setOnClickListener {
+        binding.barAVRead.readSettings.setOnClickListener { bottomSheetDialog.show() }
+        binding.barAVRead.readCatalog.setOnClickListener { showChapterCatalog() }
+        binding.barAVRead.readNight.setOnClickListener {
             AppCompatDelegate.setDefaultNightMode(
                 if (getIsInDarkMode()) AppCompatDelegate.MODE_NIGHT_NO else AppCompatDelegate.MODE_NIGHT_YES
             )
@@ -281,7 +298,6 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 //当SelectColorActivity退出后所要做的语句体
                 if (result.resultCode == RESULT_OK) { //刷新界面，使设置的文字颜色和背景颜色生效
-                    setProgressTipColor()
                     supportFragmentManager
                         .beginTransaction()
                         .replace(R.id.fcv_a_v_read, ReadFragment())
@@ -338,7 +354,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
                     R.string.no_previous_chapter,
                     Snackbar.LENGTH_INDEFINITE
                 ).apply {
-                    setAnchorView(binding.llAVReadBottomBar)
+                    setAnchorView(binding.barAVRead.root)
                     setAction(R.string.ok) {}
                     show()
                 }
@@ -357,7 +373,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
             if (target == null) {
                 Snackbar.make(binding.root, R.string.no_next_chapter, Snackbar.LENGTH_INDEFINITE)
                     .apply {
-                        setAnchorView(binding.llAVReadBottomBar)
+                        setAnchorView(binding.barAVRead.root)
                         setAction(R.string.ok) {}
                         show()
                     }
@@ -396,7 +412,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
                 }
             )
             .commit()
-        binding.tvAVReadProgress.text = "0%"
+        binding.statusAVRead.readStatusProgress.text = "0%"
         viewModel.progressText.value = "0%"
     }
 
@@ -417,12 +433,13 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
                 override fun onAnimationCancel(animation: Animator) {}
                 override fun onAnimationRepeat(animation: Animator) {}
             })
-        binding.llAVReadBottomBar.animate().translationY(0f)
+        binding.barAVRead.root.animate().translationY(0f)
             .setInterpolator(AccelerateDecelerateInterpolator())
+        viewModel.isBarShown = true
     }
 
     fun hideBar() { //隐藏上下栏
-        binding.tbAVRead.animate().translationY(-(binding.tbAVRead.height.toFloat()))
+        binding.tbAVRead.animate().translationY(-(binding.tbAVRead.bottom.toFloat()))
             .setInterpolator(AccelerateDecelerateInterpolator())
             .setListener(object : Animator.AnimatorListener {
                 override fun onAnimationStart(animation: Animator) {}
@@ -438,8 +455,11 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
                 override fun onAnimationCancel(animation: Animator) {}
                 override fun onAnimationRepeat(animation: Animator) {}
             })
-        binding.llAVReadBottomBar.animate().translationY(binding.llAVReadBottomBar.height.toFloat())
+        //按实际位置计算，保证底栏（含底部边距）完全移出屏幕
+        binding.barAVRead.root.animate()
+            .translationY((binding.root.height - binding.barAVRead.root.top).toFloat())
             .setInterpolator(AccelerateDecelerateInterpolator())
+        viewModel.isBarShown = false
     }
 
     fun setRestoreChapterReadHistoryDisable() {
@@ -454,22 +474,27 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
         }
     }
 
-    private fun getTextColor() = getIsInDarkMode().let {
-        if (it) { //夜间模式
-            "#" + viewModel.getTextColorNight()
-        } else {
-            "#" + viewModel.getTextColorDay()
-        }
+    /** 常显状态行：时间与电量，每 30 秒刷新一次（百分比由进度回写） */
+    private fun refreshStatusBar() {
+        binding.statusAVRead.readStatusTime.text = ReaderStatusText.time()
+        val battery = ReaderStatusText.batteryLevel(this)
+        binding.statusAVRead.readStatusBattery.text = if (battery == null) "--" else "$battery%"
     }
 
-    private fun setProgressTipColor() { //设置阅读提示的字体颜色及其背景颜色
-        binding.llAVReadBottomBar2.setBackgroundColor(Color.parseColor(getHideBarColor()))
-        binding.tvAVReadProgress.setTextColor(Color.parseColor(getTextColor()))
+    /** 把 "45%" 形式的进度文本换算成滑块取值 */
+    private fun parsePercent(text: String?): Float =
+        text?.trim()?.removeSuffix("%")?.toFloatOrNull()?.coerceIn(0f, 100f) ?: 0f
+
+    /** 跳转到已加载内容的指定百分比位置 */
+    private fun scrollToPercent(percent: Int) {
+        (supportFragmentManager.findFragmentById(R.id.fcv_a_v_read) as? ReadFragment)
+            ?.scrollToPercent(percent)
     }
 
     private fun setBottomBarIsEnable(isEnable: Boolean) {
-        binding.bAVReadConfig.isEnabled = isEnable
-        binding.bAVReadNextChapter.isEnabled = isEnable
-        binding.bAVReadPreviousChapter.isEnabled = isEnable
+        binding.barAVRead.readConfig.isEnabled = isEnable
+        binding.barAVRead.readNextChapter.isEnabled = isEnable
+        binding.barAVRead.readPreviousChapter.isEnabled = isEnable
+        binding.barAVRead.readProgressSlider.isEnabled = isEnable
     }
 }

@@ -11,5 +11,6 @@ enum class AppTheme {
     TealTurquoise,
     TidalWave,
     YinYang,
-    Yotsuba
+    Yotsuba,
+    GalIsland
 }

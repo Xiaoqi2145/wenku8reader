@@ -26,7 +26,7 @@
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tl_a_search"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.GalIsland.TextInputLayout.OutlinedBox"
                     android:paddingLeft="20dp"
                     android:paddingRight="20dp"
                     android:hint="@string/search"
@@ -50,9 +50,8 @@
                     android:layout_height="wrap_content"
                     android:text="@string/search_method"
                     android:paddingLeft="20dp"
-                    android:layout_marginTop="10dp"
-                    android:textSize="14sp"
-                    android:textStyle="bold"/>
+                    android:layout_marginTop="16dp"
+                    style="@style/TextAppearance.GalIsland.SectionTitle"/>
 
                 <com.google.android.material.chip.ChipGroup
                     android:paddingLeft="20dp"
@@ -64,14 +63,14 @@
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/c_a_search_by_novel_title"
-                        style="@style/Widget.Material3.Chip.Filter"
+                        style="@style/Widget.GalIsland.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/by_novel_title"/>
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/c_a_search_by_author"
-                        style="@style/Widget.Material3.Chip.Filter"
+                        style="@style/Widget.GalIsland.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/by_author"/>
@@ -83,9 +82,8 @@
                     android:layout_height="wrap_content"
                     android:text="@string/search_history"
                     android:paddingLeft="20dp"
-                    android:layout_marginTop="10dp"
-                    android:textSize="14sp"
-                    android:textStyle="bold"/>
+                    android:layout_marginTop="16dp"
+                    style="@style/TextAppearance.GalIsland.SectionTitle"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"

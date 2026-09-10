@@ -57,7 +57,7 @@ class ReadViewModel @Inject constructor(
     val chapterTitle get() = novel!!.volume[curVolumePos].chapters[curChapterPos].chapterTitle
     val curVolume get() = novel!!.volume[curVolumePos]
 
-    var isBarShown = false //上下栏是否显示
+    var isBarShown = true //上下栏是否显示（与进入阅读页时的 showBar() 保持一致）
     var progressText = MutableLiveData<String>()
 
     private data class VerticalProgressPosition(

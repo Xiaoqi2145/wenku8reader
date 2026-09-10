@@ -7,7 +7,7 @@
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/tb_a_v_read"
-        style="@style/Widget.MaterialComponents.AppBarLayout.Surface"
+        style="@style/Widget.GalIsland.Toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?colorSurfaceContainer"
@@ -15,132 +15,24 @@
         tools:title="title"
         app:menu="@menu/menu_act_v_h_read"/>
 
-    <LinearLayout
-        android:orientation="vertical"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fcv_a_v_read"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent" />
 
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/fcv_a_v_read"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+    <include
+        android:id="@+id/status_a_v_read"
+        layout="@layout/view_read_status_bar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/gi_status_bar_height"
+        android:layout_gravity="bottom" />
 
-        <LinearLayout
-            android:id="@+id/ll_a_v_read_bottom_bar_2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="end"
-            android:paddingEnd="14dp">
-
-            <TextView
-                android:id="@+id/tv_a_v_read_status"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:paddingStart="14dp"
-                android:textColor="?android:attr/textColorSecondary"
-                android:textSize="11sp"
-                android:alpha="0.58"
-                tools:text="19:43 | 91%" />
-
-            <TextView
-                android:id="@+id/tv_a_v_read_progress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/read_progress"
-                android:textSize="11sp"
-                android:alpha="0.58" />
-
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/ll_a_v_read_bottom_bar"
+    <include
+        android:id="@+id/bar_a_v_read"
+        layout="@layout/view_read_bottom_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="?colorSurfaceContainer"
-        android:gravity="center">
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:id="@+id/ll_a_v_read_bottom_1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                app:layout_constraintBottom_toTopOf="@id/ll_a_v_read_bottom_2">
-
-                <Button
-                    android:id="@+id/b_a_v_read_previous_chapter"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="@string/previous_chapter"
-                    android:textSize="16sp" />
-
-                <Button
-                    android:id="@+id/b_a_v_read_next_chapter"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="@string/next_chapter"
-                    android:textSize="16sp" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ll_a_v_read_bottom_2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                app:layout_constraintTop_toBottomOf="@id/ll_a_v_read_bottom_1">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/b_a_v_read_night"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
-                    android:text="@string/night_mode"
-                    app:icon="@drawable/ic_dark_mode" app:iconGravity="textTop" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/b_a_v_read_settings"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
-                    android:text="@string/setting"
-                    app:icon="@drawable/ic_setting" app:iconGravity="textTop" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/b_a_v_read_catalog"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
-                    android:text="@string/chapter_catalog"
-                    app:icon="@drawable/ic_view_list" app:iconGravity="textTop" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/b_a_v_read_config"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/more_setting"
-                    android:visibility="gone"
-                    android:textSize="16sp" />
-
-            </LinearLayout>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </LinearLayout>
+        android:layout_marginBottom="@dimen/gi_status_bar_height" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

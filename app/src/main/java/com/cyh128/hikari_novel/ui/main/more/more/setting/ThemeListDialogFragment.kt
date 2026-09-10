@@ -57,6 +57,10 @@ class ThemeListDialogFragment: DialogFragment() {
             AppTheme.Yotsuba -> {
                 view.findViewById<Chip>(R.id.c_v_theme_list_yotsuba).isChecked = true
             }
+
+            AppTheme.GalIsland -> {
+                view.findViewById<Chip>(R.id.c_v_theme_list_galisland).isChecked = true
+            }
         }
 
         view.findViewById<ChipGroup>(R.id.cg_v_theme_list).setOnCheckedStateChangeListener { group, checkedIds ->
@@ -123,6 +127,12 @@ class ThemeListDialogFragment: DialogFragment() {
                         viewModel.setAppTheme(AppTheme.Yotsuba)
                         ThemeHelper.setCurrentTheme(AppTheme.Yotsuba)
                         (requireActivity() as SettingActivity).binding.tvASettingAppTheme.text = getString(R.string.yotsuba)
+                    }
+
+                    10 -> {
+                        viewModel.setAppTheme(AppTheme.GalIsland)
+                        ThemeHelper.setCurrentTheme(AppTheme.GalIsland)
+                        (requireActivity() as SettingActivity).binding.tvASettingAppTheme.text = getString(R.string.galisland)
                     }
                 }
             }

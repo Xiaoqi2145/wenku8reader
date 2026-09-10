@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ GalIsland 视觉体系：形状层级 / 组件样式 / 字体尺度
+  ~ 对应 GalIsland UI Template 的 tokens.css 与 components.css
+  ~
+  ~ 形状：control 7dp / card 8dp / window 10dp / tag 6dp
+  ~ 卡片：1dp 细描边（outlineVariant）+ 8dp 圆角 + 无阴影
+-->
+<resources>
+
+    <!-- ===================== 形状层级 ===================== -->
+    <style name="ShapeAppearance.GalIsland.Tag" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">6dp</item>
+    </style>
+
+    <style name="ShapeAppearance.GalIsland.Small" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">7dp</item>
+    </style>
+
+    <style name="ShapeAppearance.GalIsland.Medium" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">8dp</item>
+    </style>
+
+    <style name="ShapeAppearance.GalIsland.Large" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">10dp</item>
+    </style>
+
+    <!-- ===================== 字体尺度 ===================== -->
+    <style name="TextAppearance.GalIsland.CardTitle" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="TextAppearance.GalIsland.CardSubtitle" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">11sp</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="TextAppearance.GalIsland.Meta" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="TextAppearance.GalIsland.SectionTitle" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="TextAppearance.GalIsland.Eyebrow" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textSize">10sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?attr/colorPrimary</item>
+    </style>
+
+    <style name="TextAppearance.GalIsland.Button" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.01</item>
+    </style>
+
+    <style name="TextAppearance.GalIsland.Tab" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="TextAppearance.GalIsland.Tag" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textSize">10sp</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="TextAppearance.GalIsland.ChipLabel" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textSize">12sp</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="TextAppearance.GalIsland.EmptyTitle" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <!-- ===================== 卡片 ===================== -->
+    <!-- 细描边 + 8dp 圆角，无阴影（模板 .library-card） -->
+    <style name="Widget.GalIsland.CardView" parent="Widget.Material3.CardView.Filled">
+        <item name="cardBackgroundColor">?attr/colorSurface</item>
+        <item name="cardBackgroundColor">?attr/colorSurface</item>
+        <item name="cardCornerRadius">8dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">?attr/colorOutlineVariant</item>
+    </style>
+
+    <!-- 纯图片容器：8dp 圆角、无描边（模板 .card-cover） -->
+    <style name="Widget.GalIsland.CardView.Cover" parent="Widget.GalIsland.CardView">
+        <item name="strokeWidth">0dp</item>
+    </style>
+
+    <!-- 小说卡片：沿用项目既有观感（6dp 圆角、无描边、无阴影） -->
+    <style name="Widget.GalIsland.CardView.Novel" parent="Widget.Material3.CardView.Filled">
+        <item name="cardCornerRadius">@dimen/gi_radius_card_novel</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">0dp</item>
+    </style>
+
+    <style name="Widget.GalIsland.CardView.Novel.Cover" parent="Widget.GalIsland.CardView.Novel">
+        <item name="cardCornerRadius">@dimen/gi_radius_cover_novel</item>
+    </style>
+
+    <!-- 列表式小说卡片的封面沿用外卡圆角 -->
+    <style name="Widget.GalIsland.CardView.Novel.Cover.Liner" parent="Widget.GalIsland.CardView.Novel">
+        <item name="cardCornerRadius">@dimen/gi_radius_card_novel</item>
+    </style>
+
+    <!-- ===================== 进度条 ===================== -->
+    <!-- 细轨滑块，配合阅读底栏与设置面板 -->
+    <style name="Widget.GalIsland.Slider" parent="Widget.Material3.Slider">
+        <item name="trackHeight">4dp</item>
+        <item name="thumbRadius">8dp</item>
+        <item name="tickVisible">false</item>
+        <item name="haloRadius">16dp</item>
+    </style>
+
+    <!-- ===================== 工具栏 ===================== -->
+    <style name="Widget.GalIsland.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="titleTextAppearance">@style/TextAppearance.GalIsland.Heading</item>
+        <item name="android:background">?attr/colorSurface</item>
+    </style>
+
+    <style name="TextAppearance.GalIsland.Heading" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textSize">@dimen/gi_text_heading</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <!-- 小说卡片标题：沿用项目旧版 13sp -->
+    <style name="TextAppearance.GalIsland.NovelTitle" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">@dimen/gi_text_card_title</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <!-- 列表主标题（目录/章节） -->
+    <style name="TextAppearance.GalIsland.ListTitle" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">@dimen/gi_text_list_title</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <!-- 列表标记文字（如“当前章节”） -->
+    <style name="TextAppearance.GalIsland.ListMark" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textSize">@dimen/gi_text_body</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?attr/colorPrimary</item>
+    </style>
+
+    <!-- 面板标题（底部弹层标题栏） -->
+    <style name="TextAppearance.GalIsland.SheetTitle" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textSize">@dimen/gi_text_sheet_title</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <!-- 阅读设置面板标签 -->
+    <style name="TextAppearance.GalIsland.ConfigLabel" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">@dimen/gi_text_config</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <!-- 阅读页状态栏文字（时间/电量/百分比） -->
+    <style name="TextAppearance.GalIsland.StatusText" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">@dimen/gi_text_meta</item>
+        <item name="android:textColor">?android:attr/textColorSecondary</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <!-- ===================== 按钮 ===================== -->
+    <style name="Widget.GalIsland.Button" parent="Widget.Material3.Button">
+        <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Small</item>
+        <item name="android:textAppearance">@style/TextAppearance.GalIsland.Button</item>
+        <item name="android:minHeight">40dp</item>
+    </style>
+
+    <style name="Widget.GalIsland.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Small</item>
+        <item name="android:textAppearance">@style/TextAppearance.GalIsland.Button</item>
+        <item name="android:minHeight">@dimen/gi_control_height</item>
+    </style>
+
+    <style name="Widget.GalIsland.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Small</item>
+        <item name="android:textAppearance">@style/TextAppearance.GalIsland.Button</item>
+    </style>
+
+    <style name="Widget.GalIsland.Button.Text.Icon" parent="Widget.Material3.Button.TextButton.Icon">
+        <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Small</item>
+        <item name="android:textAppearance">@style/TextAppearance.GalIsland.Button</item>
+    </style>
+
+    <style name="Widget.GalIsland.Button.IconButton" parent="Widget.Material3.Button.IconButton">
+        <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Small</item>
+    </style>
+
+    <!-- ===================== Chip / 标签 ===================== -->
+    <!-- 标签：细描边、小字号、紧凑高度（模板 .tag） -->
+    <style name="Widget.GalIsland.Chip" parent="Widget.Material3.Chip.Assist">
+        <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Tag</item>
+        <item name="chipMinHeight">24dp</item>
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="chipStrokeColor">?attr/colorOutlineVariant</item>
+        <item name="chipBackgroundColor">?attr/colorSurfaceContainerHigh</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:textAppearance">@style/TextAppearance.GalIsland.Tag</item>
+        <item name="chipIconVisible">false</item>
+        <item name="ensureMinTouchTargetSize">false</item>
+    </style>
+
+    <style name="Widget.GalIsland.Chip.Suggestion" parent="Widget.Material3.Chip.Suggestion">
+        <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Small</item>
+        <item name="chipMinHeight">32dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.GalIsland.ChipLabel</item>
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="chipStrokeColor">?attr/colorOutlineVariant</item>
+        <item name="chipBackgroundColor">?attr/colorSurfaceContainerHigh</item>
+    </style>
+
+    <style name="Widget.GalIsland.Chip.Filter" parent="Widget.Material3.Chip.Filter">
+        <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Small</item>
+        <item name="chipMinHeight">32dp</item>
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="chipStrokeColor">?attr/colorOutlineVariant</item>
+        <item name="android:textAppearance">@style/TextAppearance.GalIsland.ChipLabel</item>
+    </style>
+
+    <!-- ===================== Tab ===================== -->
+    <!-- 3dp 主色指示条、加粗 13sp 标签（模板侧栏激活态） -->
+    <style name="Widget.GalIsland.TabLayout" parent="Widget.Material3.TabLayout">
+        <item name="tabIndicatorColor">?attr/colorPrimary</item>
+        <item name="tabIndicatorHeight">3dp</item>
+        <item name="tabIndicatorFullWidth">false</item>
+        <item name="tabSelectedTextColor">?attr/colorPrimary</item>
+        <item name="tabTextColor">?attr/colorOnSurfaceVariant</item>
+        <item name="tabTextAppearance">@style/TextAppearance.GalIsland.Tab</item>
+        <item name="tabRippleColor">?attr/colorPrimaryContainer</item>
+    </style>
+
+    <!-- ===================== 底部导航激活指示器 ===================== -->
+    <!-- 复刻模板 nav-item.is-active：淡主色底 + 7dp 圆角 -->
+    <style name="Widget.GalIsland.NavigationBar.ActiveIndicator" parent="">
+        <item name="android:width">64dp</item>
+        <item name="android:height">32dp</item>
+        <item name="android:color">@color/galisland_nav_indicator</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Small</item>
+    </style>
+
+    <!-- ===================== 输入框 ===================== -->
+    <style name="Widget.GalIsland.TextInputLayout.OutlinedBox" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">7dp</item>
+        <item name="boxCornerRadiusTopEnd">7dp</item>
+        <item name="boxCornerRadiusBottomStart">7dp</item>
+        <item name="boxCornerRadiusBottomEnd">7dp</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">1.5dp</item>
+        <item name="boxStrokeColor">@color/galisland_box_stroke</item>
+        <item name="hintTextColor">?attr/colorPrimary</item>
+    </style>
+
+    <style name="Widget.GalIsland.TextInputLayout.OutlinedBox.Dropdown" parent="Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+        <item name="boxCornerRadiusTopStart">7dp</item>
+        <item name="boxCornerRadiusTopEnd">7dp</item>
+        <item name="boxCornerRadiusBottomStart">7dp</item>
+        <item name="boxCornerRadiusBottomEnd">7dp</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">1.5dp</item>
+        <item name="boxStrokeColor">@color/galisland_box_stroke</item>
+        <item name="hintTextColor">?attr/colorPrimary</item>
+    </style>
+
+    <!-- ===================== 提示条 ===================== -->
+    <style name="Widget.GalIsland.Snackbar" parent="Widget.Material3.Snackbar">
+        <item name="backgroundTint">?attr/colorSurfaceContainerHigh</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Small</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="Widget.GalIsland.Snackbar.TextView" parent="Widget.Material3.Snackbar.TextView">
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- ===================== 对话框 ===================== -->
+    <style name="ThemeOverlay.GalIsland.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.GalIsland.Medium</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/TextAppearance.GalIsland.SectionTitle</item>
+    </style>
+</resources>

@@ -101,6 +101,10 @@ class SettingActivity : BaseActivity<ActivitySettingBinding>() {
             AppTheme.Yotsuba -> {
                 binding.tvASettingAppTheme.text = getString(R.string.yotsuba)
             }
+
+            AppTheme.GalIsland -> {
+                binding.tvASettingAppTheme.text = getString(R.string.galisland)
+            }
         }
 
         binding.tvASettingDarkMode.text = when(viewModel.getDarkMode()) {

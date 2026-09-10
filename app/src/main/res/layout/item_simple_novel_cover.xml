@@ -2,23 +2,20 @@
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    style="@style/Widget.Material3.CardView.Filled"
+    style="@style/Widget.GalIsland.CardView.Novel.Cover"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginLeft="10dp"
-    android:layout_marginRight="10dp"
-    android:layout_marginTop="14dp"
-    app:cardCornerRadius="4dp"
-    app:cardElevation="0dp"
-    app:strokeWidth="0dp">
+    android:layout_marginLeft="@dimen/gi_space_inset"
+    android:layout_marginRight="@dimen/gi_space_inset"
+    android:layout_marginTop="14dp">
 
     <TextView
         android:id="@+id/tv_i_simple_novel_cover"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal|left"
-        android:padding="10dp"
-        android:textSize="15sp"
+        android:padding="@dimen/gi_space_inset"
+        android:textSize="@dimen/gi_text_novel_title_plain"
         tools:text="title" />
 
 </com.google.android.material.card.MaterialCardView>

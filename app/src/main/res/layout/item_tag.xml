@@ -7,7 +7,8 @@
 
     <com.google.android.material.chip.Chip
         android:id="@+id/c_i_tag"
-        android:layout_marginRight="10dp"
+        style="@style/Widget.GalIsland.Chip"
+        android:layout_marginRight="8dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="false"
