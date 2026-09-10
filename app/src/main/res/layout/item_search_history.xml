@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:orientation="vertical"
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content">
+  <com.google.android.material.chip.Chip
+    android:id="@+id/c_i_search_history"
+    style="@style/Widget.GalIsland.Chip.Suggestion"
+    android:layout_marginRight="@dimen/gi_space_sm"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
-
-    <com.google.android.material.chip.Chip
-        android:id="@+id/c_i_search_history"
-        style="@style/Widget.GalIsland.Chip.Suggestion"
-        android:layout_marginRight="8dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:checkable="false"
-        tools:text="search_history"/>
-
+    android:layout_height="wrap_content"
+    android:checkable="false"
+    tools:text="search_history" />
 </LinearLayout>

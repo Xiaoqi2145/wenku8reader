@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Explicit surface roles avoid mapping unrelated Material containers to one color. -->
+    <attr name="giSurfaceSidebar" format="color" />
+    <attr name="giSurfaceToolbar" format="color" />
+    <attr name="giSurfaceInput" format="color" />
+    <attr name="giSurfaceHover" format="color" />
+    <attr name="giAccentSoft" format="color" />
+    <attr name="giBorderStrong" format="color" />
+    <style name="Widget.GalIsland.AppBar" parent="Widget.Material3.AppBarLayout">
+        <item name="android:background">?attr/giSurfaceToolbar</item>
+        <item name="android:stateListAnimator">@null</item>
+        <item name="elevation">0dp</item>
+    </style>
+    <style name="Widget.GalIsland.BottomSheet" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">?attr/colorSurface</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Large</item>
+    </style>
+    <style name="ThemeOverlay.GalIsland.BottomSheet" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.GalIsland.BottomSheet</item>
+    </style>
+    <style name="TextAppearance.GalIsland.Body" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+    <style name="Widget.GalIsland.Button.Icon" parent="Widget.GalIsland.Button" />
+    <style name="Widget.GalIsland.Button.Outlined.Icon" parent="Widget.GalIsland.Button.Outlined" />
+</resources>

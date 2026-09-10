@@ -1,75 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<com.google.android.material.card.MaterialCardView
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  style="@style/Widget.GalIsland.NovelCards.Card"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:layout_margin="@dimen/galisland_novel_card_gutter">
+  <androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_margin="@dimen/gi_card_margin"
-    style="@style/Widget.GalIsland.CardView.Novel">
-
-    <FrameLayout
+    android:layout_height="wrap_content">
+    <com.google.android.material.card.MaterialCardView
+      android:id="@+id/card_i_novel_cover_liner"
+      style="@style/Widget.GalIsland.NovelCards.Cover"
+      android:layout_width="@dimen/galisland_novel_list_cover_width"
+      android:layout_height="@dimen/galisland_novel_list_cover_height"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent">
+      <ImageView
+        android:id="@+id/iv_i_novel_cover_liner"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                style="@style/Widget.GalIsland.CardView.Novel.Cover.Liner">
-
-                <ImageView
-                    android:id="@+id/iv_i_novel_cover_liner"
-                    android:layout_width="@dimen/gi_cover_width"
-                    android:layout_height="@dimen/gi_cover_height"
-                    android:scaleType="centerCrop"
-                    tools:ignore="ContentDescription" />
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <TextView
-                android:id="@+id/tv_i_novel_cover_liner"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="@dimen/gi_space_sm"
-                android:layout_marginRight="@dimen/gi_space_sm"
-                android:ellipsize="end"
-                android:padding="@dimen/gi_card_padding"
-                android:singleLine="true"
-                style="@style/TextAppearance.GalIsland.NovelTitle"
-                tools:text="title" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/ll_i_novel_cover_liner_checked"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:alpha="0.7"
-            android:background="?attr/colorSurfaceContainerHigh"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:visibility="invisible"
-            tools:visibility="visible"/>
-
-        <ImageView
-            android:id="@+id/iv_i_novel_cover_liner_checked"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_gravity="center"
-            android:src="@drawable/ic_check_circle_fill"
-            app:tint="?attr/colorPrimary"
-            android:visibility="invisible"
-            tools:visibility="visible"/>
-
-    </FrameLayout>
-
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        tools:ignore="ContentDescription" />
+    </com.google.android.material.card.MaterialCardView>
+    <TextView
+      android:id="@+id/tv_i_novel_cover_liner"
+      style="@style/TextAppearance.GalIsland.NovelCards.Title"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginHorizontal="@dimen/galisland_novel_card_content_padding"
+      android:ellipsize="end"
+      android:gravity="start"
+      android:maxLines="2"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toEndOf="@id/card_i_novel_cover_liner"
+      app:layout_constraintTop_toTopOf="parent"
+      tools:text="A long novel title shown on two lines" />
+    <com.google.android.material.card.MaterialCardView
+      android:id="@+id/ll_i_novel_cover_liner_checked"
+      style="@style/Widget.GalIsland.NovelCards.SelectionIndicator"
+      android:layout_width="@dimen/galisland_novel_selection_size"
+      android:layout_height="@dimen/galisland_novel_selection_size"
+      android:layout_margin="@dimen/galisland_novel_card_content_padding"
+      android:visibility="invisible"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      tools:visibility="visible">
+      <ImageView
+        android:id="@+id/iv_i_novel_cover_liner_checked"
+        android:layout_width="@dimen/galisland_novel_selection_icon_size"
+        android:layout_height="@dimen/galisland_novel_selection_icon_size"
+        android:layout_gravity="center"
+        android:src="@drawable/ic_check_circle_fill"
+        android:visibility="invisible"
+        app:tint="?attr/colorPrimary"
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
+    </com.google.android.material.card.MaterialCardView>
+  </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

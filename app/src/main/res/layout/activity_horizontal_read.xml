@@ -1,42 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+  <com.cyh128.hikari_novel.ui.read.horizontal.PageView
+    android:id="@+id/pv_a_h_read"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <com.cyh128.hikari_novel.ui.read.horizontal.PageView
-        android:id="@+id/pv_a_h_read"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
-    <include
-        android:id="@+id/i_a_h_read_guide"
-        layout="@layout/view_horizontal_read_guide" />
-
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/tb_a_h_read"
-        style="@style/Widget.GalIsland.Toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?colorSurfaceContainer"
-        tools:title="title"
-        app:menu="@menu/menu_act_v_h_read"/>
-
-    <include
-        android:id="@+id/status_a_h_read"
-        layout="@layout/view_read_status_bar"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/gi_status_bar_height"
-        android:layout_gravity="bottom" />
-
-    <include
-        android:id="@+id/bar_a_h_read"
-        layout="@layout/view_read_bottom_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_marginBottom="@dimen/gi_status_bar_height" />
-
+    android:layout_height="match_parent" />
+  <include
+    android:id="@+id/i_a_h_read_guide"
+    layout="@layout/view_horizontal_read_guide" />
+  <com.google.android.material.appbar.MaterialToolbar
+    android:id="@+id/tb_a_h_read"
+    style="@style/Widget.GalIsland.Toolbar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/giSurfaceToolbar"
+    tools:title="title"
+    app:menu="@menu/menu_act_v_h_read"
+    android:minHeight="@dimen/gi_toolbar_height"
+    android:elevation="0dp" />
+  <include
+    android:id="@+id/status_a_h_read"
+    layout="@layout/view_read_status_bar"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/gi_status_bar_height"
+    android:layout_gravity="bottom" />
+  <include
+    android:id="@+id/bar_a_h_read"
+    layout="@layout/view_read_bottom_bar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:layout_marginBottom="@dimen/gi_status_bar_height" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

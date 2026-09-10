@@ -1,50 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical"
+  android:background="?attr/colorSurface"
+  android:fitsSystemWindows="true">
+  <com.google.android.material.appbar.AppBarLayout
+    android:id="@+id/abl_a_novel_info"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
-
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/abl_a_novel_info"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fitsSystemWindows="true">
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/tb_a_novel_info"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:title="@string/novel_detail" />
-
-        <com.google.android.material.progressindicator.LinearProgressIndicator
-            android:id="@+id/lpi_a_novel_info"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:indeterminate="true"
-            app:hideAnimationBehavior="escape" />
-
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <androidx.fragment.app.FragmentContainerView
-        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
-        android:id="@+id/fcv_a_novel_info"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/fab_f_novel_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|right"
-        android:layout_margin="16dp"
-        android:contentDescription="@null"
-        android:text="@string/continue_from_history"
-        app:icon="@drawable/ic_play"
-        app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
-        android:visibility="invisible"
-        tools:visibility="visible"/>
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
-
+    android:layout_height="wrap_content"
+    android:background="?attr/giSurfaceToolbar"
+    app:elevation="0dp"
+    style="@style/Widget.GalIsland.AppBar">
+    <com.google.android.material.appbar.MaterialToolbar
+      android:id="@+id/tb_a_novel_info"
+      style="@style/Widget.GalIsland.Toolbar"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      app:title="@string/novel_detail" />
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+      android:id="@+id/lpi_a_novel_info"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:indeterminate="true"
+      app:trackThickness="@dimen/gi_space_xxs"
+      app:hideAnimationBehavior="escape" />
+  </com.google.android.material.appbar.AppBarLayout>
+  <View
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/gi_stroke"
+    android:background="?attr/colorOutlineVariant" />
+  <androidx.fragment.app.FragmentContainerView
+    android:id="@+id/fcv_a_novel_info"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1" />
+  <LinearLayout
+    android:id="@+id/gi_detail_action_bar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="?attr/colorSurfaceContainerLow"
+    android:visibility="gone"
+    tools:visibility="visible">
+    <View
+      android:layout_width="match_parent"
+      android:layout_height="@dimen/gi_stroke"
+      android:background="?attr/colorOutlineVariant" />
+    <!-- Retain the binding ID; this is a fixed button, no longer a floating action. -->
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/fab_f_novel_info"
+      style="@style/Widget.GalIsland.Button"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:minHeight="@dimen/gi_control_height"
+      android:layout_marginStart="@dimen/gi_space_lg"
+      android:layout_marginEnd="@dimen/gi_space_lg"
+      android:layout_marginTop="@dimen/gi_space_sm"
+      android:layout_marginBottom="@dimen/gi_space_sm"
+      android:text="@string/continue_from_history"
+      app:icon="@drawable/ic_play"
+      app:iconGravity="textStart" />
+  </LinearLayout>
+</LinearLayout>

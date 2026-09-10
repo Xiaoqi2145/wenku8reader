@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="gi_detail_description">簡介</string>
+    <string name="download">下載</string>
+    <string name="pause">暫停</string>
+    <string name="night_mode">夜間模式</string>
+    <string name="display_settings">顯示設定</string>
+    <string name="behavior_settings">行為設定</string>
+    <string name="advanced_settings">進階設定</string>
+    <string name="read_status_time">目前時間</string>
+    <string name="read_status_battery">剩餘電量</string>
+    <string name="read_status_progress">閱讀進度</string>
+</resources>

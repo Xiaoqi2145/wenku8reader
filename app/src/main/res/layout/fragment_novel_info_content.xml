@@ -1,287 +1,301 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.core.widget.NestedScrollView
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="?attr/colorSurface"
+  android:fillViewport="true">
+  <LinearLayout
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="@dimen/gi_space_lg">
     <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      android:layout_marginBottom="@dimen/gi_space_lg">
+      <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.GalIsland.CardView.Cover"
+        android:layout_width="@dimen/gi_metric_104dp"
+        android:layout_height="@dimen/gi_metric_130dp">
+        <androidx.appcompat.widget.AppCompatImageView
+          android:id="@+id/iv_f_novel_info_content"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:contentDescription="@string/cover"
+          android:foreground="?attr/selectableItemBackground"
+          android:focusable="true"
+          android:scaleType="centerCrop" />
+      </com.google.android.material.card.MaterialCardView>
+      <LinearLayout
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:layout_marginStart="@dimen/gi_space_lg"
+        android:orientation="vertical">
+        <TextView
+          android:id="@+id/tv_f_novel_info_content_title"
+          style="@style/TextAppearance.GalIsland.Heading"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:accessibilityHeading="true"
+          android:textSize="@dimen/gi_text_heading"
+          tools:text="小说标题" />
+        <TextView
+          android:id="@+id/tv_f_novel_info_content_author"
+          style="@style/TextAppearance.GalIsland.Meta"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:minHeight="@dimen/gi_control_height"
+          android:gravity="center_vertical"
+          android:textColor="?attr/colorPrimary"
+          android:background="?attr/selectableItemBackground"
+          android:focusable="true"
+          tools:text="作者" />
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:gravity="center_vertical"
+          android:paddingTop="@dimen/gi_space_xs"
+          android:paddingBottom="@dimen/gi_space_xs">
+          <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_f_novel_info_content_status"
+            android:layout_width="@dimen/gi_space_lg"
+            android:layout_height="@dimen/gi_space_lg"
+            android:layout_marginEnd="@dimen/gi_space_sm"
+            android:importantForAccessibility="no"
+            app:srcCompat="@drawable/ic_schedule"
+            app:tint="?attr/colorOnSurfaceVariant" />
+          <TextView
+            android:id="@+id/tv_f_novel_info_content_status"
+            style="@style/TextAppearance.GalIsland.Meta"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+        </LinearLayout>
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:gravity="center_vertical"
+          android:paddingTop="@dimen/gi_space_xs"
+          android:paddingBottom="@dimen/gi_space_xs">
+          <androidx.appcompat.widget.AppCompatImageView
+            android:layout_width="@dimen/gi_space_lg"
+            android:layout_height="@dimen/gi_space_lg"
+            android:layout_marginEnd="@dimen/gi_space_sm"
+            android:importantForAccessibility="no"
+            app:srcCompat="@drawable/ic_update"
+            app:tint="?attr/colorOnSurfaceVariant" />
+          <TextView
+            android:id="@+id/tv_f_novel_info_content_fin_update"
+            style="@style/TextAppearance.GalIsland.Meta"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+        </LinearLayout>
+      </LinearLayout>
+    </LinearLayout>
+    <View
+      android:layout_width="match_parent"
+      android:layout_height="@dimen/gi_stroke"
+      android:background="?attr/colorOutlineVariant" />
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:paddingTop="@dimen/gi_space_sm"
+      android:paddingBottom="@dimen/gi_space_sm">
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="@dimen/gi_space_xs"
+        android:paddingBottom="@dimen/gi_space_xs">
+        <androidx.appcompat.widget.AppCompatImageView
+          android:id="@+id/iv_f_novel_info_content_anim"
+          android:layout_width="@dimen/gi_space_lg"
+          android:layout_height="@dimen/gi_space_lg"
+          android:layout_marginEnd="@dimen/gi_space_sm"
+          android:importantForAccessibility="no"
+          app:srcCompat="@drawable/ic_live_tv"
+          app:tint="?attr/colorOnSurfaceVariant" />
+        <TextView
+          android:id="@+id/tv_f_novel_info_content_is_animated"
+          style="@style/TextAppearance.GalIsland.Meta"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1" />
+      </LinearLayout>
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="@dimen/gi_space_xs"
+        android:paddingBottom="@dimen/gi_space_xs">
+        <androidx.appcompat.widget.AppCompatImageView
+          android:layout_width="@dimen/gi_space_lg"
+          android:layout_height="@dimen/gi_space_lg"
+          android:layout_marginEnd="@dimen/gi_space_sm"
+          android:importantForAccessibility="no"
+          app:srcCompat="@drawable/ic_heat"
+          app:tint="?attr/colorOnSurfaceVariant" />
+        <TextView
+          android:id="@+id/tv_f_novel_info_content_heat"
+          style="@style/TextAppearance.GalIsland.Meta"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1" />
+      </LinearLayout>
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="@dimen/gi_space_xs"
+        android:paddingBottom="@dimen/gi_space_xs">
+        <androidx.appcompat.widget.AppCompatImageView
+          android:layout_width="@dimen/gi_space_lg"
+          android:layout_height="@dimen/gi_space_lg"
+          android:layout_marginEnd="@dimen/gi_space_sm"
+          android:importantForAccessibility="no"
+          app:srcCompat="@drawable/ic_trending"
+          app:tint="?attr/colorOnSurfaceVariant" />
+        <TextView
+          android:id="@+id/tv_f_novel_info_content_trending"
+          style="@style/TextAppearance.GalIsland.Meta"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1" />
+      </LinearLayout>
+    </LinearLayout>
+    <View
+      android:layout_width="match_parent"
+      android:layout_height="@dimen/gi_stroke"
+      android:background="?attr/colorOutlineVariant" />
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:layout_marginTop="@dimen/gi_space_md"
+      android:layout_marginBottom="@dimen/gi_space_md">
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/b_f_novel_info_content_bookshelf"
+          style="@style/Widget.GalIsland.Button.Outlined"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:minWidth="0dp"
+          android:minHeight="@dimen/gi_control_height"
+          android:layout_margin="@dimen/gi_metric_3dp"
+          android:paddingStart="@dimen/gi_space_sm"
+          android:paddingEnd="@dimen/gi_space_sm"
+          android:text="@string/add_to_bookshelf"
+          app:icon="@drawable/ic_outline_favorite"
+          app:iconSize="@dimen/gi_metric_18dp"
+          app:iconGravity="textStart" />
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/b_f_novel_info_content_vote"
+          style="@style/Widget.GalIsland.Button.Outlined"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:minWidth="0dp"
+          android:minHeight="@dimen/gi_control_height"
+          android:layout_margin="@dimen/gi_metric_3dp"
+          android:paddingStart="@dimen/gi_space_sm"
+          android:paddingEnd="@dimen/gi_space_sm"
+          android:text="@string/recommend_this_novel"
+          app:icon="@drawable/ic_recommend"
+          app:iconSize="@dimen/gi_metric_18dp"
+          app:iconGravity="textStart" />
+      </LinearLayout>
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/b_f_novel_info_content_comment"
+          style="@style/Widget.GalIsland.Button.Outlined"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:minWidth="0dp"
+          android:minHeight="@dimen/gi_control_height"
+          android:layout_margin="@dimen/gi_metric_3dp"
+          android:paddingStart="@dimen/gi_space_sm"
+          android:paddingEnd="@dimen/gi_space_sm"
+          android:text="@string/comment_area"
+          app:icon="@drawable/ic_comment"
+          app:iconSize="@dimen/gi_metric_18dp"
+          app:iconGravity="textStart" />
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/b_f_novel_info_content_download"
+          style="@style/Widget.GalIsland.Button.Outlined"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:minWidth="0dp"
+          android:minHeight="@dimen/gi_control_height"
+          android:layout_margin="@dimen/gi_metric_3dp"
+          android:paddingStart="@dimen/gi_space_sm"
+          android:paddingEnd="@dimen/gi_space_sm"
+          android:text="@string/download"
+          app:icon="@drawable/ic_download"
+          app:iconSize="@dimen/gi_metric_18dp"
+          app:iconGravity="textStart" />
+      </LinearLayout>
+    </LinearLayout>
+    <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/rv_f_novel_info_content"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="@dimen/gi_space_md"
+      android:layout_marginBottom="@dimen/gi_space_lg"
+      android:nestedScrollingEnabled="false" />
+    <TextView
+      style="@style/TextAppearance.GalIsland.SectionTitle"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:accessibilityHeading="true"
+      android:text="@string/gi_detail_description" />
+    <com.ctetin.expandabletextviewlibrary.ExpandableTextView
+      android:id="@+id/etv_f_novel_info_content"
+      style="@style/TextAppearance.GalIsland.Meta"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="@dimen/gi_space_sm"
+      android:layout_marginBottom="@dimen/gi_space_xl"
+      android:lineSpacingMultiplier="1.8"
+      app:ep_max_line="4"
+      app:ep_need_animation="true"
+      app:ep_need_contract="true" />
+    <TextView
+      style="@style/TextAppearance.GalIsland.SectionTitle"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:accessibilityHeading="true"
+      android:text="@string/chapter_catalog"
+      android:layout_marginBottom="@dimen/gi_space_md" />
+    <com.google.android.material.card.MaterialCardView
+      style="@style/Widget.GalIsland.CardView"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content">
+      <pokercc.android.expandablerecyclerview.ExpandableRecyclerView
+        android:id="@+id/erv_f_novel_info_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginRight="20dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                style="@style/Widget.GalIsland.CardView.Cover">
-
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:id="@+id/iv_f_novel_info_content"
-                    android:layout_width="120dp"
-                    android:layout_height="150dp"
-                    android:foreground="?selectableItemBackground"
-                    android:scaleType="centerCrop" />
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="10dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tv_f_novel_info_content_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="3dp"
-                    android:layout_marginBottom="10dp"
-                    android:letterSpacing="0"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    tools:text="title" />
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dp"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/ic_person" />
-
-                    <TextView
-                        android:id="@+id/tv_f_novel_info_content_author"
-                        style="@style/TextAppearance.Material3.BodyMedium"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/colorPrimary"
-                        android:textStyle="bold"
-                        tools:text="author" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dp"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:id="@+id/iv_f_novel_info_content_status"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/ic_schedule" />
-
-                    <TextView
-                        android:id="@+id/tv_f_novel_info_content_status"
-                        style="@style/TextAppearance.GalIsland.Meta"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:text="status" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dp"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/ic_update" />
-
-                    <TextView
-                        android:id="@+id/tv_f_novel_info_content_fin_update"
-                        style="@style/TextAppearance.GalIsland.Meta"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:text="finUpdate" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dp"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:id="@+id/iv_f_novel_info_content_anim"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/ic_live_tv" />
-
-                    <TextView
-                        android:id="@+id/tv_f_novel_info_content_is_animated"
-                        style="@style/TextAppearance.GalIsland.Meta"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:text="isAnimated" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dp"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/ic_heat" />
-
-                    <TextView
-                        android:id="@+id/tv_f_novel_info_content_heat"
-                        style="@style/TextAppearance.GalIsland.Meta"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:text="heat" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/ic_trending" />
-
-                    <TextView
-                        android:id="@+id/tv_f_novel_info_content_trending"
-                        style="@style/TextAppearance.GalIsland.Meta"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:text="treanding" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="18dp"
-            android:layout_marginRight="20dp"
-            android:background="?attr/colorOutlineVariant" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_marginTop="14dp"
-            android:layout_marginRight="10dp"
-            android:orientation="horizontal">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/b_f_novel_info_content_bookshelf"
-                style="@style/Widget.GalIsland.Button.Text.Icon"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/add_to_bookshelf"
-                android:textSize="12sp"
-                app:icon="@drawable/ic_outline_favorite"
-                app:iconGravity="textTop"
-                app:iconSize="24dp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/b_f_novel_info_content_vote"
-                style="@style/Widget.GalIsland.Button.Text.Icon"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/recommend_this_novel"
-                android:textSize="12sp"
-                app:icon="@drawable/ic_recommend"
-                app:iconGravity="textTop"
-                app:iconSize="24dp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/b_f_novel_info_content_comment"
-                style="@style/Widget.GalIsland.Button.Text.Icon"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/comment_area"
-                android:textSize="12sp"
-                app:icon="@drawable/ic_comment"
-                app:iconGravity="textTop"
-                app:iconSize="24dp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/b_f_novel_info_content_download"
-                style="@style/Widget.GalIsland.Button.Text.Icon"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/download"
-                android:textSize="12sp"
-                app:icon="@drawable/ic_download"
-                app:iconGravity="textTop"
-                app:iconSize="24dp" />
-
-        </LinearLayout>
-
-        <com.ctetin.expandabletextviewlibrary.ExpandableTextView
-            android:id="@+id/etv_f_novel_info_content"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginRight="20dp"
-            android:layout_marginBottom="12dp"
-            style="@style/TextAppearance.GalIsland.Meta"
-            android:textColor="?attr/colorOnSurface"
-            android:lineSpacingMultiplier="1.6"
-            app:ep_max_line="3"
-            app:ep_need_animation="true"
-            app:ep_need_contract="true" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_f_novel_info_content"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_marginBottom="10dp"
-            android:fadingEdgeLength="60dp"
-            android:requiresFadingEdge="horizontal" />
-
-        <pokercc.android.expandablerecyclerview.ExpandableRecyclerView
-            android:id="@+id/erv_f_novel_info_content"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:nestedScrollingEnabled="false" />
-
-    </LinearLayout>
-
+        android:nestedScrollingEnabled="false" />
+    </com.google.android.material.card.MaterialCardView>
+  </LinearLayout>
 </androidx.core.widget.NestedScrollView>

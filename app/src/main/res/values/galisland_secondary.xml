@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="gi_secondary_page_margin">16dp</dimen>
+    <dimen name="gi_secondary_panel_padding">12dp</dimen>
+    <dimen name="gi_secondary_row_height">56dp</dimen>
+
+    <style name="Widget.GalIsland.Secondary.Toolbar" parent="Widget.GalIsland.Toolbar">
+        <item name="android:minHeight">56dp</item>
+        <item name="android:elevation">0dp</item>
+    </style>
+
+    <style name="Widget.GalIsland.Secondary.Panel" parent="Widget.GalIsland.CardView">
+        <item name="android:layout_marginLeft">@dimen/gi_secondary_page_margin</item>
+        <item name="android:layout_marginRight">@dimen/gi_secondary_page_margin</item>
+    </style>
+
+    <style name="Widget.GalIsland.Secondary.Row" parent="">
+        <item name="android:minHeight">@dimen/gi_secondary_row_height</item>
+        <item name="android:paddingLeft">16dp</item>
+        <item name="android:paddingRight">16dp</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+    </style>
+
+    <style name="TextAppearance.GalIsland.Secondary.Title" parent="TextAppearance.GalIsland.CardTitle">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.GalIsland.Secondary.Body" parent="TextAppearance.GalIsland.Meta">
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="TextAppearance.GalIsland.Secondary.Supporting" parent="TextAppearance.GalIsland.CardSubtitle" />
+</resources>

@@ -1,35 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical"
+  android:background="?android:attr/colorBackground">
+  <androidx.coordinatorlayout.widget.CoordinatorLayout
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/bnv_a_main"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/fcv_a_main"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bnv_a_main"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:elevation="0dp"
-        app:itemActiveIndicatorStyle="@style/Widget.GalIsland.NavigationBar.ActiveIndicator"
-        app:itemIconTint="@color/galisland_nav_item_icon"
-        app:itemTextColor="@color/galisland_nav_item_text"
-        app:labelVisibilityMode="labeled"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:menu="@menu/menu_nav_act_main"
-        tools:viewBindingType="com.google.android.material.navigation.NavigationBarView" />
-
+    android:layout_height="0dp"
+    app:layout_constraintBottom_toTopOf="@id/bnv_a_main"
+    app:layout_constraintTop_toTopOf="parent">
+    <androidx.fragment.app.FragmentContainerView
+      android:id="@+id/fcv_a_main"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent" />
+  </androidx.coordinatorlayout.widget.CoordinatorLayout>
+  <com.google.android.material.bottomnavigation.BottomNavigationView
+    android:id="@+id/bnv_a_main"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:elevation="0dp"
+    app:itemActiveIndicatorStyle="@style/Widget.GalIsland.NavigationBar.ActiveIndicator"
+    app:itemIconTint="@color/galisland_nav_item_icon"
+    app:itemTextColor="@color/galisland_nav_item_text"
+    app:labelVisibilityMode="labeled"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:menu="@menu/menu_nav_act_main"
+    tools:viewBindingType="com.google.android.material.navigation.NavigationBarView"
+    android:background="@drawable/gi_nav_bottom" />
 </androidx.constraintlayout.widget.ConstraintLayout>

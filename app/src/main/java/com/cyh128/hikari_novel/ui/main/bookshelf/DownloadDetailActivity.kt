@@ -27,6 +27,7 @@ class DownloadDetailActivity : AppCompatActivity() {
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        com.cyh128.hikari_novel.util.ThemeHelper.initActivityThemeAndDarkMode(this)
         super.onCreate(savedInstanceState)
         binding = ActivityDownloadDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)

@@ -1,38 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+  <androidx.fragment.app.FragmentContainerView
+    android:id="@+id/fcv_a_v_read"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/tb_a_v_read"
-        style="@style/Widget.GalIsland.Toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?colorSurfaceContainer"
-        app:elevation="4dp"
-        tools:title="title"
-        app:menu="@menu/menu_act_v_h_read"/>
-
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fcv_a_v_read"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    <include
-        android:id="@+id/status_a_v_read"
-        layout="@layout/view_read_status_bar"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/gi_status_bar_height"
-        android:layout_gravity="bottom" />
-
-    <include
-        android:id="@+id/bar_a_v_read"
-        layout="@layout/view_read_bottom_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_marginBottom="@dimen/gi_status_bar_height" />
-
+    android:layout_height="match_parent" />
+  <com.google.android.material.appbar.MaterialToolbar
+    android:id="@+id/tb_a_v_read"
+    style="@style/Widget.GalIsland.Toolbar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/giSurfaceToolbar"
+    tools:title="title"
+    app:menu="@menu/menu_act_v_h_read"
+    android:minHeight="@dimen/gi_toolbar_height"
+    android:elevation="0dp" />
+  <include
+    android:id="@+id/status_a_v_read"
+    layout="@layout/view_read_status_bar"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/gi_status_bar_height"
+    android:layout_gravity="bottom" />
+  <include
+    android:id="@+id/bar_a_v_read"
+    layout="@layout/view_read_bottom_bar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:layout_marginBottom="@dimen/gi_status_bar_height" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

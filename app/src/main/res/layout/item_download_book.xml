@@ -1,15 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="10dp" android:clickable="true" android:focusable="true">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="12dp">
-        <ImageView android:id="@+id/iv_download_cover" android:layout_width="56dp" android:layout_height="78dp" android:scaleType="centerCrop" android:contentDescription="@string/cover" />
-        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:orientation="vertical">
-            <TextView android:id="@+id/tv_download_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:textStyle="bold" />
-            <TextView android:id="@+id/tv_download_progress" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" />
-            <ProgressBar android:id="@+id/pb_download" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="wrap_content" />
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="end">
-                <com.google.android.material.button.MaterialButton android:id="@+id/b_download_pause" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/pause" />
-                <com.google.android.material.button.MaterialButton android:id="@+id/b_download_delete" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/delete" />
-            </LinearLayout>
-        </LinearLayout>
+<com.google.android.material.card.MaterialCardView
+  style="@style/Widget.GalIsland.CardView"
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:layout_marginBottom="@dimen/gi_space_inset"
+  android:clickable="true"
+  android:focusable="true">
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="@dimen/gi_space_md">
+    <ImageView
+      android:id="@+id/iv_download_cover"
+      android:layout_width="@dimen/gi_toolbar_height"
+      android:layout_height="@dimen/gi_metric_78dp"
+      android:scaleType="centerCrop"
+      android:contentDescription="@string/cover" />
+    <LinearLayout
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:layout_marginStart="@dimen/gi_space_md"
+      android:orientation="vertical">
+      <TextView
+        android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Title"
+        android:id="@+id/tv_download_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold" />
+      <TextView
+        android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Supporting"
+        android:id="@+id/tv_download_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/gi_space_xs" />
+      <ProgressBar
+        android:progressTint="?attr/colorPrimary"
+        android:indeterminateTint="?attr/colorPrimary"
+        android:id="@+id/pb_download"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end">
+        <com.google.android.material.button.MaterialButton
+          android:minHeight="@dimen/gi_control_height"
+          android:id="@+id/b_download_pause"
+          style="@style/Widget.GalIsland.Button.Text"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/pause" />
+        <com.google.android.material.button.MaterialButton
+          android:minHeight="@dimen/gi_control_height"
+          android:id="@+id/b_download_delete"
+          style="@style/Widget.GalIsland.Button.Text"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/delete" />
+      </LinearLayout>
     </LinearLayout>
+  </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

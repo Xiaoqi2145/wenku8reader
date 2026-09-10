@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center">
-
-    <TextView
-        android:id="@+id/tv_v_message"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:textSize="16sp"
-        tools:text="error"/>
-
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:orientation="vertical"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:gravity="center"
+  android:padding="@dimen/gi_space_xl">
+  <TextView
+    android:textAppearance="@style/TextAppearance.GalIsland.Meta"
+    android:id="@+id/tv_v_message"
+    android:background="@drawable/gi_secondary_panel"
+    android:padding="@dimen/gi_space_lg"
+    android:gravity="center"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/gi_space_inset"
+    android:layout_marginLeft="@dimen/gi_control_icon"
+    android:layout_marginRight="@dimen/gi_control_icon"
+    tools:text="error" />
 </LinearLayout>

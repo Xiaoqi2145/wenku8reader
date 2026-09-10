@@ -1,534 +1,480 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:background="?android:attr/colorBackground">
+  <com.google.android.material.appbar.AppBarLayout
+    android:elevation="0dp"
+    android:background="?attr/giSurfaceToolbar"
+    android:fitsSystemWindows="true"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    style="@style/Widget.GalIsland.AppBar">
+    <com.google.android.material.appbar.MaterialToolbar
+      android:id="@+id/tb_a_setting"
+      style="@style/Widget.GalIsland.Secondary.Toolbar"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      app:title="@string/setting" />
+  </com.google.android.material.appbar.AppBarLayout>
+  <androidx.core.widget.NestedScrollView
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
-
-    <com.google.android.material.appbar.AppBarLayout
-        android:fitsSystemWindows="true"
+    android:clipToPadding="false"
+    android:padding="@dimen/gi_space_md"
+    app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="@drawable/gi_secondary_panel"
+      android:orientation="vertical"
+      android:paddingBottom="@dimen/gi_space_md">
+      <TextView
+        android:textAppearance="@style/TextAppearance.GalIsland.SectionTitle"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/tb_a_setting"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:title="@string/setting"/>
-
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <androidx.core.widget.NestedScrollView
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/gi_space_inset"
+        android:paddingLeft="@dimen/gi_space_inset"
+        android:textColor="?colorPrimary"
+        android:textStyle="bold"
+        android:text="@string/common" />
+      <LinearLayout
+        android:paddingBottom="@dimen/gi_space_sm"
+        android:paddingTop="@dimen/gi_space_sm"
+        android:minHeight="@dimen/gi_secondary_row_height"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
-
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingRight="@dimen/gi_space_lg"
+        android:paddingLeft="@dimen/gi_space_lg"
+        android:orientation="horizontal">
+        <androidx.appcompat.widget.AppCompatImageView
+          android:layout_width="@dimen/gi_space_xl"
+          android:layout_height="@dimen/gi_space_xl"
+          app:srcCompat="@drawable/ic_update" />
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <TextView
-                style="@style/TextAppearance.Material3.TitleSmall"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:paddingLeft="10dp"
-                android:textColor="?colorPrimary"
-                android:textStyle="bold"
-                android:text="@string/common"/>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:gravity="center"
-                android:paddingRight="20dp"
-                android:paddingLeft="20dp"
-                android:orientation="horizontal">
-
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    app:srcCompat="@drawable/ic_update"/>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:layout_marginLeft="20dp"
-                    android:orientation="vertical"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:text="@string/auto_check_update"/>
-
-                </LinearLayout>
-
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/s_a_setting_auto_update"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-
-            </LinearLayout>
-
-            <com.google.android.material.divider.MaterialDivider
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:dividerThickness="1dp"
-                app:dividerColor="?attr/colorSurfaceContainer"/>
-
-            <LinearLayout
-                android:id="@+id/ll_a_setting_language"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:gravity="center"
-                android:paddingRight="20dp"
-                android:paddingLeft="20dp"
-                android:orientation="horizontal"
-                android:background="?selectableItemBackground">
-
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    app:srcCompat="@drawable/ic_language"/>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:layout_marginLeft="20dp"
-                    android:orientation="vertical"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:text="@string/language"/>
-
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/tv_a_setting_language"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="跟随系统"/>
-
-            </LinearLayout>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
-                android:layout_marginBottom="10dp"
-                style="@style/Widget.GalIsland.CardView">
-
-                <LinearLayout
-                    android:padding="12dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_gravity="center_vertical"
-                        android:src="@drawable/ic_warning"/>
-
-                    <TextView
-                        android:layout_marginLeft="10dp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:text="@string/need_restart"/>
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.divider.MaterialDivider
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:dividerThickness="1dp"
-                app:dividerColor="?attr/colorSurfaceContainer"/>
-
-            <LinearLayout
-                android:id="@+id/ll_a_setting_node"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:gravity="center"
-                android:paddingRight="20dp"
-                android:paddingLeft="20dp"
-                android:orientation="horizontal"
-                android:background="?selectableItemBackground">
-
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    app:srcCompat="@drawable/ic_network_node"/>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:layout_marginLeft="20dp"
-                    android:orientation="vertical"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:text="@string/switch_node"/>
-
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/tv_a_setting_node"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="www.wenku8.cc"/>
-
-            </LinearLayout>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
-                android:layout_marginBottom="10dp"
-                style="@style/Widget.GalIsland.CardView">
-
-                <LinearLayout
-                    android:padding="12dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_gravity="center_vertical"
-                        android:src="@drawable/ic_warning"/>
-
-                    <TextView
-                        android:layout_marginLeft="10dp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:text="@string/need_restart"/>
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.divider.MaterialDivider
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:dividerThickness="1dp"
-                app:dividerColor="?attr/colorSurfaceContainer"/>
-
-            <LinearLayout
-                android:id="@+id/ll_a_setting_dark_mode"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:gravity="center"
-                android:paddingRight="20dp"
-                android:paddingLeft="20dp"
-                android:orientation="horizontal"
-                android:background="?selectableItemBackground">
-
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    app:srcCompat="@drawable/ic_dark_mode"/>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:layout_marginLeft="20dp"
-                    android:orientation="vertical"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:text="@string/dark_mode"/>
-
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/tv_a_setting_dark_mode"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="跟随系统"/>
-
-            </LinearLayout>
-
-            <com.google.android.material.divider.MaterialDivider
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:dividerThickness="1dp"
-                app:dividerColor="?attr/colorSurfaceContainer"/>
-
-            <LinearLayout
-                android:id="@+id/ll_a_setting_app_theme"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:gravity="center"
-                android:paddingRight="20dp"
-                android:paddingLeft="20dp"
-                android:orientation="horizontal"
-                android:background="?selectableItemBackground">
-
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    app:srcCompat="@drawable/ic_palette"/>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:layout_marginLeft="20dp"
-                    android:orientation="vertical"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:text="@string/app_theme"/>
-
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/tv_a_setting_app_theme"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="动态取色"/>
-
-            </LinearLayout>
-
-            <com.google.android.material.divider.MaterialDivider
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:dividerThickness="1dp"
-                app:dividerColor="?attr/colorSurfaceContainer"/>
-
-            <LinearLayout
-                android:id="@+id/ll_a_setting_list_view_type"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:gravity="center"
-                android:paddingRight="20dp"
-                android:paddingLeft="20dp"
-                android:orientation="horizontal"
-                android:background="?selectableItemBackground">
-
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    app:srcCompat="@drawable/ic_view_list"/>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:layout_marginLeft="20dp"
-                    android:orientation="vertical"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:text="@string/list_view_type"/>
-
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/tv_a_setting_list_view_type"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="单列"/>
-
-            </LinearLayout>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
-                android:layout_marginBottom="10dp"
-                style="@style/Widget.GalIsland.CardView">
-
-                <LinearLayout
-                    android:padding="12dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_gravity="center_vertical"
-                        android:src="@drawable/ic_warning"/>
-
-                    <TextView
-                        android:layout_marginLeft="10dp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:text="@string/need_restart"/>
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.divider.MaterialDivider
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:dividerThickness="1dp"
-                app:dividerColor="?attr/colorSurfaceContainer"/>
-
-            <LinearLayout
-                android:id="@+id/ll_a_setting_default_tab"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:gravity="center"
-                android:paddingRight="20dp"
-                android:paddingLeft="20dp"
-                android:orientation="horizontal"
-                android:background="?selectableItemBackground">
-
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    app:srcCompat="@drawable/ic_page_control"/>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:layout_marginLeft="20dp"
-                    android:orientation="vertical"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:text="@string/default_tab"/>
-
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/tv_a_setting_default_tab"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="首页"/>
-
-            </LinearLayout>
-
-
-
-
-            <TextView
-                style="@style/TextAppearance.Material3.TitleSmall"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
-                android:layout_marginLeft="20dp"
-                android:layout_marginBottom="10dp"
-                android:textColor="?colorPrimary"
-                android:textStyle="bold"
-                android:text="@string/reader"/>
-
-            <LinearLayout
-                android:id="@+id/ll_a_setting_read_mode"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:gravity="center"
-                android:paddingRight="20dp"
-                android:paddingLeft="20dp"
-                android:orientation="horizontal"
-                android:background="?selectableItemBackground">
-
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    app:srcCompat="@drawable/ic_reader"/>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginLeft="20dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:text="@string/read_mode"/>
-
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/tv_a_setting_read_mode"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="横向"/>
-
-            </LinearLayout>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
-                style="@style/Widget.GalIsland.CardView">
-
-                <LinearLayout
-                    android:padding="12dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_gravity="center_vertical"
-                        android:src="@drawable/ic_warning"/>
-
-                    <TextView
-                        android:layout_marginLeft="10dp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:text="@string/read_mode_tip_2"/>
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
+          android:layout_width="0dp"
+          android:layout_height="match_parent"
+          android:layout_weight="1"
+          android:layout_marginLeft="@dimen/gi_control_icon"
+          android:orientation="vertical"
+          android:gravity="center_vertical">
+          <TextView
+            android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="@string/auto_check_update" />
         </LinearLayout>
-
-    </androidx.core.widget.NestedScrollView>
-
+        <com.google.android.material.materialswitch.MaterialSwitch
+          android:id="@+id/s_a_setting_auto_update"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content" />
+      </LinearLayout>
+      <com.google.android.material.divider.MaterialDivider
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:dividerThickness="@dimen/gi_stroke"
+        app:dividerColor="?attr/colorOutlineVariant" />
+      <LinearLayout
+        android:paddingBottom="@dimen/gi_space_sm"
+        android:paddingTop="@dimen/gi_space_sm"
+        android:minHeight="@dimen/gi_secondary_row_height"
+        android:id="@+id/ll_a_setting_language"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingRight="@dimen/gi_space_lg"
+        android:paddingLeft="@dimen/gi_space_lg"
+        android:orientation="horizontal"
+        android:background="?selectableItemBackground">
+        <androidx.appcompat.widget.AppCompatImageView
+          android:layout_width="@dimen/gi_space_xl"
+          android:layout_height="@dimen/gi_space_xl"
+          app:srcCompat="@drawable/ic_language" />
+        <LinearLayout
+          android:layout_width="0dp"
+          android:layout_height="match_parent"
+          android:layout_weight="1"
+          android:layout_marginLeft="@dimen/gi_control_icon"
+          android:orientation="vertical"
+          android:gravity="center_vertical">
+          <TextView
+            android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="@string/language" />
+        </LinearLayout>
+        <TextView
+          android:textAppearance="@style/TextAppearance.GalIsland.Meta"
+          android:id="@+id/tv_a_setting_language"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          tools:text="跟随系统" />
+      </LinearLayout>
+      <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/gi_control_icon"
+        android:layout_marginRight="@dimen/gi_control_icon"
+        android:layout_marginBottom="@dimen/gi_space_inset"
+        style="@style/Widget.GalIsland.CardView">
+        <LinearLayout
+          android:padding="@dimen/gi_space_md"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:orientation="horizontal">
+          <ImageView
+            android:layout_width="@dimen/gi_control_icon"
+            android:layout_height="@dimen/gi_control_icon"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_warning" />
+          <TextView
+            android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Body"
+            android:layout_marginLeft="@dimen/gi_space_inset"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:text="@string/need_restart" />
+        </LinearLayout>
+      </com.google.android.material.card.MaterialCardView>
+      <com.google.android.material.divider.MaterialDivider
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:dividerThickness="@dimen/gi_stroke"
+        app:dividerColor="?attr/colorOutlineVariant" />
+      <LinearLayout
+        android:paddingBottom="@dimen/gi_space_sm"
+        android:paddingTop="@dimen/gi_space_sm"
+        android:minHeight="@dimen/gi_secondary_row_height"
+        android:id="@+id/ll_a_setting_node"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingRight="@dimen/gi_space_lg"
+        android:paddingLeft="@dimen/gi_space_lg"
+        android:orientation="horizontal"
+        android:background="?selectableItemBackground">
+        <androidx.appcompat.widget.AppCompatImageView
+          android:layout_width="@dimen/gi_space_xl"
+          android:layout_height="@dimen/gi_space_xl"
+          app:srcCompat="@drawable/ic_network_node" />
+        <LinearLayout
+          android:layout_width="0dp"
+          android:layout_height="match_parent"
+          android:layout_weight="1"
+          android:layout_marginLeft="@dimen/gi_control_icon"
+          android:orientation="vertical"
+          android:gravity="center_vertical">
+          <TextView
+            android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="@string/switch_node" />
+        </LinearLayout>
+        <TextView
+          android:textAppearance="@style/TextAppearance.GalIsland.Meta"
+          android:id="@+id/tv_a_setting_node"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          tools:text="www.wenku8.cc" />
+      </LinearLayout>
+      <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/gi_control_icon"
+        android:layout_marginRight="@dimen/gi_control_icon"
+        android:layout_marginBottom="@dimen/gi_space_inset"
+        style="@style/Widget.GalIsland.CardView">
+        <LinearLayout
+          android:padding="@dimen/gi_space_md"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:orientation="horizontal">
+          <ImageView
+            android:layout_width="@dimen/gi_control_icon"
+            android:layout_height="@dimen/gi_control_icon"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_warning" />
+          <TextView
+            android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Body"
+            android:layout_marginLeft="@dimen/gi_space_inset"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:text="@string/need_restart" />
+        </LinearLayout>
+      </com.google.android.material.card.MaterialCardView>
+      <com.google.android.material.divider.MaterialDivider
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:dividerThickness="@dimen/gi_stroke"
+        app:dividerColor="?attr/colorOutlineVariant" />
+      <LinearLayout
+        android:paddingBottom="@dimen/gi_space_sm"
+        android:paddingTop="@dimen/gi_space_sm"
+        android:minHeight="@dimen/gi_secondary_row_height"
+        android:id="@+id/ll_a_setting_dark_mode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingRight="@dimen/gi_space_lg"
+        android:paddingLeft="@dimen/gi_space_lg"
+        android:orientation="horizontal"
+        android:background="?selectableItemBackground">
+        <androidx.appcompat.widget.AppCompatImageView
+          android:layout_width="@dimen/gi_space_xl"
+          android:layout_height="@dimen/gi_space_xl"
+          app:srcCompat="@drawable/ic_dark_mode" />
+        <LinearLayout
+          android:layout_width="0dp"
+          android:layout_height="match_parent"
+          android:layout_weight="1"
+          android:layout_marginLeft="@dimen/gi_control_icon"
+          android:orientation="vertical"
+          android:gravity="center_vertical">
+          <TextView
+            android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="@string/dark_mode" />
+        </LinearLayout>
+        <TextView
+          android:textAppearance="@style/TextAppearance.GalIsland.Meta"
+          android:id="@+id/tv_a_setting_dark_mode"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          tools:text="跟随系统" />
+      </LinearLayout>
+      <com.google.android.material.divider.MaterialDivider
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:dividerThickness="@dimen/gi_stroke"
+        app:dividerColor="?attr/colorOutlineVariant" />
+      <LinearLayout
+        android:paddingBottom="@dimen/gi_space_sm"
+        android:paddingTop="@dimen/gi_space_sm"
+        android:minHeight="@dimen/gi_secondary_row_height"
+        android:id="@+id/ll_a_setting_app_theme"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingRight="@dimen/gi_space_lg"
+        android:paddingLeft="@dimen/gi_space_lg"
+        android:orientation="horizontal"
+        android:background="?selectableItemBackground">
+        <androidx.appcompat.widget.AppCompatImageView
+          android:layout_width="@dimen/gi_space_xl"
+          android:layout_height="@dimen/gi_space_xl"
+          app:srcCompat="@drawable/ic_palette" />
+        <LinearLayout
+          android:layout_width="0dp"
+          android:layout_height="match_parent"
+          android:layout_weight="1"
+          android:layout_marginLeft="@dimen/gi_control_icon"
+          android:orientation="vertical"
+          android:gravity="center_vertical">
+          <TextView
+            android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="@string/app_theme" />
+        </LinearLayout>
+        <TextView
+          android:textAppearance="@style/TextAppearance.GalIsland.Meta"
+          android:id="@+id/tv_a_setting_app_theme"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          tools:text="动态取色" />
+      </LinearLayout>
+      <com.google.android.material.divider.MaterialDivider
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:dividerThickness="@dimen/gi_stroke"
+        app:dividerColor="?attr/colorOutlineVariant" />
+      <LinearLayout
+        android:paddingBottom="@dimen/gi_space_sm"
+        android:paddingTop="@dimen/gi_space_sm"
+        android:minHeight="@dimen/gi_secondary_row_height"
+        android:id="@+id/ll_a_setting_list_view_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingRight="@dimen/gi_space_lg"
+        android:paddingLeft="@dimen/gi_space_lg"
+        android:orientation="horizontal"
+        android:background="?selectableItemBackground">
+        <androidx.appcompat.widget.AppCompatImageView
+          android:layout_width="@dimen/gi_space_xl"
+          android:layout_height="@dimen/gi_space_xl"
+          app:srcCompat="@drawable/ic_view_list" />
+        <LinearLayout
+          android:layout_width="0dp"
+          android:layout_height="match_parent"
+          android:layout_weight="1"
+          android:layout_marginLeft="@dimen/gi_control_icon"
+          android:orientation="vertical"
+          android:gravity="center_vertical">
+          <TextView
+            android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="@string/list_view_type" />
+        </LinearLayout>
+        <TextView
+          android:textAppearance="@style/TextAppearance.GalIsland.Meta"
+          android:id="@+id/tv_a_setting_list_view_type"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          tools:text="单列" />
+      </LinearLayout>
+      <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/gi_control_icon"
+        android:layout_marginRight="@dimen/gi_control_icon"
+        android:layout_marginBottom="@dimen/gi_space_inset"
+        style="@style/Widget.GalIsland.CardView">
+        <LinearLayout
+          android:padding="@dimen/gi_space_md"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:orientation="horizontal">
+          <ImageView
+            android:layout_width="@dimen/gi_control_icon"
+            android:layout_height="@dimen/gi_control_icon"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_warning" />
+          <TextView
+            android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Body"
+            android:layout_marginLeft="@dimen/gi_space_inset"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:text="@string/need_restart" />
+        </LinearLayout>
+      </com.google.android.material.card.MaterialCardView>
+      <com.google.android.material.divider.MaterialDivider
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:dividerThickness="@dimen/gi_stroke"
+        app:dividerColor="?attr/colorOutlineVariant" />
+      <LinearLayout
+        android:paddingBottom="@dimen/gi_space_sm"
+        android:paddingTop="@dimen/gi_space_sm"
+        android:minHeight="@dimen/gi_secondary_row_height"
+        android:id="@+id/ll_a_setting_default_tab"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingRight="@dimen/gi_space_lg"
+        android:paddingLeft="@dimen/gi_space_lg"
+        android:orientation="horizontal"
+        android:background="?selectableItemBackground">
+        <androidx.appcompat.widget.AppCompatImageView
+          android:layout_width="@dimen/gi_space_xl"
+          android:layout_height="@dimen/gi_space_xl"
+          app:srcCompat="@drawable/ic_page_control" />
+        <LinearLayout
+          android:layout_width="0dp"
+          android:layout_height="match_parent"
+          android:layout_weight="1"
+          android:layout_marginLeft="@dimen/gi_control_icon"
+          android:orientation="vertical"
+          android:gravity="center_vertical">
+          <TextView
+            android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="@string/default_tab" />
+        </LinearLayout>
+        <TextView
+          android:textAppearance="@style/TextAppearance.GalIsland.Meta"
+          android:id="@+id/tv_a_setting_default_tab"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          tools:text="首页" />
+      </LinearLayout>
+      <TextView
+        android:textAppearance="@style/TextAppearance.GalIsland.SectionTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/gi_metric_30dp"
+        android:layout_marginLeft="@dimen/gi_control_icon"
+        android:layout_marginBottom="@dimen/gi_space_inset"
+        android:textColor="?colorPrimary"
+        android:textStyle="bold"
+        android:text="@string/reader" />
+      <LinearLayout
+        android:paddingBottom="@dimen/gi_space_sm"
+        android:paddingTop="@dimen/gi_space_sm"
+        android:minHeight="@dimen/gi_secondary_row_height"
+        android:id="@+id/ll_a_setting_read_mode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingRight="@dimen/gi_space_lg"
+        android:paddingLeft="@dimen/gi_space_lg"
+        android:orientation="horizontal"
+        android:background="?selectableItemBackground">
+        <androidx.appcompat.widget.AppCompatImageView
+          android:layout_width="@dimen/gi_space_xl"
+          android:layout_height="@dimen/gi_space_xl"
+          app:srcCompat="@drawable/ic_reader" />
+        <LinearLayout
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:layout_marginLeft="@dimen/gi_control_icon"
+          android:orientation="vertical">
+          <TextView
+            android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="@string/read_mode" />
+        </LinearLayout>
+        <TextView
+          android:textAppearance="@style/TextAppearance.GalIsland.Meta"
+          android:id="@+id/tv_a_setting_read_mode"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          tools:text="横向" />
+      </LinearLayout>
+      <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/gi_control_icon"
+        android:layout_marginRight="@dimen/gi_control_icon"
+        style="@style/Widget.GalIsland.CardView">
+        <LinearLayout
+          android:padding="@dimen/gi_space_md"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:orientation="horizontal">
+          <ImageView
+            android:layout_width="@dimen/gi_control_icon"
+            android:layout_height="@dimen/gi_control_icon"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_warning" />
+          <TextView
+            android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Body"
+            android:layout_marginLeft="@dimen/gi_space_inset"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:text="@string/read_mode_tip_2" />
+        </LinearLayout>
+      </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+  </androidx.core.widget.NestedScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

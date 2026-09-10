@@ -1,59 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="?colorSurface"
+  android:orientation="vertical">
+  <LinearLayout
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="?colorSurface"
-    android:orientation="vertical">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/gi_toolbar_height"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingLeft="@dimen/gi_space_lg"
-        android:paddingRight="@dimen/gi_space_sm">
-
-        <TextView
-            android:id="@+id/tv_f_read_chapter_catalog_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="@string/chapter_catalog"
-            style="@style/TextAppearance.GalIsland.SheetTitle" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/b_f_read_chapter_catalog_select_all"
-            style="@style/Widget.GalIsland.Button.Text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/select_all"
-            android:visibility="gone" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/b_f_read_chapter_catalog_download"
-            style="@style/Widget.GalIsland.Button.Text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/download_selected" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/b_f_read_chapter_catalog_close"
-            style="@style/Widget.GalIsland.Button.IconButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/ic_close" />
-
-    </LinearLayout>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_f_read_chapter_catalog"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:paddingBottom="@dimen/gi_space_xl" />
-
+    android:layout_height="@dimen/gi_toolbar_height"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingLeft="@dimen/gi_space_lg"
+    android:paddingRight="@dimen/gi_space_sm">
+    <TextView
+      android:id="@+id/tv_f_read_chapter_catalog_title"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:ellipsize="end"
+      android:maxLines="1"
+      android:text="@string/chapter_catalog"
+      style="@style/TextAppearance.GalIsland.SheetTitle" />
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/b_f_read_chapter_catalog_select_all"
+      style="@style/Widget.GalIsland.Button.Text"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/select_all"
+      android:visibility="gone" />
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/b_f_read_chapter_catalog_download"
+      style="@style/Widget.GalIsland.Button.Text"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/download_selected" />
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/b_f_read_chapter_catalog_close"
+      style="@style/Widget.GalIsland.Button.IconButton"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      app:icon="@drawable/ic_close" />
+  </LinearLayout>
+  <androidx.recyclerview.widget.RecyclerView
+    android:id="@+id/rv_f_read_chapter_catalog"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    android:clipToPadding="false"
+    android:paddingBottom="@dimen/gi_space_xl" />
 </LinearLayout>

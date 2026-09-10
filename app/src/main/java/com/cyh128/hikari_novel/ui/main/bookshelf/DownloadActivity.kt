@@ -25,6 +25,7 @@ class DownloadActivity : AppCompatActivity() {
     private var books = emptyList<com.cyh128.hikari_novel.data.source.local.database.reader.DownloadBookEntity>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        com.cyh128.hikari_novel.util.ThemeHelper.initActivityThemeAndDarkMode(this)
         super.onCreate(savedInstanceState)
         binding = ActivityDownloadBinding.inflate(layoutInflater)
         setContentView(binding.root)

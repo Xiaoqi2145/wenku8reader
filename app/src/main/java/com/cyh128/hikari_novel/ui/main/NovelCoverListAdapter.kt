@@ -197,6 +197,7 @@ class BookshelfListAdapter(
     fun getMultiSelectMode() = isMultiSelectMode
 
     private fun setChecked(value: Boolean, binding: ViewBinding) {
+        binding.root.isSelected = value
         if (listViewType == ListViewType.Linear) {
             binding as ItemNovelCoverLinerBinding
 

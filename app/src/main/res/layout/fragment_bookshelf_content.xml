@@ -1,35 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:orientation="vertical">
+  <com.google.android.material.card.MaterialCardView
+    android:layout_marginLeft="@dimen/gi_space_lg"
+    android:layout_marginRight="@dimen/gi_space_lg"
+    android:layout_marginTop="@dimen/gi_space_inset"
+    android:layout_marginBottom="@dimen/gi_space_inset"
+    style="@style/Widget.GalIsland.CardView"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical">
-
-    <com.google.android.material.card.MaterialCardView
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
-        style="@style/Widget.GalIsland.CardView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:layout_margin="6dp"
-            android:id="@+id/tv_f_bookshelf_content"
-            style="@style/TextAppearance.Material3.LabelMedium"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:singleLine="false"
-            tools:text="1/10/100" />
-
-    </com.google.android.material.card.MaterialCardView>
-
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fcv_f_bookshelf_content"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
+    android:layout_height="wrap_content">
+    <TextView
+      android:layout_margin="@dimen/gi_radius_tag"
+      android:id="@+id/tv_f_bookshelf_content"
+      style="@style/TextAppearance.GalIsland.Meta"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:gravity="start|center_vertical"
+      android:singleLine="false"
+      tools:text="1/10/100"
+      android:padding="@dimen/gi_space_sm" />
+  </com.google.android.material.card.MaterialCardView>
+  <androidx.fragment.app.FragmentContainerView
+    android:id="@+id/fcv_f_bookshelf_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
 </LinearLayout>

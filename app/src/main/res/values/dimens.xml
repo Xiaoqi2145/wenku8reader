@@ -5,52 +5,49 @@
   ~ 组件样式只引用本文件的 dimen，不要在布局里写死数值
 -->
 <resources>
-
-    <!-- ===================== 间距 ===================== -->
-    <dimen name="gi_space_xxs">2dp</dimen>
-    <dimen name="gi_space_xs">4dp</dimen>
-    <dimen name="gi_space_sm">8dp</dimen>
-    <dimen name="gi_space_md">12dp</dimen>
-    <dimen name="gi_space_lg">16dp</dimen>
-    <dimen name="gi_space_xl">24dp</dimen>
-    <dimen name="gi_space_inset">10dp</dimen>
-
-    <!-- ===================== 圆角（模板 6/7/8/10） ===================== -->
-    <dimen name="gi_radius_tag">6dp</dimen>
-    <dimen name="gi_radius_control">7dp</dimen>
-    <dimen name="gi_radius_card">8dp</dimen>
-    <dimen name="gi_radius_window">10dp</dimen>
-
-    <!-- 小说卡片沿用项目既有观感：细圆角、无描边、无阴影 -->
-    <dimen name="gi_radius_card_novel">6dp</dimen>
-    <dimen name="gi_radius_cover_novel">4dp</dimen>
-
-    <!-- ===================== 描边 ===================== -->
-    <dimen name="gi_stroke">1dp</dimen>
-
-    <!-- ===================== 小说卡片 ===================== -->
-    <dimen name="gi_card_margin">5dp</dimen>
-    <dimen name="gi_card_padding">5dp</dimen>
-    <dimen name="gi_cover_width">112dp</dimen>
-    <dimen name="gi_cover_height">160dp</dimen>
-
-    <!-- ===================== 控件尺寸（模板 36/38，移动端保底 40） ===================== -->
-    <dimen name="gi_control_height">40dp</dimen>
-    <dimen name="gi_icon_button_size">40dp</dimen>
-    <dimen name="gi_toolbar_height">56dp</dimen>
-    <dimen name="gi_status_bar_height">28dp</dimen>
-    <dimen name="gi_status_icon">14dp</dimen>
-
-    <!-- ===================== 字级 ===================== -->
-    <dimen name="gi_text_meta">11sp</dimen>
-    <dimen name="gi_text_body">12sp</dimen>
-    <dimen name="gi_text_section">13sp</dimen>
-    <dimen name="gi_text_card_title">13sp</dimen>
-    <dimen name="gi_text_novel_title_plain">15sp</dimen>
-    <dimen name="gi_text_list_title">15sp</dimen>
-    <dimen name="gi_text_sheet_title">18sp</dimen>
-    <dimen name="gi_text_card_title_emphasis">14sp</dimen>
-    <dimen name="gi_text_config">16sp</dimen>
-    <dimen name="gi_text_heading">22sp</dimen>
-
+  <!-- ===================== 间距 ===================== -->
+  <dimen name="gi_space_xxs">2dp</dimen>
+  <dimen name="gi_space_xs">4dp</dimen>
+  <dimen name="gi_space_sm">8dp</dimen>
+  <dimen name="gi_space_md">12dp</dimen>
+  <dimen name="gi_space_lg">16dp</dimen>
+  <dimen name="gi_space_xl">24dp</dimen>
+  <dimen name="gi_space_inset">10dp</dimen>
+  <!-- ===================== 圆角（模板 6/7/8/10） ===================== -->
+  <dimen name="gi_radius_tag">6dp</dimen>
+  <dimen name="gi_radius_control">7dp</dimen>
+  <dimen name="gi_radius_card">8dp</dimen>
+  <dimen name="gi_radius_window">10dp</dimen>
+  <!-- 小说卡片与模板保持 8dp 圆角；边界由卡片状态色统一控制。 -->
+  <dimen name="gi_radius_card_novel">8dp</dimen>
+  <dimen name="gi_radius_cover_novel">8dp</dimen>
+  <!-- ===================== 描边 ===================== -->
+  <dimen name="gi_stroke">1dp</dimen>
+  <!-- ===================== 小说卡片 ===================== -->
+  <dimen name="gi_card_margin">6dp</dimen>
+  <dimen name="gi_card_padding">12dp</dimen>
+  <dimen name="gi_cover_width">112dp</dimen>
+  <dimen name="gi_cover_height">160dp</dimen>
+  <!-- ===================== 控件尺寸（模板 36/38，移动端保底 40） ===================== -->
+  <dimen name="gi_control_height">48dp</dimen>
+  <dimen name="gi_icon_button_size">48dp</dimen>
+  <dimen name="gi_toolbar_height">56dp</dimen>
+  <dimen name="gi_status_bar_height">28dp</dimen>
+  <dimen name="gi_status_icon">14dp</dimen>
+  <!-- ===================== 字级 ===================== -->
+  <dimen name="gi_text_meta">11sp</dimen>
+  <dimen name="gi_text_body">12sp</dimen>
+  <dimen name="gi_text_section">13sp</dimen>
+  <dimen name="gi_text_card_title">14sp</dimen>
+  <dimen name="gi_text_novel_title_plain">15sp</dimen>
+  <dimen name="gi_text_list_title">15sp</dimen>
+  <dimen name="gi_text_sheet_title">18sp</dimen>
+  <dimen name="gi_text_card_title_emphasis">14sp</dimen>
+  <dimen name="gi_text_config">14sp</dimen>
+  <dimen name="gi_text_heading">22sp</dimen>
+  <dimen name="gi_control_icon">20dp</dimen>
+  <dimen name="gi_page_inset">16dp</dimen>
+  <dimen name="gi_grid_line">0.5dp</dimen>
+  <dimen name="gi_rail_width">80dp</dimen>
+  <dimen name="gi_grid_unit">40dp</dimen>
 </resources>

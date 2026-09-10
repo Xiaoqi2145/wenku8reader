@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="galisland_novel_card_gutter">6dp</dimen>
+    <dimen name="galisland_novel_card_content_padding">5dp</dimen>
+    <dimen name="galisland_novel_card_page_inset">16dp</dimen>
+    <dimen name="galisland_novel_card_vertical_gap">8dp</dimen>
+    <dimen name="galisland_novel_selection_size">28dp</dimen>
+    <dimen name="galisland_novel_selection_icon_size">20dp</dimen>
+    <dimen name="galisland_novel_list_cover_width">112dp</dimen>
+    <dimen name="galisland_novel_list_cover_height">160dp</dimen>
+    <style name="Widget.GalIsland.NovelCards.Card" parent="Widget.Material3.CardView.Filled">
+        <item name="cardBackgroundColor">@android:color/transparent</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+    <style name="Widget.GalIsland.NovelCards.Cover" parent="Widget.GalIsland.CardView.Cover" />
+    <style name="Widget.GalIsland.NovelCards.SelectionIndicator" parent="Widget.GalIsland.CardView">
+        <item name="cardBackgroundColor">@android:color/transparent</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">0dp</item>
+    </style>
+    <style name="TextAppearance.GalIsland.NovelCards.Title" parent="TextAppearance.GalIsland.CardTitle" />
+</resources>

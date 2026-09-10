@@ -44,7 +44,7 @@ class NovelInfoActivity : BaseActivity<ActivityNovelInfoBinding>() {
                 Event.LoadSuccessEvent -> {
                     binding.lpiANovelInfo.hide()
                     viewModel.getLatestReadHistoryFlow().onEach {
-                        binding.fabFNovelInfo.visibility = if (it == null) View.INVISIBLE else View.VISIBLE
+                        binding.giDetailActionBar.visibility = if (it == null) View.GONE else View.VISIBLE
                     }.launchIn(lifecycleScope)
                     toNovelInfoContentScreen()
                 }
