@@ -66,6 +66,15 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
         setSupportActionBar(binding.tbAVRead)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.tbAVRead.setNavigationOnClickListener { finish() }
+        supportFragmentManager.setFragmentResultListener(
+            ReadChapterCatalogBottomSheet.RESULT_KEY,
+            this
+        ) { _, result ->
+            jumpToChapter(
+                result.getInt(ReadChapterCatalogBottomSheet.RESULT_VOLUME),
+                result.getInt(ReadChapterCatalogBottomSheet.RESULT_CHAPTER)
+            )
+        }
 
 
         receiveEvent<Event>("event_vertical_read_activity") { event ->
@@ -317,8 +326,11 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
     private fun showChapterCatalog() {
         val novel = viewModel.novel ?: return
+        val visiblePosition = viewModel.latestVerticalPosition()
+        val visibleVolume = visiblePosition?.chapter?.volumeIndex ?: viewModel.curVolumePos
+        val visibleChapter = visiblePosition?.chapter?.chapterIndex ?: viewModel.curChapterPos
         ReadChapterCatalogBottomSheet
-            .newInstance(novel, viewModel.curVolumePos, viewModel.curChapterPos)
+            .newInstance(novel, visibleVolume, visibleChapter)
             .apply {
                 onChapterSelected = { volumePos, chapterPos ->
                     jumpToChapter(volumePos, chapterPos)

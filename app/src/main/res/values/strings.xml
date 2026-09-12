@@ -346,4 +346,11 @@
     <string name="chapter_catalog">目录</string>
     <string name="current_chapter">当前章节</string>
     <string name="volume_number">第%1$d卷</string>
+    <string name="catalog_volume_label">卷目</string>
+    <string name="catalog_chapter_label">章节列表</string>
+    <string name="catalog_volume_count">%1$d章</string>
+    <string name="catalog_volume_count_total">%1$d卷</string>
+    <string name="catalog_chapter_count">共 %1$d 章</string>
+    <string name="catalog_current_position">第%1$d卷 · 第%2$d章</string>
+    <string name="chapter_number">第%1$d章</string>
 </resources>

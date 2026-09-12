@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+  <solid android:color="?attr/giSurfaceSidebar" />
+  <stroke
+    android:width="@dimen/gi_stroke"
+    android:color="?attr/colorOutlineVariant" />
+  <corners
+    android:topLeftRadius="@dimen/gi_radius_window"
+    android:topRightRadius="0dp"
+    android:bottomRightRadius="0dp"
+    android:bottomLeftRadius="@dimen/gi_radius_window" />
+</shape>

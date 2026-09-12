@@ -250,7 +250,13 @@ class NovelInfoContentFragment : BaseFragment<FragmentNovelInfoContentBinding>()
         }
 
         binding.bFNovelInfoContentDownload.setOnClickListener {
-            ReadChapterCatalogBottomSheet.newInstance(viewModel.novel, 0, 0, true).apply {
+            ReadChapterCatalogBottomSheet.newInstance(
+                novel = viewModel.novel,
+                currentVolumePos = 0,
+                currentChapterPos = 0,
+                allowDownload = true,
+                coverUrl = viewModel.novelInfo?.imgUrl
+            ).apply {
                 onDownloadRequested = { refs ->
                     viewModel.enqueueDownloads(refs)
                     MaterialAlertDialogBuilder(requireActivity())

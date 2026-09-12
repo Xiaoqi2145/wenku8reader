@@ -281,6 +281,11 @@
   <style name="Widget.GalIsland.Snackbar.TextView" parent="Widget.Material3.Snackbar.TextView">
     <item name="android:textColor">?attr/colorOnSurface</item>
   </style>
+  <!-- END-side catalog enters like a lightweight mobile drawer. -->
+  <style name="Animation.GalIsland.ReadCatalog" parent="@android:style/Animation.Dialog">
+    <item name="android:windowEnterAnimation">@anim/slide_in_right</item>
+    <item name="android:windowExitAnimation">@anim/slide_out_right</item>
+  </style>
   <!-- ===================== 对话框 ===================== -->
   <style name="ThemeOverlay.GalIsland.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
     <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.GalIsland.Medium</item>

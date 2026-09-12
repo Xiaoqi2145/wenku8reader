@@ -328,4 +328,11 @@
     <string name="download_chapter">下載章節</string>
     <string name="download_queued">已加入下載佇列</string>
     <string name="continue_reading">繼續閱讀</string>
+    <string name="catalog_volume_label">卷目</string>
+    <string name="catalog_chapter_label">章節列表</string>
+    <string name="catalog_volume_count">%1$d章</string>
+    <string name="catalog_volume_count_total">%1$d卷</string>
+    <string name="catalog_chapter_count">共 %1$d 章</string>
+    <string name="catalog_current_position">第%1$d卷 · 第%2$d章</string>
+    <string name="chapter_number">第%1$d章</string>
 </resources>

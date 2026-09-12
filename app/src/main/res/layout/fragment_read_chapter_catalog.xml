@@ -2,51 +2,224 @@
 <LinearLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:background="?colorSurface"
-  android:orientation="vertical">
+  android:background="@drawable/bg_read_chapter_catalog_panel"
+  android:orientation="vertical"
+  android:paddingTop="@dimen/gi_space_xs">
+
   <LinearLayout
     android:layout_width="match_parent"
-    android:layout_height="@dimen/gi_toolbar_height"
+    android:layout_height="@dimen/gi_catalog_header_height"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingLeft="@dimen/gi_space_lg"
-    android:paddingRight="@dimen/gi_space_sm">
-    <TextView
-      android:id="@+id/tv_f_read_chapter_catalog_title"
+    android:paddingStart="@dimen/gi_page_inset"
+    android:paddingEnd="@dimen/gi_space_sm">
+
+    <LinearLayout
       android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:layout_weight="1"
-      android:ellipsize="end"
-      android:maxLines="1"
-      android:text="@string/chapter_catalog"
-      style="@style/TextAppearance.GalIsland.SheetTitle" />
+      android:orientation="vertical">
+
+      <TextView
+        android:id="@+id/tv_f_read_chapter_catalog_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textColor="?attr/colorOnSurface"
+        style="@style/TextAppearance.GalIsland.SheetTitle"
+        tools:text="葬送的芙莉莲" />
+
+      <TextView
+        android:id="@+id/tv_f_read_chapter_catalog_subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/gi_space_xxs"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        style="@style/TextAppearance.GalIsland.Meta"
+        tools:text="第1卷 · 第12章" />
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/b_f_read_chapter_catalog_close"
+      style="@style/Widget.GalIsland.Button.IconButton"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:contentDescription="@string/close"
+      app:icon="@drawable/ic_close" />
+  </LinearLayout>
+
+  <View
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/gi_stroke"
+    android:background="?attr/colorOutlineVariant" />
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/gi_catalog_feature_height"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/gi_page_inset"
+    android:paddingTop="@dimen/gi_space_sm"
+    android:paddingEnd="@dimen/gi_page_inset"
+    android:paddingBottom="@dimen/gi_space_sm">
+
+    <com.google.android.material.card.MaterialCardView
+      android:layout_width="@dimen/gi_catalog_cover_width"
+      android:layout_height="@dimen/gi_cover_height"
+      android:contentDescription="@string/cover"
+      android:foreground="?attr/selectableItemBackground"
+      app:cardCornerRadius="@dimen/gi_radius_cover_novel"
+      app:cardElevation="@dimen/gi_catalog_cover_elevation"
+      app:strokeWidth="0dp"
+      style="@style/Widget.GalIsland.CardView.Novel.Cover"
+      tools:ignore="ContentDescription">
+
+      <ImageView
+        android:id="@+id/iv_f_read_chapter_catalog_cover"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/giSurfaceInput"
+        android:contentDescription="@string/cover"
+        android:scaleType="fitCenter"
+        tools:src="@drawable/ic_empty" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <LinearLayout
+      android:layout_width="0dp"
+      android:layout_height="match_parent"
+      android:layout_marginStart="@dimen/gi_space_md"
+      android:layout_weight="1"
+      android:orientation="vertical">
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+          android:id="@+id/tv_f_read_chapter_catalog_volume_label"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:text="@string/catalog_volume_label"
+          android:textColor="?attr/colorOnSurface"
+          style="@style/TextAppearance.GalIsland.SectionTitle" />
+
+        <TextView
+          android:id="@+id/tv_f_read_chapter_catalog_volume_count"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:textColor="?attr/colorOnSurfaceVariant"
+          style="@style/TextAppearance.GalIsland.Meta"
+          tools:text="8卷" />
+      </LinearLayout>
+
+      <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/gi_space_xs"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+          android:id="@+id/rv_f_read_chapter_catalog_volumes"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:clipToPadding="false"
+          android:fadingEdge="vertical"
+          android:fadingEdgeLength="@dimen/gi_space_lg"
+          android:overScrollMode="always"
+          android:paddingTop="@dimen/gi_space_xs"
+          android:paddingBottom="@dimen/gi_space_xs"
+          android:requiresFadingEdge="vertical"
+          android:scrollbars="vertical"
+          android:fadeScrollbars="false"
+          tools:listitem="@layout/item_read_chapter_catalog_volume" />
+
+        <View
+          android:layout_width="match_parent"
+          android:layout_height="@dimen/gi_space_lg"
+          android:background="@drawable/bg_read_chapter_catalog_fade_top"
+          android:clickable="false"
+          android:importantForAccessibility="no"
+          android:layout_gravity="top" />
+
+        <View
+          android:layout_width="match_parent"
+          android:layout_height="@dimen/gi_space_lg"
+          android:layout_gravity="bottom"
+          android:background="@drawable/bg_read_chapter_catalog_fade_bottom"
+          android:clickable="false"
+          android:importantForAccessibility="no" />
+      </FrameLayout>
+    </LinearLayout>
+  </LinearLayout>
+
+  <View
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/gi_stroke"
+    android:background="?attr/colorOutlineVariant" />
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/gi_catalog_section_height"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/gi_page_inset"
+    android:paddingEnd="@dimen/gi_space_sm">
+
+    <TextView
+      android:id="@+id/tv_f_read_chapter_catalog_chapter_label"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:text="@string/catalog_chapter_label"
+      android:textColor="?attr/colorOnSurface"
+      style="@style/TextAppearance.GalIsland.SectionTitle" />
+
+    <TextView
+      android:id="@+id/tv_f_read_chapter_catalog_chapter_count"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginEnd="@dimen/gi_space_xs"
+      android:textColor="?attr/colorOnSurfaceVariant"
+      style="@style/TextAppearance.GalIsland.Meta"
+      tools:text="共 24 章" />
+
     <com.google.android.material.button.MaterialButton
       android:id="@+id/b_f_read_chapter_catalog_select_all"
       style="@style/Widget.GalIsland.Button.Text"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:text="@string/select_all"
-      android:visibility="gone" />
+      android:visibility="gone"
+      tools:visibility="visible" />
+
     <com.google.android.material.button.MaterialButton
       android:id="@+id/b_f_read_chapter_catalog_download"
       style="@style/Widget.GalIsland.Button.Text"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:text="@string/download_selected" />
-    <com.google.android.material.button.MaterialButton
-      android:id="@+id/b_f_read_chapter_catalog_close"
-      style="@style/Widget.GalIsland.Button.IconButton"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      app:icon="@drawable/ic_close" />
+      android:text="@string/download_selected"
+      android:visibility="gone"
+      tools:visibility="visible" />
   </LinearLayout>
+
   <androidx.recyclerview.widget.RecyclerView
     android:id="@+id/rv_f_read_chapter_catalog"
     android:layout_width="match_parent"
     android:layout_height="0dp"
     android:layout_weight="1"
     android:clipToPadding="false"
-    android:paddingBottom="@dimen/gi_space_xl" />
+    android:overScrollMode="always"
+    android:paddingBottom="@dimen/gi_space_xl"
+    android:scrollbars="vertical"
+    android:fadeScrollbars="false"
+    tools:listitem="@layout/item_read_chapter_catalog_chapter" />
 </LinearLayout>

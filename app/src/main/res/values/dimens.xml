@@ -50,4 +50,13 @@
   <dimen name="gi_grid_line">0.5dp</dimen>
   <dimen name="gi_rail_width">80dp</dimen>
   <dimen name="gi_grid_unit">40dp</dimen>
+
+  <!-- ===================== 阅读目录抽屉 ===================== -->
+  <dimen name="gi_catalog_header_height">72dp</dimen>
+  <dimen name="gi_catalog_feature_height">192dp</dimen>
+  <dimen name="gi_catalog_section_height">52dp</dimen>
+  <dimen name="gi_catalog_cover_width">112dp</dimen>
+  <dimen name="gi_catalog_cover_elevation">3dp</dimen>
+  <dimen name="gi_catalog_volume_item_height">56dp</dimen>
+  <dimen name="gi_catalog_chapter_number_width">48dp</dimen>
 </resources>

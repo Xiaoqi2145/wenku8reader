@@ -64,6 +64,15 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.tbAHRead.setNavigationOnClickListener { finish() }
         supportActionBar?.setTitle(R.string.loading)
+        supportFragmentManager.setFragmentResultListener(
+            ReadChapterCatalogBottomSheet.RESULT_KEY,
+            this
+        ) { _, result ->
+            jumpToChapter(
+                result.getInt(ReadChapterCatalogBottomSheet.RESULT_VOLUME),
+                result.getInt(ReadChapterCatalogBottomSheet.RESULT_CHAPTER)
+            )
+        }
 
         if (viewModel.novel == null) {
             intent.getParcelableExtra<ReadParcel>("data")!!.also { data ->
