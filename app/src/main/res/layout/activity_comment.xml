@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<com.cyh128.hikari_novel.ui.other.LibrarySurfaceLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:fitsSystemWindows="true"
@@ -34,4 +34,4 @@
       android:layout_width="match_parent"
       android:layout_height="wrap_content" />
   </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</com.cyh128.hikari_novel.ui.other.LibrarySurfaceLayout>

@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
+<com.cyh128.hikari_novel.ui.other.LibrarySurfaceLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:tools="http://schemas.android.com/tools"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:fitsSystemWindows="true"
+  android:background="?android:attr/colorBackground">
+<androidx.core.widget.NestedScrollView
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
   android:orientation="vertical"
   android:clipToPadding="false"
-  android:padding="@dimen/gi_space_lg"
-  android:background="?android:attr/colorBackground">
+  android:padding="@dimen/gi_space_lg">
   <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -106,3 +109,4 @@
     </LinearLayout>
   </LinearLayout>
 </androidx.core.widget.NestedScrollView>
+</com.cyh128.hikari_novel.ui.other.LibrarySurfaceLayout>

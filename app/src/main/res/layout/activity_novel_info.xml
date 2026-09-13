@@ -33,17 +33,23 @@
     android:layout_width="match_parent"
     android:layout_height="@dimen/gi_stroke"
     android:background="?attr/colorOutlineVariant" />
-  <androidx.fragment.app.FragmentContainerView
-    android:id="@+id/fcv_a_novel_info"
+  <!-- 详情内容区与书库列表共用 GalIsland 网格表面，视觉基线一致。 -->
+  <com.cyh128.hikari_novel.ui.other.LibrarySurfaceLayout
     android:layout_width="match_parent"
     android:layout_height="0dp"
-    android:layout_weight="1" />
+    android:layout_weight="1"
+    android:background="?android:attr/colorBackground">
+    <androidx.fragment.app.FragmentContainerView
+      android:id="@+id/fcv_a_novel_info"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent" />
+  </com.cyh128.hikari_novel.ui.other.LibrarySurfaceLayout>
   <LinearLayout
     android:id="@+id/gi_detail_action_bar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="?attr/colorSurfaceContainerLow"
+    android:background="?attr/giSurfaceToolbar"
     android:visibility="gone"
     tools:visibility="visible">
     <View

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<com.cyh128.hikari_novel.ui.other.LibrarySurfaceLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
+  android:background="?android:attr/colorBackground"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:orientation="vertical"
   android:fitsSystemWindows="true">
@@ -68,7 +69,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/gi_control_icon"
-        style="?attr/materialCardViewFilledStyle">
+        style="@style/Widget.GalIsland.CardView">
         <LinearLayout
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
@@ -85,7 +86,7 @@
             android:orientation="vertical"
             android:layout_marginLeft="@dimen/gi_metric_11dp">
             <TextView
-              style="@style/TextAppearance.AppCompat.Large"
+              style="@style/TextAppearance.GalIsland.Secondary.Title"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:textSize="@dimen/gi_text_novel_title_plain"
@@ -97,7 +98,7 @@
               android:textSize="@dimen/gi_text_card_title"
               android:text="000000" />
             <TextView
-              style="@style/TextAppearance.AppCompat.Large"
+              style="@style/TextAppearance.GalIsland.Secondary.Title"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:textSize="@dimen/gi_text_novel_title_plain"
@@ -116,7 +117,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/gi_control_icon"
-        style="?attr/materialCardViewFilledStyle">
+        style="@style/Widget.GalIsland.CardView">
         <LinearLayout
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
@@ -133,7 +134,7 @@
             android:orientation="vertical"
             android:layout_marginLeft="@dimen/gi_metric_11dp">
             <TextView
-              style="@style/TextAppearance.AppCompat.Large"
+              style="@style/TextAppearance.GalIsland.Secondary.Title"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:textSize="@dimen/gi_text_novel_title_plain"
@@ -145,7 +146,7 @@
               android:textSize="@dimen/gi_text_card_title"
               android:text="FFFFFF" />
             <TextView
-              style="@style/TextAppearance.AppCompat.Large"
+              style="@style/TextAppearance.GalIsland.Secondary.Title"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:textSize="@dimen/gi_text_novel_title_plain"
@@ -181,4 +182,4 @@
       </LinearLayout>
     </LinearLayout>
   </androidx.core.widget.NestedScrollView>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</com.cyh128.hikari_novel.ui.other.LibrarySurfaceLayout>

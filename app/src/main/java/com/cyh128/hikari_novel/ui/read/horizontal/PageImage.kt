@@ -158,7 +158,7 @@ class PageImage : AppCompatImageView {
                     isTouching = false
                 }
 
-                moveStart[0] > width * 2 / 5 && moveStart[0] < height * 3 / 5 -> {
+                moveStart[0] > width * 2 / 5 && moveStart[0] < width * 3 / 5 -> {
                     if (!isTouching && imageRect?.contains(x, y) == true) {
                         mImageurl?.let {
                             mImageClick(it)
@@ -437,7 +437,7 @@ class PageImage : AppCompatImageView {
 
     //正文区域高度
     private fun getTextHeight(): Int =
-        ((height - mBottomTextSize - readerContentBottomInset) * 0.96f).toInt()
+        ((height - mBottomTextSize - readerContentBottomInset).coerceAtLeast(mTextSize * mRowSpace) * 0.96f).toInt()
 
     private fun getFooterTextSize(): Float = mBottomTextSize.coerceAtMost(mTextSize * 0.55f)
 

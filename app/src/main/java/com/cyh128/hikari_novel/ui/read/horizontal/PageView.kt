@@ -145,7 +145,7 @@ class PageView: ViewFlipper, IPageView {
                     pageFlag = 1
                 }
 
-                moveStart[0] > width * 2 / 5 && moveStart[0] < height * 3 / 5 -> {
+                moveStart[0] > width * 2 / 5 && moveStart[0] < width * 3 / 5 -> {
                     if (currentView is PageImage) {
                         currentView.dispatchTouchEvent(event)
                         return super.onTouchEvent(event)

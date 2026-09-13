@@ -9,7 +9,7 @@
   xmlns:tools="http://schemas.android.com/tools"
   android:id="@+id/read_status_bar"
   android:layout_width="match_parent"
-  android:layout_height="@dimen/gi_status_bar_height"
+  android:layout_height="@dimen/gi_reader_status_line_height"
   android:background="@drawable/bg_read_status_bar"
   android:gravity="center_vertical"
   android:orientation="horizontal"

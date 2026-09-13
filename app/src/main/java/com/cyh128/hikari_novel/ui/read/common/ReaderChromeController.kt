@@ -1,75 +1,130 @@
 package com.cyh128.hikari_novel.ui.read.common
 
-import android.animation.Animator
 import android.view.View
-import android.view.animation.AccelerateDecelerateInterpolator
-import androidx.appcompat.app.AppCompatActivity
-import com.gyf.immersionbar.ImmersionBar
+import android.view.ViewGroup
+import android.view.Window
+import androidx.core.graphics.ColorUtils
+import androidx.core.view.WindowInsetsControllerCompat
 
-/** Owns the single reader toolbar/bottom bar pair and their visibility state. */
+/**
+ * Owns the reader toolbar/bottom dock pair, the always-on status line, and
+ * their visibility state.
+ *
+ * The dock is translated as a whole — background and top stroke included — so
+ * hiding it never leaves a floating footprint behind. The status line is a
+ * sibling of the dock: it fades out while the menu is shown (the menu surface
+ * already occupies the bottom edge) and fades back in for immersive reading.
+ *
+ * The bottom translation is always calculated from the dock's parent bounds;
+ * never mix decor/window coordinates with CoordinatorLayout coordinates.
+ */
 class ReaderChromeController(
-    private val activity: AppCompatActivity,
+    private val window: Window,
+    private val chromeHost: ViewGroup,
     private val toolbar: View,
-    private val bottomBar: View,
+    private val bottomDock: View,
+    private val statusLine: View,
     private val shownBarColor: Int,
-    private val hiddenBarColor: () -> String,
+    private val hiddenBarColor: () -> Int,
     private val onVisibilityChanged: (Boolean) -> Unit
 ) {
+    private var targetShown = true
+
+    init {
+        val relayout = View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+            if (!targetShown) syncHiddenPosition()
+        }
+        chromeHost.addOnLayoutChangeListener(relayout)
+        bottomDock.addOnLayoutChangeListener(relayout)
+    }
+
     fun show() {
+        targetShown = true
         cancelAnimations()
+        applySystemBars(shownBarColor)
         toolbar.animate()
             .translationY(0f)
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .setListener(immersionListener(shown = true))
+            .setDuration(180L)
             .start()
-        bottomBar.animate()
+        bottomDock.animate()
             .translationY(0f)
-            .setInterpolator(AccelerateDecelerateInterpolator())
+            .setDuration(180L)
             .start()
+        setStatusLineVisible(false)
         onVisibilityChanged(true)
     }
 
     fun hide() {
+        targetShown = false
         cancelAnimations()
+        applySystemBars(hiddenBarColor())
         toolbar.animate()
             .translationY(-toolbar.bottom.toFloat())
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .setListener(immersionListener(shown = false))
+            .setDuration(180L)
             .start()
-        // The bottom bar may have a status-bar margin, so use its actual position.
-        bottomBar.animate()
-            .translationY((activity.window.decorView.height - bottomBar.top).toFloat())
-            .setInterpolator(AccelerateDecelerateInterpolator())
+        bottomDock.animate()
+            .translationY(hideTranslation())
+            .setDuration(180L)
             .start()
+        setStatusLineVisible(true)
         onVisibilityChanged(false)
+    }
+
+    /** Reapply the hidden position after insets, rotation, or split-screen relayout. */
+    fun onWindowGeometryChanged() {
+        if (targetShown) return
+        cancelAnimations()
+        syncHiddenPosition()
+    }
+
+    /** The status line is mutually exclusive with the menu surface. */
+    private fun setStatusLineVisible(visible: Boolean) {
+        statusLine.animate().cancel()
+        if (visible) {
+            if (statusLine.visibility != View.VISIBLE) {
+                statusLine.alpha = 0f
+                statusLine.visibility = View.VISIBLE
+            }
+            statusLine.animate()
+                .alpha(1f)
+                .setDuration(180L)
+                .withEndAction(null)
+                .start()
+        } else {
+            statusLine.animate()
+                .alpha(0f)
+                .setDuration(180L)
+                .withEndAction { statusLine.visibility = View.INVISIBLE }
+                .start()
+        }
+    }
+
+    private fun hideTranslation(): Float {
+        val parent = bottomDock.parent as? ViewGroup ?: chromeHost
+        return ReaderChromeGeometry.hideTranslation(
+            parentHeight = parent.height,
+            contentBottomInset = 0,
+            barTop = bottomDock.top
+        )
+    }
+
+    private fun syncHiddenPosition() {
+        toolbar.translationY = -toolbar.bottom.toFloat()
+        bottomDock.translationY = hideTranslation()
     }
 
     private fun cancelAnimations() {
         toolbar.animate().cancel()
-        bottomBar.animate().cancel()
+        bottomDock.animate().cancel()
     }
 
-    private fun immersionListener(shown: Boolean): Animator.AnimatorListener =
-        object : Animator.AnimatorListener {
-            override fun onAnimationStart(animation: Animator) {
-                val immersion = ImmersionBar.with(activity)
-                if (shown) {
-                    immersion
-                        .statusBarColor(shownBarColor)
-                        .navigationBarColor(shownBarColor)
-                } else {
-                    immersion
-                        .statusBarColor(hiddenBarColor())
-                        .navigationBarColor(hiddenBarColor())
-                }
-                immersion
-                    .fitsSystemWindows(true)
-                    .autoDarkModeEnable(true)
-                    .init()
-            }
-
-            override fun onAnimationEnd(animation: Animator) = Unit
-            override fun onAnimationCancel(animation: Animator) = Unit
-            override fun onAnimationRepeat(animation: Animator) = Unit
+    private fun applySystemBars(color: Int) {
+        window.statusBarColor = color
+        window.navigationBarColor = color
+        val lightBars = ColorUtils.calculateLuminance(color) > 0.5
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            isAppearanceLightStatusBars = lightBars
+            isAppearanceLightNavigationBars = lightBars
         }
+    }
 }

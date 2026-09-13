@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="galisland_novel_card_gutter">6dp</dimen>
-    <dimen name="galisland_novel_card_content_padding">5dp</dimen>
-    <dimen name="galisland_novel_card_page_inset">16dp</dimen>
-    <dimen name="galisland_novel_card_vertical_gap">8dp</dimen>
-    <dimen name="galisland_novel_selection_size">28dp</dimen>
-    <dimen name="galisland_novel_selection_icon_size">20dp</dimen>
-    <dimen name="galisland_novel_list_cover_width">112dp</dimen>
-    <dimen name="galisland_novel_list_cover_height">160dp</dimen>
+    <!-- Novel cards reuse the canonical GalIsland spacing and control tokens. -->
+    <dimen name="galisland_novel_card_gutter">@dimen/gi_card_margin</dimen>
+    <dimen name="galisland_novel_card_content_padding">@dimen/gi_space_xs</dimen>
+    <dimen name="galisland_novel_card_page_inset">@dimen/gi_page_inset</dimen>
+    <dimen name="galisland_novel_card_vertical_gap">@dimen/gi_space_sm</dimen>
+    <dimen name="galisland_novel_selection_size">@dimen/gi_selection_size</dimen>
+    <dimen name="galisland_novel_selection_icon_size">@dimen/gi_control_icon</dimen>
+    <dimen name="galisland_novel_list_cover_width">@dimen/gi_cover_width</dimen>
+    <dimen name="galisland_novel_list_cover_height">@dimen/gi_cover_height</dimen>
     <style name="Widget.GalIsland.NovelCards.Card" parent="Widget.Material3.CardView.Filled">
         <item name="cardBackgroundColor">@android:color/transparent</item>
         <item name="cardElevation">0dp</item>

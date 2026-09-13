@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="gi_secondary_page_margin">16dp</dimen>
-    <dimen name="gi_secondary_panel_padding">12dp</dimen>
-    <dimen name="gi_secondary_row_height">56dp</dimen>
+    <dimen name="gi_secondary_page_margin">@dimen/gi_page_inset</dimen>
+    <dimen name="gi_secondary_panel_padding">@dimen/gi_space_md</dimen>
+    <dimen name="gi_secondary_row_height">@dimen/gi_toolbar_height</dimen>
 
     <style name="Widget.GalIsland.Secondary.Toolbar" parent="Widget.GalIsland.Toolbar">
-        <item name="android:minHeight">56dp</item>
+        <item name="android:minHeight">@dimen/gi_toolbar_height</item>
         <item name="android:elevation">0dp</item>
     </style>
 
@@ -16,8 +16,8 @@
 
     <style name="Widget.GalIsland.Secondary.Row" parent="">
         <item name="android:minHeight">@dimen/gi_secondary_row_height</item>
-        <item name="android:paddingLeft">16dp</item>
-        <item name="android:paddingRight">16dp</item>
+        <item name="android:paddingLeft">@dimen/gi_page_inset</item>
+        <item name="android:paddingRight">@dimen/gi_page_inset</item>
         <item name="android:background">?attr/selectableItemBackground</item>
     </style>
 

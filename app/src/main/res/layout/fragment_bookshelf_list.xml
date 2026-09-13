@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<com.cyh128.hikari_novel.ui.other.LibrarySurfaceLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
-  android:layout_height="match_parent">
+  android:layout_height="match_parent"
+  android:background="?android:attr/colorBackground">
   <me.jingbin.library.ByRecyclerView
     android:id="@+id/rv_f_bookshelf_list"
     android:layout_width="match_parent"
@@ -11,4 +12,4 @@
     android:paddingLeft="@dimen/gi_space_inset"
     android:paddingRight="@dimen/gi_space_inset"
     tools:listitem="@layout/item_novel_cover_grid" />
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</com.cyh128.hikari_novel.ui.other.LibrarySurfaceLayout>

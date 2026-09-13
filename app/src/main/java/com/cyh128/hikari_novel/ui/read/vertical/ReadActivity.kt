@@ -2,7 +2,6 @@ package com.cyh128.hikari_novel.ui.read.vertical
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.WindowManager
@@ -25,26 +24,27 @@ import com.cyh128.hikari_novel.ui.other.LoadingView
 import com.cyh128.hikari_novel.ui.read.SelectColorActivity
 import com.cyh128.hikari_novel.ui.read.catalog.ReadChapterCatalogBottomSheet
 import com.cyh128.hikari_novel.ui.read.common.ReaderChromeController
+import com.cyh128.hikari_novel.ui.read.common.ReaderWindowInsetsCoordinator
 import com.cyh128.hikari_novel.util.getIsInDarkMode
 import com.cyh128.hikari_novel.util.ReaderStatusText
 import com.cyh128.hikari_novel.util.startActivity
 import com.drake.channel.receiveEvent
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.slider.Slider
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.properties.Delegates
 
 @AndroidEntryPoint
 class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
     private lateinit var bottomViewBinding: ViewVerticalReadConfigBinding
     private lateinit var bottomSheetDialog: BottomSheetDialog
     private lateinit var chromeController: ReaderChromeController
+    private lateinit var windowInsetsCoordinator: ReaderWindowInsetsCoordinator
     private val viewModel by lazy { ViewModelProvider(this)[ReadViewModel::class.java] }
-    private var showBarColor by Delegates.notNull<Int>()
     /** 用户正在拖动进度滑块时暂停外部回写，避免抖动 */
     private var progressSliderTracking = false
 
@@ -181,23 +181,30 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
     private fun initView() {
         refreshStatusBar()
-        TypedValue().also {  //上下栏颜色初始化
-            theme.resolveAttribute(
-                com.google.android.material.R.attr.colorSurfaceContainer,
-                it,
-                true
-            )
-            showBarColor = it.resourceId
-        }
-
+        val showBarColor = MaterialColors.getColor(
+            binding.root,
+            com.google.android.material.R.attr.colorSurfaceContainer
+        )
         chromeController = ReaderChromeController(
-            activity = this,
+            window = window,
+            chromeHost = binding.root,
             toolbar = binding.tbAVRead,
-            bottomBar = binding.barAVRead.root,
+            bottomDock = binding.readBottomDock,
+            statusLine = binding.statusAVRead.root,
             shownBarColor = showBarColor,
             hiddenBarColor = ::getHideBarColor,
             onVisibilityChanged = { viewModel.isBarShown = it }
         )
+        windowInsetsCoordinator = ReaderWindowInsetsCoordinator(
+            window = window,
+            root = binding.root,
+            toolbar = binding.tbAVRead,
+            bottomDock = binding.readBottomDock,
+            statusLine = binding.statusAVRead.root
+        ) {
+            chromeController.onWindowGeometryChanged()
+        }
+        windowInsetsCoordinator.install()
 
         bottomViewBinding = ViewVerticalReadConfigBinding.inflate(LayoutInflater.from(this))
         bottomSheetDialog = BottomSheetDialog(this).apply {
@@ -448,7 +455,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
                 R.id.fcv_a_v_read,
                 LoadingView().apply {
                     arguments = Bundle().also {
-                        it.putString("color", getHideBarColor())
+                        it.putString("color", getHideBarColorString())
                     }
                 }
             )
@@ -469,13 +476,12 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
         bottomViewBinding.sVVReadConfigRestoreChapterReadHistory.isChecked = false
     }
 
-    private fun getHideBarColor() = getIsInDarkMode().let {
-        if (it) { //夜间模式
-            "#" + viewModel.getBgColorNight()
-        } else {
-            "#" + viewModel.getBgColorDay()
-        }
+    private fun getHideBarColorString() = getIsInDarkMode().let {
+        if (it) "#" + viewModel.getBgColorNight()
+        else "#" + viewModel.getBgColorDay()
     }
+
+    private fun getHideBarColor(): Int = android.graphics.Color.parseColor(getHideBarColorString())
 
     /** 常显状态行：时间与电量，在分钟边界刷新（百分比由进度回写）。 */
     private fun refreshStatusBar() {

@@ -3,6 +3,7 @@ package com.cyh128.hikari_novel.ui.read.catalog
 import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -288,9 +289,13 @@ class ReadChapterCatalogBottomSheet : DialogFragment() {
     }
 
     private fun calculatePanelWidth(): Int {
-        val screenWidth = resources.displayMetrics.widthPixels
+        val windowWidth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            dialog?.window?.windowManager?.currentWindowMetrics?.bounds?.width()
+        } else {
+            null
+        } ?: resources.displayMetrics.widthPixels
         val maxWidth = (resources.displayMetrics.density * MAX_PANEL_WIDTH_DP).toInt()
-        val proportionalWidth = (screenWidth * PANEL_WIDTH_RATIO).toInt()
+        val proportionalWidth = (windowWidth * PANEL_WIDTH_RATIO).toInt()
         return minOf(proportionalWidth, maxWidth)
     }
 

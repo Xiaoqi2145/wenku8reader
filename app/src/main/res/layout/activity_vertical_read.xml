@@ -24,17 +24,35 @@
     app:menu="@menu/menu_act_v_h_read"
     android:minHeight="@dimen/gi_toolbar_height"
     android:elevation="0dp" />
+  <!--
+    ~ 常显状态行独立于底栏 dock：菜单呼出时由 ReaderChromeController 淡出，
+    ~ 菜单隐藏时恢复，避免菜单下方残留一条同色带与双重描边。
+  -->
   <include
     android:id="@+id/status_a_v_read"
     layout="@layout/view_read_status_bar"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/gi_status_bar_height"
+    android:layout_height="@dimen/gi_reader_status_line_height"
     android:layout_gravity="bottom" />
-  <include
-    android:id="@+id/bar_a_v_read"
-    layout="@layout/view_read_bottom_bar"
+  <!--
+    ~ 底栏 dock 只承载菜单本体并独占背景；隐藏时整个 dock（含背景与描边）
+    ~ 被平移出屏幕底缘，不再留下浮空占位。宽屏下内容限宽居中。
+  -->
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/read_bottom_dock"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="bottom"
-    android:layout_marginBottom="@dimen/gi_status_bar_height" />
+    android:background="@drawable/bg_read_bottom_bar">
+    <include
+      android:id="@+id/bar_a_v_read"
+      layout="@layout/view_read_bottom_bar"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintWidth_max="@dimen/gi_reader_dock_max_width" />
+  </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

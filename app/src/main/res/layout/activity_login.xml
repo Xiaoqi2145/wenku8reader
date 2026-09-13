@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<com.cyh128.hikari_novel.ui.other.LibrarySurfaceLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:background="?attr/colorSurface"
+  android:background="?android:attr/colorBackground">
+<FrameLayout
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
   android:fitsSystemWindows="true">
   <LinearLayout
     android:layout_gravity="center"
@@ -156,3 +159,4 @@
       app:icon="@drawable/ic_help" />
   </LinearLayout>
 </FrameLayout>
+</com.cyh128.hikari_novel.ui.other.LibrarySurfaceLayout>

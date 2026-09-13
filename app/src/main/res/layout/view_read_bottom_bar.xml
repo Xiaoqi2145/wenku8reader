@@ -10,8 +10,6 @@
   android:id="@+id/read_bottom_bar"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
-  android:layout_gravity="bottom"
-  android:background="@drawable/bg_read_bottom_bar"
   android:gravity="center"
   android:orientation="vertical">
   <androidx.constraintlayout.widget.ConstraintLayout

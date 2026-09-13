@@ -7,18 +7,19 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:clipToPadding="false"
-  android:paddingLeft="@dimen/gi_control_icon"
-  android:paddingRight="@dimen/gi_control_icon"
+  android:paddingLeft="@dimen/gi_page_inset"
+  android:paddingRight="@dimen/gi_page_inset"
   android:paddingBottom="@dimen/gi_reader_content_bottom_inset">
   <LinearLayout
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical">
     <com.google.android.material.button.MaterialButton
       android:id="@+id/b_f_v_read_previous_chapter"
       style="@style/Widget.GalIsland.Button.Outlined"
-      android:layout_width="match_parent"
+      android:layout_width="wrap_content"
       android:layout_height="wrap_content"
+      android:layout_gravity="center_horizontal"
       android:layout_marginTop="@dimen/gi_control_icon"
       android:layout_marginBottom="@dimen/gi_control_icon"
       android:layout_marginLeft="@dimen/gi_page_inset"
@@ -49,7 +50,8 @@
     <com.google.android.material.button.MaterialButton
       android:id="@+id/b_f_v_read_next_chapter"
       style="@style/Widget.GalIsland.Button.Outlined"
-      android:layout_width="match_parent"
+      android:layout_width="wrap_content"
+      android:layout_gravity="center_horizontal"
       android:layout_height="wrap_content"
       android:layout_marginTop="@dimen/gi_space_inset"
       android:layout_marginBottom="@dimen/gi_control_icon"

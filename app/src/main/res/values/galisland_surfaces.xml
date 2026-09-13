@@ -7,6 +7,8 @@
     <attr name="giSurfaceHover" format="color" />
     <attr name="giAccentSoft" format="color" />
     <attr name="giBorderStrong" format="color" />
+    <!-- 网格底纹线色：随主题昼夜切换，默认复用 outlineVariant。 -->
+    <attr name="giGridLine" format="color" />
     <style name="Widget.GalIsland.AppBar" parent="Widget.Material3.AppBarLayout">
         <item name="android:background">?attr/giSurfaceToolbar</item>
         <item name="android:stateListAnimator">@null</item>

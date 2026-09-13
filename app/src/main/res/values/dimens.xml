@@ -32,9 +32,14 @@
   <dimen name="gi_control_height">48dp</dimen>
   <dimen name="gi_icon_button_size">48dp</dimen>
   <dimen name="gi_toolbar_height">56dp</dimen>
-  <dimen name="gi_status_bar_height">28dp</dimen>
+  <!-- Reader HUD height is semantic; system navigation is handled by the window policy. -->
+  <dimen name="gi_reader_status_line_height">28dp</dimen>
+  <dimen name="gi_status_bar_height">@dimen/gi_reader_status_line_height</dimen>
   <dimen name="gi_reader_content_bottom_inset">36dp</dimen>
+  <!-- 宽屏下阅读底栏内容的最大宽度；背景仍全宽，内容居中。 -->
+  <dimen name="gi_reader_dock_max_width">840dp</dimen>
   <dimen name="gi_status_icon">14dp</dimen>
+  <dimen name="gi_selection_size">28dp</dimen>
   <!-- ===================== 字级 ===================== -->
   <dimen name="gi_text_meta">11sp</dimen>
   <dimen name="gi_text_body">12sp</dimen>
@@ -48,7 +53,8 @@
   <dimen name="gi_text_heading">22sp</dimen>
   <dimen name="gi_control_icon">20dp</dimen>
   <dimen name="gi_page_inset">16dp</dimen>
-  <dimen name="gi_grid_line">0.5dp</dimen>
+  <!-- 网格线宽对齐模板 1px @ 40px 单元。 -->
+  <dimen name="gi_grid_line">@dimen/gi_stroke</dimen>
   <dimen name="gi_rail_width">80dp</dimen>
   <dimen name="gi_grid_unit">40dp</dimen>
   <dimen name="gi_vertical_image_max_height">420dp</dimen>

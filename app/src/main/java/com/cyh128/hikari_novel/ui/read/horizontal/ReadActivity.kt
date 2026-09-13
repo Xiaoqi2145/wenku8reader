@@ -4,7 +4,6 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
-import android.util.TypedValue
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.Menu
@@ -31,12 +30,14 @@ import com.cyh128.hikari_novel.databinding.ViewHorizontalReadConfigBinding
 import com.cyh128.hikari_novel.ui.read.SelectColorActivity
 import com.cyh128.hikari_novel.ui.read.catalog.ReadChapterCatalogBottomSheet
 import com.cyh128.hikari_novel.ui.read.common.ReaderChromeController
+import com.cyh128.hikari_novel.ui.read.common.ReaderWindowInsetsCoordinator
 import com.cyh128.hikari_novel.util.ThemeHelper
 import com.cyh128.hikari_novel.util.getIsInDarkMode
 import com.cyh128.hikari_novel.util.ReaderStatusText
 import com.cyh128.hikari_novel.util.startActivity
 import com.drake.channel.receiveEvent
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.slider.Slider
 import com.google.android.material.snackbar.Snackbar
@@ -46,7 +47,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
-import kotlin.properties.Delegates
 
 @AndroidEntryPoint
 class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
@@ -54,7 +54,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
     private lateinit var bottomViewBinding: ViewHorizontalReadConfigBinding
     private lateinit var bottomSheetDialog: BottomSheetDialog
     private lateinit var chromeController: ReaderChromeController
-    private var showBarColor by Delegates.notNull<Int>()
+    private lateinit var windowInsetsCoordinator: ReaderWindowInsetsCoordinator
     private var saveReadHistoryJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -258,23 +258,30 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             }
         } else binding.iAHReadGuide.root.visibility = View.GONE
 
-        TypedValue().also {  //上下栏颜色初始化
-            theme.resolveAttribute(
-                com.google.android.material.R.attr.colorSurfaceContainer,
-                it,
-                true
-            )
-            showBarColor = it.resourceId
-        }
-
+        val showBarColor = MaterialColors.getColor(
+            binding.root,
+            com.google.android.material.R.attr.colorSurfaceContainer
+        )
         chromeController = ReaderChromeController(
-            activity = this,
+            window = window,
+            chromeHost = binding.root,
             toolbar = binding.tbAHRead,
-            bottomBar = binding.barAHRead.root,
+            bottomDock = binding.readBottomDock,
+            statusLine = binding.statusAHRead.root,
             shownBarColor = showBarColor,
             hiddenBarColor = ::getHideBarColor,
             onVisibilityChanged = { viewModel.isBarShown = it }
         )
+        windowInsetsCoordinator = ReaderWindowInsetsCoordinator(
+            window = window,
+            root = binding.root,
+            toolbar = binding.tbAHRead,
+            bottomDock = binding.readBottomDock,
+            statusLine = binding.statusAHRead.root
+        ) {
+            chromeController.onWindowGeometryChanged()
+        }
+        windowInsetsCoordinator.install()
 
         bottomViewBinding = ViewHorizontalReadConfigBinding.inflate(LayoutInflater.from(this))
         bottomSheetDialog = BottomSheetDialog(this).apply {
@@ -587,13 +594,12 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
         chromeController.hide()
     }
 
-    private fun getHideBarColor() = getIsInDarkMode().let {
-        if (it) { //夜间模式
-            "#" + viewModel.getBgColorNight()
-        } else {
-            "#" + viewModel.getBgColorDay()
-        }
+    private fun getHideBarColorString() = getIsInDarkMode().let {
+        if (it) "#" + viewModel.getBgColorNight()
+        else "#" + viewModel.getBgColorDay()
     }
+
+    private fun getHideBarColor(): Int = getHideBarColorString().toColorInt()
 
     private fun setBottomBarIsEnable(value: Boolean) {
         binding.barAHRead.readNextChapter.isEnabled = value
