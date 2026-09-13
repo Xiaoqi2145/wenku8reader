@@ -1,76 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:app="http://schemas.android.com/apk/res-auto"
-  android:orientation="horizontal"
-  android:layout_width="match_parent"
-  android:layout_height="match_parent"
-  android:alpha="0.8">
-  <com.google.android.material.card.MaterialCardView
-    android:layout_width="0dp"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:cardBackgroundColor="?attr/colorOnSurfaceVariant"
-    android:padding="@dimen/gi_space_inset"
-    app:cardCornerRadius="0dp"
-    app:strokeWidth="@dimen/gi_stroke"
-    android:layout_weight="1">
-    <TextView
-      android:layout_gravity="center"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="@string/previous_chapter"
-      style="@style/TextAppearance.GalIsland.Heading"
-      android:textColor="#ffffff" />
-  </com.google.android.material.card.MaterialCardView>
-  <com.google.android.material.card.MaterialCardView
-    android:layout_width="0dp"
-    android:layout_height="match_parent"
-    app:cardBackgroundColor="?attr/colorOnSurfaceVariant"
-    android:padding="@dimen/gi_space_inset"
-    app:cardCornerRadius="0dp"
-    app:strokeWidth="@dimen/gi_stroke"
-    android:layout_weight="1">
-    <LinearLayout
-      android:layout_gravity="center"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:orientation="vertical">
-      <TextView
-        android:layout_gravity="center"
-        android:layout_width="wrap_content"
+    android:clickable="true"
+    android:focusable="true">
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/menu"
-        style="@style/TextAppearance.GalIsland.Heading"
-        android:textColor="#ffffff" />
-      <TextView
-        android:layout_marginLeft="@dimen/gi_space_inset"
-        android:layout_marginRight="@dimen/gi_space_inset"
-        android:layout_marginTop="@dimen/gi_space_inset"
         android:layout_gravity="center"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textSize="@dimen/gi_text_card_title"
-        android:text="@string/menu_tip"
-        style="@style/TextAppearance.GalIsland.SheetTitle"
-        android:textColor="#ffffff" />
-    </LinearLayout>
-  </com.google.android.material.card.MaterialCardView>
-  <com.google.android.material.card.MaterialCardView
-    android:layout_width="0dp"
-    android:layout_height="match_parent"
-    app:cardBackgroundColor="?attr/colorOnSurfaceVariant"
-    android:padding="@dimen/gi_space_inset"
-    app:cardCornerRadius="0dp"
-    app:strokeWidth="@dimen/gi_stroke"
-    android:layout_weight="1">
-    <TextView
-      android:layout_gravity="center"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="@string/next_chapter"
-      style="@style/TextAppearance.GalIsland.Heading"
-      android:textColor="#ffffff" />
-  </com.google.android.material.card.MaterialCardView>
-</LinearLayout>
+        android:layout_margin="@dimen/gi_page_inset"
+        android:clickable="true"
+        android:focusable="true"
+        app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+        app:cardCornerRadius="@dimen/gi_radius_card"
+        app:cardElevation="0dp"
+        app:strokeColor="?attr/colorOutlineVariant"
+        app:strokeWidth="@dimen/gi_stroke">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/gi_space_xl">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/reader_tip_title"
+                style="@style/TextAppearance.GalIsland.SheetTitle" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/gi_space_sm"
+                android:text="@string/reader_tip_body"
+                style="@style/TextAppearance.GalIsland.Body" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginTop="@dimen/gi_space_lg"
+                android:text="@string/reader_tip_dismiss"
+                android:textColor="?attr/colorPrimary"
+                android:textStyle="bold"
+                style="@style/TextAppearance.GalIsland.Button" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</FrameLayout>

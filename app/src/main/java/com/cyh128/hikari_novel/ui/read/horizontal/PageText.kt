@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.graphics.Typeface
 import android.util.AttributeSet
 import android.view.View
+import com.cyh128.hikari_novel.R
 
 /*
  * Copyright 2018 ya-b
@@ -49,6 +50,10 @@ class PageText : View {
     var mSecondPageNum: Int = 0
     var mMaxPageNum: Int = 0
     var mDoublePageMode = false
+
+    private val readerContentBottomInset by lazy {
+        resources.getDimension(R.dimen.gi_reader_content_bottom_inset)
+    }
 
     constructor(context: Context) : super(context)
 
@@ -104,7 +109,7 @@ class PageText : View {
 
     private fun drawFooter(canvas: Canvas, pageText: String) {
         val footerMargin = getMarginLeft(width.toFloat()).coerceAtLeast(16f)
-        val footerY = height - getFooterBottomPadding()
+        val footerY = height - readerContentBottomInset - getFooterBottomPadding()
         val pageTextWidth = mPaint.measureText(pageText)
         val titleMaxWidth = (width - footerMargin * 3f - pageTextWidth).coerceAtLeast(0f)
         val titleText = fitFooterText(mTitle.orEmpty(), titleMaxWidth)
@@ -146,7 +151,8 @@ class PageText : View {
     private fun getTextHeight(): Int = (getContentHeight() * 0.94f).toInt()
 
     private fun getContentHeight(): Float =
-        (height - getFooterReservedHeight()).coerceAtLeast(mTextSize * mRowSpace)
+        (height - readerContentBottomInset - getFooterReservedHeight())
+            .coerceAtLeast(mTextSize * mRowSpace)
 
     private fun getFooterTextSize(): Float = mBottomTextSize.coerceAtMost(mTextSize * 0.55f)
 

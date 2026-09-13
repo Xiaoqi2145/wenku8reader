@@ -1,14 +1,13 @@
 package com.cyh128.hikari_novel.ui.read.vertical
 
-import android.animation.Animator
 import android.content.Intent
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.WindowManager
-import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.Lifecycle
 import androidx.appcompat.app.AppCompatDelegate
@@ -25,6 +24,7 @@ import com.cyh128.hikari_novel.databinding.ViewVerticalReadConfigBinding
 import com.cyh128.hikari_novel.ui.other.LoadingView
 import com.cyh128.hikari_novel.ui.read.SelectColorActivity
 import com.cyh128.hikari_novel.ui.read.catalog.ReadChapterCatalogBottomSheet
+import com.cyh128.hikari_novel.ui.read.common.ReaderChromeController
 import com.cyh128.hikari_novel.util.getIsInDarkMode
 import com.cyh128.hikari_novel.util.ReaderStatusText
 import com.cyh128.hikari_novel.util.startActivity
@@ -33,7 +33,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.slider.Slider
 import com.google.android.material.snackbar.Snackbar
-import com.gyf.immersionbar.ImmersionBar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -43,6 +42,7 @@ import kotlin.properties.Delegates
 class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
     private lateinit var bottomViewBinding: ViewVerticalReadConfigBinding
     private lateinit var bottomSheetDialog: BottomSheetDialog
+    private lateinit var chromeController: ReaderChromeController
     private val viewModel by lazy { ViewModelProvider(this)[ReadViewModel::class.java] }
     private var showBarColor by Delegates.notNull<Int>()
     /** 用户正在拖动进度滑块时暂停外部回写，避免抖动 */
@@ -50,6 +50,17 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (viewModel.isBarShown) {
+                    hideBar()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
 
         if (viewModel.novel == null) {
             val parcel = intent.getParcelableExtra<ReadParcel>("data")
@@ -155,7 +166,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 while (true) {
                     refreshStatusBar()
-                    delay(30_000)
+                    delay(60_000L - (System.currentTimeMillis() % 60_000L))
                 }
             }
         }
@@ -179,6 +190,15 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
             showBarColor = it.resourceId
         }
 
+        chromeController = ReaderChromeController(
+            activity = this,
+            toolbar = binding.tbAVRead,
+            bottomBar = binding.barAVRead.root,
+            shownBarColor = showBarColor,
+            hiddenBarColor = ::getHideBarColor,
+            onVisibilityChanged = { viewModel.isBarShown = it }
+        )
+
         bottomViewBinding = ViewVerticalReadConfigBinding.inflate(LayoutInflater.from(this))
         bottomSheetDialog = BottomSheetDialog(this).apply {
             setContentView(bottomViewBinding.root)
@@ -192,6 +212,15 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
         bottomViewBinding.sVVReadConfigRestoreChapterReadHistoryWithoutConfirm.isChecked = viewModel.getIsShowChapterReadHistoryWithoutConfirm()
         bottomViewBinding.sVVReadConfigRestoreChapterReadHistoryWithoutConfirm.isEnabled = viewModel.getIsShowChapterReadHistory()
+
+        if (viewModel.isVerticalReadFirstLaunch) {
+            binding.iAVReadGuide.root.setOnClickListener {
+                binding.iAVReadGuide.root.visibility = android.view.View.GONE
+                viewModel.setIsVerticalReadFirstLaunch(false)
+            }
+        } else {
+            binding.iAVReadGuide.root.visibility = android.view.View.GONE
+        }
 
         if (viewModel.getKeepScreenOn()) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) //保持屏幕常亮
         else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -235,6 +264,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
                 override fun onStopTrackingTouch(slider: Slider) {
                     progressSliderTracking = false
+                    slider.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
                     scrollToPercent(slider.value.toInt())
                 }
             }
@@ -242,16 +272,15 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
         //设置底栏菜单按钮监听
         binding.barAVRead.readPreviousChapter.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
             toPreviousChapter()
         }
 
         binding.barAVRead.readNextChapter.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
             toNextChapter()
         }
 
-        binding.barAVRead.readConfig.setOnClickListener {
-            bottomSheetDialog.show()
-        }
         binding.barAVRead.readSettings.setOnClickListener { bottomSheetDialog.show() }
         binding.barAVRead.readCatalog.setOnClickListener { showChapterCatalog() }
         binding.barAVRead.readNight.setOnClickListener {
@@ -429,49 +458,11 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
     }
 
     fun showBar() { //显示上下栏
-        binding.tbAVRead.animate().translationY(0f)
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .setListener(object : Animator.AnimatorListener {
-                override fun onAnimationStart(animation: Animator) {
-                    ImmersionBar.with(this@ReadActivity)
-                        .statusBarColor(showBarColor)
-                        .navigationBarColor(showBarColor)
-                        .fitsSystemWindows(true)
-                        .autoDarkModeEnable(true)
-                        .init()
-                }
-
-                override fun onAnimationEnd(animation: Animator) {}
-                override fun onAnimationCancel(animation: Animator) {}
-                override fun onAnimationRepeat(animation: Animator) {}
-            })
-        binding.barAVRead.root.animate().translationY(0f)
-            .setInterpolator(AccelerateDecelerateInterpolator())
-        viewModel.isBarShown = true
+        chromeController.show()
     }
 
     fun hideBar() { //隐藏上下栏
-        binding.tbAVRead.animate().translationY(-(binding.tbAVRead.bottom.toFloat()))
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .setListener(object : Animator.AnimatorListener {
-                override fun onAnimationStart(animation: Animator) {}
-                override fun onAnimationEnd(animation: Animator) {
-                    ImmersionBar.with(this@ReadActivity)
-                        .statusBarColor(getHideBarColor())
-                        .navigationBarColor(getHideBarColor())
-                        .fitsSystemWindows(true)
-                        .autoDarkModeEnable(true)
-                        .init()
-                }
-
-                override fun onAnimationCancel(animation: Animator) {}
-                override fun onAnimationRepeat(animation: Animator) {}
-            })
-        //按实际位置计算，保证底栏（含底部边距）完全移出屏幕
-        binding.barAVRead.root.animate()
-            .translationY((binding.root.height - binding.barAVRead.root.top).toFloat())
-            .setInterpolator(AccelerateDecelerateInterpolator())
-        viewModel.isBarShown = false
+        chromeController.hide()
     }
 
     fun setRestoreChapterReadHistoryDisable() {
@@ -486,7 +477,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
         }
     }
 
-    /** 常显状态行：时间与电量，每 30 秒刷新一次（百分比由进度回写） */
+    /** 常显状态行：时间与电量，在分钟边界刷新（百分比由进度回写）。 */
     private fun refreshStatusBar() {
         binding.statusAVRead.readStatusTime.text = ReaderStatusText.time()
         val battery = ReaderStatusText.batteryLevel(this)
@@ -504,7 +495,6 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
     }
 
     private fun setBottomBarIsEnable(isEnable: Boolean) {
-        binding.barAVRead.readConfig.isEnabled = isEnable
         binding.barAVRead.readNextChapter.isEnabled = isEnable
         binding.barAVRead.readPreviousChapter.isEnabled = isEnable
         binding.barAVRead.readProgressSlider.isEnabled = isEnable

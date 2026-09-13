@@ -58,6 +58,10 @@ class PageView: ViewFlipper, IPageView {
     var imageArray = listOf<String>()
     var doublePageEnabled: Boolean by InvalidateAfterSet(false)
 
+    private val readerContentBottomInset by lazy {
+        resources.getDimension(R.dimen.gi_reader_content_bottom_inset)
+    }
+
     private lateinit var imageClick: (String) -> Unit
 
     private val touchJudge by lazy { ReaderTouchJudge(context) }
@@ -428,7 +432,8 @@ class PageView: ViewFlipper, IPageView {
     private fun getTextHeight(): Int = (getContentHeight() * 0.94f).toInt()
 
     private fun getContentHeight(): Float =
-        (height - getFooterReservedHeight()).coerceAtLeast(textSize * rowSpace)
+        (height - readerContentBottomInset - getFooterReservedHeight())
+            .coerceAtLeast(textSize * rowSpace)
 
     private fun getFooterTextSize(): Float = bottomTextSize.coerceAtMost(textSize * 0.55f)
 

@@ -313,12 +313,11 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
     }
 
     private fun toggleReaderBar() {
+        binding.root.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
         if (viewModel.isBarShown) {
             (requireActivity() as ReadActivity).hideBar()
-            viewModel.isBarShown = false
         } else {
             (requireActivity() as ReadActivity).showBar()
-            viewModel.isBarShown = true
         }
     }
 

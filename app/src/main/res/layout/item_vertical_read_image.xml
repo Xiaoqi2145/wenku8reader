@@ -10,10 +10,10 @@
   android:orientation="vertical"
   android:padding="@dimen/gi_space_inset">
   <FrameLayout
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content">
     <com.google.android.material.card.MaterialCardView
-      android:layout_width="wrap_content"
+      android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_gravity="center_horizontal"
       app:cardCornerRadius="@dimen/gi_space_xs"
@@ -21,9 +21,11 @@
       android:foreground="?selectableItemBackground">
       <ImageView
         android:id="@+id/iv_i_v_read_image"
-        android:layout_width="@dimen/gi_metric_280dp"
-        android:layout_height="@dimen/gi_metric_420dp"
-        android:scaleType="centerCrop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:maxHeight="@dimen/gi_vertical_image_max_height"
+        android:scaleType="fitCenter"
         tools:ignore="ContentDescription" />
     </com.google.android.material.card.MaterialCardView>
     <com.google.android.material.progressindicator.CircularProgressIndicator

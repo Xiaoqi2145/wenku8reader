@@ -1,6 +1,5 @@
 package com.cyh128.hikari_novel.ui.read.horizontal
 
-import android.animation.Animator
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
@@ -11,9 +10,9 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.WindowManager
-import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.OnBackPressedCallback
 import androidx.core.graphics.toColorInt
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
@@ -31,6 +30,7 @@ import com.cyh128.hikari_novel.databinding.ActivityHorizontalReadBinding
 import com.cyh128.hikari_novel.databinding.ViewHorizontalReadConfigBinding
 import com.cyh128.hikari_novel.ui.read.SelectColorActivity
 import com.cyh128.hikari_novel.ui.read.catalog.ReadChapterCatalogBottomSheet
+import com.cyh128.hikari_novel.ui.read.common.ReaderChromeController
 import com.cyh128.hikari_novel.util.ThemeHelper
 import com.cyh128.hikari_novel.util.getIsInDarkMode
 import com.cyh128.hikari_novel.util.ReaderStatusText
@@ -40,7 +40,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.slider.Slider
 import com.google.android.material.snackbar.Snackbar
-import com.gyf.immersionbar.ImmersionBar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -54,11 +53,23 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
     private val viewModel by lazy { ViewModelProvider(this)[ReadViewModel::class.java] }
     private lateinit var bottomViewBinding: ViewHorizontalReadConfigBinding
     private lateinit var bottomSheetDialog: BottomSheetDialog
+    private lateinit var chromeController: ReaderChromeController
     private var showBarColor by Delegates.notNull<Int>()
     private var saveReadHistoryJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (viewModel.isBarShown) {
+                    hideBar()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
 
         setSupportActionBar(binding.tbAHRead)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -190,7 +201,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 while (true) {
                     refreshStatusBar()
-                    delay(30_000)
+                    delay(60_000L - (System.currentTimeMillis() % 60_000L))
                 }
             }
         }
@@ -255,6 +266,15 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             )
             showBarColor = it.resourceId
         }
+
+        chromeController = ReaderChromeController(
+            activity = this,
+            toolbar = binding.tbAHRead,
+            bottomBar = binding.barAHRead.root,
+            shownBarColor = showBarColor,
+            hiddenBarColor = ::getHideBarColor,
+            onVisibilityChanged = { viewModel.isBarShown = it }
+        )
 
         bottomViewBinding = ViewHorizontalReadConfigBinding.inflate(LayoutInflater.from(this))
         bottomSheetDialog = BottomSheetDialog(this).apply {
@@ -328,12 +348,11 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
 
         binding.pvAHRead.onCenterClick = object : IPageView.OnCenterClick {
             override fun onCenterClick() {
+                binding.root.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
                 if (viewModel.isBarShown) {
                     hideBar()
-                    viewModel.isBarShown = false
                 } else {
                     showBar()
-                    viewModel.isBarShown = true
                 }
             }
         }
@@ -381,6 +400,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             object : Slider.OnSliderTouchListener {
                 override fun onStartTrackingTouch(slider: Slider) {}
                 override fun onStopTrackingTouch(slider: Slider) {
+                    slider.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
                     binding.pvAHRead.pageNum = slider.value.toInt()
                     updateProgressPercent(slider.value.toInt(), binding.pvAHRead.maxPageNum)
                 }
@@ -429,7 +449,6 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             )
         }
 
-        binding.barAHRead.readConfig.setOnClickListener { bottomSheetDialog.show() }
         binding.barAHRead.readSettings.setOnClickListener { bottomSheetDialog.show() }
         binding.barAHRead.readCatalog.setOnClickListener { showChapterCatalog() }
         binding.barAHRead.readNight.setOnClickListener {
@@ -447,9 +466,15 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             }
         }
 
-        binding.barAHRead.readNextChapter.setOnClickListener { toNextChapter() }
+        binding.barAHRead.readNextChapter.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+            toNextChapter()
+        }
 
-        binding.barAHRead.readPreviousChapter.setOnClickListener { toPreviousChapter() }
+        binding.barAHRead.readPreviousChapter.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+            toPreviousChapter()
+        }
 
         bottomViewBinding.sVHReadConfigKeyDownSwitchChapter.setOnCheckedChangeListener { _, isChecked ->
             viewModel.setKeyDownSwitchChapter(isChecked)
@@ -555,49 +580,11 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
     }
 
     private fun showBar() { //显示上下栏
-        binding.tbAHRead.animate().translationY(0f)
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .setListener(object : Animator.AnimatorListener {
-                override fun onAnimationStart(animation: Animator) {
-                    ImmersionBar.with(this@ReadActivity)
-                        .statusBarColor(showBarColor)
-                        .navigationBarColor(showBarColor)
-                        .fitsSystemWindows(true)
-                        .autoDarkModeEnable(true)
-                        .init()
-                }
-
-                override fun onAnimationEnd(animation: Animator) {}
-                override fun onAnimationCancel(animation: Animator) {}
-                override fun onAnimationRepeat(animation: Animator) {}
-            })
-        binding.barAHRead.root.animate().translationY(0f)
-            .setInterpolator(AccelerateDecelerateInterpolator())
-        viewModel.isBarShown = true
+        chromeController.show()
     }
 
     private fun hideBar() { //隐藏上下栏
-        binding.tbAHRead.animate().translationY(-(binding.tbAHRead.bottom.toFloat()))
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .setListener(object : Animator.AnimatorListener {
-                override fun onAnimationStart(animation: Animator) {}
-                override fun onAnimationEnd(animation: Animator) {
-                    ImmersionBar.with(this@ReadActivity)
-                        .statusBarColor(getHideBarColor())
-                        .navigationBarColor(getHideBarColor())
-                        .fitsSystemWindows(true)
-                        .autoDarkModeEnable(true)
-                        .init()
-                }
-
-                override fun onAnimationCancel(animation: Animator) {}
-                override fun onAnimationRepeat(animation: Animator) {}
-            })
-        //按实际位置计算，保证底栏（含底部边距）完全移出屏幕
-        binding.barAHRead.root.animate()
-            .translationY((binding.root.height - binding.barAHRead.root.top).toFloat())
-            .setInterpolator(AccelerateDecelerateInterpolator())
-        viewModel.isBarShown = false
+        chromeController.hide()
     }
 
     private fun getHideBarColor() = getIsInDarkMode().let {
@@ -609,7 +596,6 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
     }
 
     private fun setBottomBarIsEnable(value: Boolean) {
-        binding.barAHRead.readConfig.isEnabled = value
         binding.barAHRead.readNextChapter.isEnabled = value
         binding.barAHRead.readPreviousChapter.isEnabled = value
         binding.barAHRead.readProgressSlider.isEnabled = value
@@ -621,7 +607,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
         binding.statusAHRead.readStatusProgress.text = "$percent%"
     }
 
-    /** 常显状态行：时间与电量，每 30 秒刷新一次 */
+    /** 常显状态行：时间与电量，在分钟边界刷新。 */
     private fun refreshStatusBar() {
         binding.statusAHRead.readStatusTime.text = ReaderStatusText.time()
         val battery = ReaderStatusText.batteryLevel(this)

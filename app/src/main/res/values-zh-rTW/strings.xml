@@ -207,6 +207,9 @@
     <string name="sign_in">簽到</string>
     <string name="menu">選單</string>
     <string name="menu_tip">在有圖片的頁面點擊圖片正中間可以放大查看</string>
+    <string name="reader_tip_title">閱讀提示</string>
+    <string name="reader_tip_body">點擊螢幕中央呼出閱讀選單；在圖片頁面點擊圖片中央可以查看原圖。</string>
+    <string name="reader_tip_dismiss">知道了</string>
 
     <string name="go_to_download">前往下載</string>
     <string name="sign_in_success">簽到成功</string>
@@ -328,6 +331,7 @@
     <string name="download_chapter">下載章節</string>
     <string name="download_queued">已加入下載佇列</string>
     <string name="continue_reading">繼續閱讀</string>
+    <string name="chapter_end">本章結束</string>
     <string name="catalog_volume_label">卷目</string>
     <string name="catalog_chapter_label">章節列表</string>
     <string name="catalog_volume_count">%1$d章</string>

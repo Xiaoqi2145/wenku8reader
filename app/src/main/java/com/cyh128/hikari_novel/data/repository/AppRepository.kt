@@ -37,6 +37,14 @@ class AppRepository @Inject constructor(
         appConfig.isHorizontalFirstLaunch = isHorizontalFirstLaunch
     }
 
+    //获取竖向阅读器首次启动状态
+    fun getIsVerticalFirstLaunch() = appConfig.isVerticalFirstLaunch
+
+    //设置竖向阅读器首次启动状态
+    fun setIsVerticalFirstLaunch(isVerticalFirstLaunch: Boolean) {
+        appConfig.isVerticalFirstLaunch = isVerticalFirstLaunch
+    }
+
     //获取自动更新状态
     fun getIsAutoUpdate() = appConfig.isAutoUpdate
 

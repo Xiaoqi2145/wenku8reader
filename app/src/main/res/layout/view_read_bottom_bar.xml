@@ -87,13 +87,6 @@
         android:text="@string/chapter_catalog"
         app:icon="@drawable/ic_view_list"
         app:iconGravity="textTop" />
-      <com.google.android.material.button.MaterialButton
-        android:id="@+id/read_config"
-        style="@style/Widget.GalIsland.Button.Text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/more_setting"
-        android:visibility="gone" />
     </LinearLayout>
   </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

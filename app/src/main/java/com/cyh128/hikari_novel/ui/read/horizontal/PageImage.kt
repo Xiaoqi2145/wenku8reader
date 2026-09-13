@@ -66,6 +66,10 @@ class PageImage : AppCompatImageView {
     var mPageNum: Int = 0
     var mMaxPageNum: Int = 0
 
+    private val readerContentBottomInset by lazy {
+        resources.getDimension(com.cyh128.hikari_novel.R.dimen.gi_reader_content_bottom_inset)
+    }
+
     var imageRect: RectF? = null
     var mImageurl: String? = null
     lateinit var mImageClick: (String) -> Unit
@@ -273,7 +277,7 @@ class PageImage : AppCompatImageView {
 
     private fun drawFooter(canvas: Canvas, pageText: String) {
         val footerMargin = getMarginLeft().coerceAtLeast(16f)
-        val footerY = height - getFooterBottomPadding()
+        val footerY = height - readerContentBottomInset - getFooterBottomPadding()
         val pageTextWidth = mPaint.measureText(pageText)
         val titleMaxWidth = (width - footerMargin * 3f - pageTextWidth).coerceAtLeast(0f)
         val titleText = fitFooterText(mTitle.orEmpty(), titleMaxWidth)
@@ -432,7 +436,8 @@ class PageImage : AppCompatImageView {
     private fun getTextWidth(): Int = (width * 0.96f).toInt()
 
     //正文区域高度
-    private fun getTextHeight(): Int = ((height - mBottomTextSize) * 0.96f).toInt()
+    private fun getTextHeight(): Int =
+        ((height - mBottomTextSize - readerContentBottomInset) * 0.96f).toInt()
 
     private fun getFooterTextSize(): Float = mBottomTextSize.coerceAtMost(mTextSize * 0.55f)
 

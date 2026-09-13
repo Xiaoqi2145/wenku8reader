@@ -164,13 +164,14 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="right">
-        <Button
+        <com.google.android.material.button.MaterialButton
           android:id="@+id/b_a_select_color_cancel"
           style="@style/Widget.GalIsland.Button.Text"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:text="@string/cancel" />
-        <Button
+        <com.google.android.material.button.MaterialButton
+          style="@style/Widget.GalIsland.Button"
           android:id="@+id/b_a_select_color_save"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"

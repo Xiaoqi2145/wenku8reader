@@ -1,25 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView
   xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
   android:id="@+id/nsv_f_v_read"
   android:orientation="vertical"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
+  android:clipToPadding="false"
   android:paddingLeft="@dimen/gi_control_icon"
-  android:paddingRight="@dimen/gi_control_icon">
+  android:paddingRight="@dimen/gi_control_icon"
+  android:paddingBottom="@dimen/gi_reader_content_bottom_inset">
   <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-    <Button
+    <com.google.android.material.button.MaterialButton
       android:id="@+id/b_f_v_read_previous_chapter"
+      style="@style/Widget.GalIsland.Button.Outlined"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_marginTop="@dimen/gi_control_icon"
       android:layout_marginBottom="@dimen/gi_control_icon"
-      android:layout_marginLeft="@dimen/gi_rail_width"
-      android:layout_marginRight="@dimen/gi_rail_width"
-      android:text="@string/previous_chapter" />
+      android:layout_marginLeft="@dimen/gi_page_inset"
+      android:layout_marginRight="@dimen/gi_page_inset"
+      android:text="@string/previous_chapter"
+      app:icon="@drawable/ic_skip_previous"
+      app:iconGravity="textStart" />
     <TextView
       android:id="@+id/tv_f_v_read"
       android:layout_width="match_parent"
@@ -39,15 +45,18 @@
       android:gravity="center"
       android:textSize="@dimen/gi_metric_20sp"
       android:textStyle="bold"
-      android:text="已经到底了" />
-    <Button
+      android:text="@string/chapter_end" />
+    <com.google.android.material.button.MaterialButton
       android:id="@+id/b_f_v_read_next_chapter"
+      style="@style/Widget.GalIsland.Button.Outlined"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_marginTop="@dimen/gi_space_inset"
       android:layout_marginBottom="@dimen/gi_control_icon"
-      android:layout_marginLeft="@dimen/gi_rail_width"
-      android:layout_marginRight="@dimen/gi_rail_width"
-      android:text="@string/next_chapter" />
+      android:layout_marginLeft="@dimen/gi_page_inset"
+      android:layout_marginRight="@dimen/gi_page_inset"
+      android:text="@string/next_chapter"
+      app:icon="@drawable/ic_skip_next"
+      app:iconGravity="textStart" />
   </LinearLayout>
 </androidx.core.widget.NestedScrollView>

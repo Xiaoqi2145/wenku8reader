@@ -26,6 +26,12 @@ class AppConfig @Inject constructor() {
             cursor.encode("is_horizontal_first_launch", value)
         }
 
+    var isVerticalFirstLaunch: Boolean
+        get() = cursor.decodeBool("is_vertical_first_launch", true)
+        set(value) {
+            cursor.encode("is_vertical_first_launch", value)
+        }
+
     var isAutoUpdate: Boolean
         get() = cursor.decodeBool("is_auto_update", true)
         set(value) {

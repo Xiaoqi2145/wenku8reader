@@ -92,13 +92,6 @@ fun Fragment.getIsInDarkMode() =
         else -> false
     }
 
-fun Context.novelGridSpanCount(): Int {
-    val screenWidthDp = resources.configuration.screenWidthDp
-    if (screenWidthDp == Configuration.SCREEN_WIDTH_DP_UNDEFINED) return 3
-
-    return (screenWidthDp / 130).coerceIn(3, 8)
-}
-
 fun String.urlEncode(enc: String? = null): String {
     if (enc != null) return URLEncoder.encode(this, enc)
     return when (Locale.getDefault()) {

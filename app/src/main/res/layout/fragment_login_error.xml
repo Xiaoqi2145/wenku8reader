@@ -45,7 +45,7 @@
         android:textStyle="bold"
         tools:text="错误提示" />
     </androidx.core.widget.NestedScrollView>
-    <Button
+    <com.google.android.material.button.MaterialButton
       android:minHeight="@dimen/gi_control_height"
       android:id="@+id/b_f_login_error"
       style="@style/Widget.GalIsland.Button"

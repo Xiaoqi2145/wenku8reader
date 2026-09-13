@@ -33,6 +33,7 @@
   <dimen name="gi_icon_button_size">48dp</dimen>
   <dimen name="gi_toolbar_height">56dp</dimen>
   <dimen name="gi_status_bar_height">28dp</dimen>
+  <dimen name="gi_reader_content_bottom_inset">36dp</dimen>
   <dimen name="gi_status_icon">14dp</dimen>
   <!-- ===================== 字级 ===================== -->
   <dimen name="gi_text_meta">11sp</dimen>
@@ -50,6 +51,7 @@
   <dimen name="gi_grid_line">0.5dp</dimen>
   <dimen name="gi_rail_width">80dp</dimen>
   <dimen name="gi_grid_unit">40dp</dimen>
+  <dimen name="gi_vertical_image_max_height">420dp</dimen>
 
   <!-- ===================== 阅读目录抽屉 ===================== -->
   <dimen name="gi_catalog_header_height">72dp</dimen>

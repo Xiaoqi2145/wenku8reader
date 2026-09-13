@@ -20,6 +20,7 @@ import com.cyh128.hikari_novel.data.model.chapterRefAt
 import com.cyh128.hikari_novel.data.model.chapterRefs
 import com.cyh128.hikari_novel.data.repository.ReadColorRepository
 import com.cyh128.hikari_novel.data.repository.VerticalReadRepository
+import com.cyh128.hikari_novel.data.repository.AppRepository
 import com.drake.channel.sendEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -35,6 +36,7 @@ import kotlin.properties.Delegates
 class ReadViewModel @Inject constructor(
     private val verticalReadRepository: VerticalReadRepository,
     private val readColorRepository: ReadColorRepository,
+    private val appRepository: AppRepository,
     private val sessionCoordinator: ReaderSessionCoordinator
 ) : ViewModel() {
     private val _readerState = MutableStateFlow<ReaderUiState>(ReaderUiState.Idle)
@@ -59,6 +61,12 @@ class ReadViewModel @Inject constructor(
 
     var isBarShown = true //上下栏是否显示（与进入阅读页时的 showBar() 保持一致）
     var progressText = MutableLiveData<String>()
+
+    val isVerticalReadFirstLaunch get() = appRepository.getIsVerticalFirstLaunch()
+
+    fun setIsVerticalReadFirstLaunch(value: Boolean) {
+        appRepository.setIsVerticalFirstLaunch(value)
+    }
 
     private data class VerticalProgressPosition(
         val position: ReaderPosition,

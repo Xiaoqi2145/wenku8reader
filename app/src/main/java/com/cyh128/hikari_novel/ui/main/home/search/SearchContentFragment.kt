@@ -3,7 +3,6 @@ package com.cyh128.hikari_novel.ui.main.home.search
 import android.os.Bundle
 import android.view.View
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.base.BaseFragment
@@ -12,6 +11,7 @@ import com.cyh128.hikari_novel.data.model.ListViewType
 import com.cyh128.hikari_novel.databinding.FragmentNovelListBinding
 import com.cyh128.hikari_novel.ui.detail.NovelInfoActivity
 import com.cyh128.hikari_novel.ui.main.NovelCoverListAdapter
+import com.cyh128.hikari_novel.ui.other.NovelGridLayoutManager
 import com.cyh128.hikari_novel.util.startActivity
 import com.drake.channel.receiveEvent
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -30,7 +30,7 @@ class SearchContentFragment : BaseFragment<FragmentNovelListBinding>() {
             }
         }
         binding.rvFNovelList.apply {
-            layoutManager = if (viewModel.listViewType == ListViewType.Linear) LinearLayoutManager(context) else GridLayoutManager(requireContext(), 3)
+            layoutManager = if (viewModel.listViewType == ListViewType.Linear) LinearLayoutManager(context) else NovelGridLayoutManager(requireContext())
             this.adapter = adapter
         }
 

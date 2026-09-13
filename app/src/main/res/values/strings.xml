@@ -30,6 +30,7 @@
     <string name="download_chapter">下载章节</string>
     <string name="download_queued">已加入下载队列</string>
     <string name="continue_reading">继续阅读</string>
+    <string name="chapter_end">本章结束</string>
     <string name="re_login">重新登录</string>
     <string name="cancel">取消</string>
     <string name="ok">好的</string>
@@ -229,6 +230,9 @@
     <string name="sign_in">签到</string>
     <string name="menu">菜单</string>
     <string name="menu_tip">在有图片的页面点击图片正中间可以放大查看</string>
+    <string name="reader_tip_title">阅读提示</string>
+    <string name="reader_tip_body">点击屏幕中央呼出阅读菜单；在图片页面点击图片中央可以查看原图。</string>
+    <string name="reader_tip_dismiss">知道了</string>
 
     <string name="go_to_download">前往下载</string>
     <string name="sign_in_success">签到成功</string>

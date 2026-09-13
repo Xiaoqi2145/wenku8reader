@@ -287,8 +287,11 @@
     <item name="android:windowExitAnimation">@anim/slide_out_right</item>
   </style>
   <!-- ===================== 对话框 ===================== -->
+  <style name="Widget.GalIsland.AlertDialog.Title" parent="MaterialAlertDialog.Material3.Title.Text">
+    <item name="android:textAppearance">@style/TextAppearance.GalIsland.SectionTitle</item>
+  </style>
   <style name="ThemeOverlay.GalIsland.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
     <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.GalIsland.Medium</item>
-    <item name="materialAlertDialogTitleTextStyle">@style/TextAppearance.GalIsland.SectionTitle</item>
+    <item name="materialAlertDialogTitleTextStyle">@style/Widget.GalIsland.AlertDialog.Title</item>
   </style>
 </resources>
