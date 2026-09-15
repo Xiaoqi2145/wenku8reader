@@ -62,6 +62,18 @@ foreach ($gridPage in $gridPages) {
 # Browsing and secondary pages must root (or wrap) in the GalIsland grid surface
 # so no page falls back to a flat solid background.
 $gridSurfaceLayouts = @(
+    'layout/activity_main.xml',
+    'layout-sw600dp/activity_main.xml',
+    'layout/activity_crash.xml',
+    'layout/activity_splash.xml',
+    'layout/fragment_guide.xml',
+    'layout/fragment_logging_in.xml',
+    'layout/fragment_login_error.xml',
+    'layout/fragment_home.xml',
+    'layout/fragment_bookshelf.xml',
+    'layout/fragment_category.xml',
+    'layout/fragment_ranking.xml',
+    'layout/activity_novel_info.xml',
     'layout/fragment_novel_list.xml',
     'layout/fragment_recommend.xml',
     'layout/fragment_bookshelf_list.xml',
@@ -83,8 +95,11 @@ $gridSurfaceLayouts = @(
 )
 foreach ($rel in $gridSurfaceLayouts) {
     $text = Get-Content -LiteralPath (Join-Path $res $rel) -Raw -Encoding UTF8
-    if (!$text.Contains('com.cyh128.hikari_novel.ui.other.LibrarySurfaceLayout')) {
+    if ($text -notmatch 'com.cyh128.hikari_novel.ui.other.(LibrarySurfaceLayout|GalislandGridConstraintLayout|GalislandGridLinearLayout)') {
         $failures.Add("Page lost the GalIsland grid surface root: $rel")
+    }
+    if ($text -match '(?m)^\s*android:background="\?attr/colorSurface"') {
+        $failures.Add("Page still uses a flat page-level colorSurface: $rel")
     }
 }
 if ($failures.Count) { $failures | ForEach-Object { Write-Error $_ -ErrorAction Continue }; exit 1 }

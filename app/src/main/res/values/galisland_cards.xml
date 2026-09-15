@@ -9,15 +9,16 @@
     <dimen name="galisland_novel_selection_icon_size">@dimen/gi_control_icon</dimen>
     <dimen name="galisland_novel_list_cover_width">@dimen/gi_cover_width</dimen>
     <dimen name="galisland_novel_list_cover_height">@dimen/gi_cover_height</dimen>
-    <style name="Widget.GalIsland.NovelCards.Card" parent="Widget.Material3.CardView.Filled">
-        <item name="cardBackgroundColor">@android:color/transparent</item>
+    <style name="Widget.GalIsland.NovelCards.Card" parent="Widget.GalIsland.CardView.Novel">
+        <item name="cardBackgroundColor">?attr/colorSurface</item>
         <item name="cardElevation">0dp</item>
-        <item name="strokeWidth">0dp</item>
+        <item name="strokeWidth">@dimen/gi_stroke</item>
+        <item name="strokeColor">?attr/colorOutlineVariant</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
     </style>
     <style name="Widget.GalIsland.NovelCards.Cover" parent="Widget.GalIsland.CardView.Cover" />
-    <style name="Widget.GalIsland.NovelCards.SelectionIndicator" parent="Widget.GalIsland.CardView">
+    <style name="Widget.GalIsland.NovelCards.SelectionIndicator" parent="Widget.GalIsland.CardView.Cover">
         <item name="cardBackgroundColor">@android:color/transparent</item>
         <item name="cardElevation">0dp</item>
         <item name="strokeWidth">0dp</item>

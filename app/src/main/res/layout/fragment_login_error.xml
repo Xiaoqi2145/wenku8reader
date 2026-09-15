@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<com.cyh128.hikari_novel.ui.other.GalislandGridLinearLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
@@ -62,4 +62,4 @@
     android:layout_height="wrap_content"
     android:text="@string/setting"
     app:icon="@drawable/ic_setting" />
-</LinearLayout>
+</com.cyh128.hikari_novel.ui.other.GalislandGridLinearLayout>

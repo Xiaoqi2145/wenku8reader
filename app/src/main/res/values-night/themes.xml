@@ -25,6 +25,7 @@
     <item name="giBorderStrong">?attr/colorOutline</item>
     <item name="giSurfaceSidebar">?attr/colorSurfaceContainerLow</item>
     <item name="giSurfaceToolbar">?attr/colorSurface</item>
+    <item name="giGridLine">?attr/colorOutlineVariant</item>
     <item name="elevationOverlayEnabled">false</item>
   </style>
 </resources>
