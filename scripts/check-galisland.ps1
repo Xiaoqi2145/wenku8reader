@@ -102,5 +102,35 @@ foreach ($rel in $gridSurfaceLayouts) {
         $failures.Add("Page still uses a flat page-level colorSurface: $rel")
     }
 }
+
+# Theme and reader Chrome tokens must remain semantic in both day and night resources.
+foreach ($themeFile in @(
+    "$res/values/themes.xml",
+    "$res/values-night/themes.xml",
+    "$res/values/galisland_surfaces.xml"
+)) {
+    $themeText = Get-Content -LiteralPath $themeFile -Raw -Encoding UTF8
+    if (!$themeText.Contains('giSurfaceReaderChrome')) {
+        $failures.Add("Missing reader Chrome token in $([IO.Path]::GetFileName($themeFile))")
+    }
+}
+foreach ($readerCode in @(
+    "$PSScriptRoot/../app/src/main/java/com/cyh128/hikari_novel/ui/read/horizontal/ReadActivity.kt",
+    "$PSScriptRoot/../app/src/main/java/com/cyh128/hikari_novel/ui/read/vertical/ReadActivity.kt"
+)) {
+    $readerText = Get-Content -LiteralPath $readerCode -Raw -Encoding UTF8
+    if ($readerText -match 'colorSurfaceContainer') {
+        $failures.Add("Reader code bypasses the semantic Chrome token: $([IO.Path]::GetFileName($readerCode))")
+    }
+    if (!$readerText.Contains('giSurfaceReaderChrome')) {
+        $failures.Add("Reader code is missing the semantic Chrome token: $([IO.Path]::GetFileName($readerCode))")
+    }
+}
+foreach ($readerSurface in @('bg_read_bottom_bar.xml', 'bg_read_status_bar.xml')) {
+    $surfaceText = Get-Content -LiteralPath "$res/drawable/$readerSurface" -Raw -Encoding UTF8
+    if (!$surfaceText.Contains('giSurfaceReaderChrome')) {
+        $failures.Add("Reader surface bypasses the semantic Chrome token: $readerSurface")
+    }
+}
 if ($failures.Count) { $failures | ForEach-Object { Write-Error $_ -ErrorAction Continue }; exit 1 }
 Write-Output 'GalIsland resource and visual consistency checks passed.'

@@ -18,6 +18,8 @@
   <dimen name="gi_radius_control">7dp</dimen>
   <dimen name="gi_radius_card">8dp</dimen>
   <dimen name="gi_radius_window">10dp</dimen>
+  <dimen name="gi_chip_height">24dp</dimen>
+  <dimen name="gi_chip_touch_height">32dp</dimen>
   <!-- 小说卡片与模板保持 8dp 圆角；边界由卡片状态色统一控制。 -->
   <dimen name="gi_radius_card_novel">8dp</dimen>
   <dimen name="gi_radius_cover_novel">8dp</dimen>

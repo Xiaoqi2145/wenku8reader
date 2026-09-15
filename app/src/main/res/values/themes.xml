@@ -19,6 +19,7 @@
     <item name="materialAlertDialogTheme">@style/ThemeOverlay.GalIsland.MaterialAlertDialog</item>
     <item name="giSurfaceInput">?attr/colorSurfaceVariant</item>
     <item name="giSurfaceHover">?attr/colorSurfaceContainerHigh</item>
+    <item name="giSurfaceReaderChrome">?attr/colorSurfaceContainer</item>
     <item name="appBarLayoutStyle">@style/Widget.GalIsland.AppBar</item>
     <item name="giAccentSoft">@color/galisland_nav_indicator</item>
     <item name="bottomSheetDialogTheme">@style/ThemeOverlay.GalIsland.BottomSheet</item>
@@ -395,6 +396,7 @@
     <item name="giSurfaceHover">@color/galisland_hover</item>
     <item name="giSurfaceInput">@color/galisland_input</item>
     <item name="giSurfaceToolbar">@color/galisland_toolbar</item>
+    <item name="giSurfaceReaderChrome">@color/galisland_surfaceContainer</item>
     <item name="giBorderStrong">@color/galisland_borderStrong</item>
   </style>
 </resources>

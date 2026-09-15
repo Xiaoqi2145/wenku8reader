@@ -183,7 +183,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
         refreshStatusBar()
         val showBarColor = MaterialColors.getColor(
             binding.root,
-            com.google.android.material.R.attr.colorSurfaceContainer
+            R.attr.giSurfaceReaderChrome
         )
         chromeController = ReaderChromeController(
             window = window,

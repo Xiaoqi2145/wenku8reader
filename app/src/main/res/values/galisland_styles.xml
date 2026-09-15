@@ -10,19 +10,19 @@
   <!-- ===================== 形状层级 ===================== -->
   <style name="ShapeAppearance.GalIsland.Tag" parent="">
     <item name="cornerFamily">rounded</item>
-    <item name="cornerSize">6dp</item>
+    <item name="cornerSize">@dimen/gi_radius_tag</item>
   </style>
   <style name="ShapeAppearance.GalIsland.Small" parent="">
     <item name="cornerFamily">rounded</item>
-    <item name="cornerSize">7dp</item>
+    <item name="cornerSize">@dimen/gi_radius_control</item>
   </style>
   <style name="ShapeAppearance.GalIsland.Medium" parent="">
     <item name="cornerFamily">rounded</item>
-    <item name="cornerSize">8dp</item>
+    <item name="cornerSize">@dimen/gi_radius_card</item>
   </style>
   <style name="ShapeAppearance.GalIsland.Large" parent="">
     <item name="cornerFamily">rounded</item>
-    <item name="cornerSize">10dp</item>
+    <item name="cornerSize">@dimen/gi_radius_window</item>
   </style>
   <!-- ===================== 字体尺度 ===================== -->
   <style name="TextAppearance.GalIsland.CardTitle" parent="TextAppearance.Material3.TitleSmall">
@@ -78,7 +78,7 @@
   <!-- 细描边 + 8dp 圆角，无阴影（模板 .library-card） -->
   <style name="Widget.GalIsland.CardView" parent="Widget.Material3.CardView.Filled">
     <item name="cardBackgroundColor">?attr/colorSurface</item>
-    <item name="cardCornerRadius">8dp</item>
+    <item name="cardCornerRadius">@dimen/gi_radius_card</item>
     <item name="cardElevation">0dp</item>
     <item name="strokeWidth">1dp</item>
     <item name="strokeColor">?attr/colorOutlineVariant</item>
@@ -200,7 +200,7 @@
   <!-- 标签：细描边、小字号、紧凑高度（模板 .tag） -->
   <style name="Widget.GalIsland.Chip" parent="Widget.Material3.Chip.Assist">
     <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Tag</item>
-    <item name="chipMinHeight">24dp</item>
+    <item name="chipMinHeight">@dimen/gi_chip_height</item>
     <item name="chipStrokeWidth">1dp</item>
     <item name="chipStrokeColor">?attr/colorOutlineVariant</item>
     <item name="chipBackgroundColor">@color/gi_chip_background</item>
@@ -211,7 +211,7 @@
   </style>
   <style name="Widget.GalIsland.Chip.Suggestion" parent="Widget.Material3.Chip.Suggestion">
     <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Small</item>
-    <item name="chipMinHeight">32dp</item>
+    <item name="chipMinHeight">@dimen/gi_chip_touch_height</item>
     <item name="android:textAppearance">@style/TextAppearance.GalIsland.ChipLabel</item>
     <item name="chipStrokeWidth">1dp</item>
     <item name="chipStrokeColor">?attr/colorOutlineVariant</item>
@@ -221,7 +221,7 @@
   </style>
   <style name="Widget.GalIsland.Chip.Filter" parent="Widget.Material3.Chip.Filter">
     <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Small</item>
-    <item name="chipMinHeight">32dp</item>
+    <item name="chipMinHeight">@dimen/gi_chip_touch_height</item>
     <item name="chipStrokeWidth">1dp</item>
     <item name="chipStrokeColor">?attr/colorOutlineVariant</item>
     <item name="android:textAppearance">@style/TextAppearance.GalIsland.ChipLabel</item>
@@ -251,10 +251,10 @@
   </style>
   <!-- ===================== 输入框 ===================== -->
   <style name="Widget.GalIsland.TextInputLayout.OutlinedBox" parent="Widget.Material3.TextInputLayout.OutlinedBox">
-    <item name="boxCornerRadiusTopStart">7dp</item>
-    <item name="boxCornerRadiusTopEnd">7dp</item>
-    <item name="boxCornerRadiusBottomStart">7dp</item>
-    <item name="boxCornerRadiusBottomEnd">7dp</item>
+    <item name="boxCornerRadiusTopStart">@dimen/gi_radius_control</item>
+    <item name="boxCornerRadiusTopEnd">@dimen/gi_radius_control</item>
+    <item name="boxCornerRadiusBottomStart">@dimen/gi_radius_control</item>
+    <item name="boxCornerRadiusBottomEnd">@dimen/gi_radius_control</item>
     <item name="boxStrokeWidth">1dp</item>
     <item name="boxStrokeWidthFocused">@dimen/gi_stroke</item>
     <item name="boxStrokeColor">@color/galisland_box_stroke</item>
@@ -262,10 +262,10 @@
     <item name="boxBackgroundColor">?attr/giSurfaceInput</item>
   </style>
   <style name="Widget.GalIsland.TextInputLayout.OutlinedBox.Dropdown" parent="Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
-    <item name="boxCornerRadiusTopStart">7dp</item>
-    <item name="boxCornerRadiusTopEnd">7dp</item>
-    <item name="boxCornerRadiusBottomStart">7dp</item>
-    <item name="boxCornerRadiusBottomEnd">7dp</item>
+    <item name="boxCornerRadiusTopStart">@dimen/gi_radius_control</item>
+    <item name="boxCornerRadiusTopEnd">@dimen/gi_radius_control</item>
+    <item name="boxCornerRadiusBottomStart">@dimen/gi_radius_control</item>
+    <item name="boxCornerRadiusBottomEnd">@dimen/gi_radius_control</item>
     <item name="boxStrokeWidth">1dp</item>
     <item name="boxStrokeWidthFocused">@dimen/gi_stroke</item>
     <item name="boxStrokeColor">@color/galisland_box_stroke</item>
@@ -274,7 +274,7 @@
   </style>
   <!-- ===================== 提示条 ===================== -->
   <style name="Widget.GalIsland.Snackbar" parent="Widget.Material3.Snackbar">
-    <item name="backgroundTint">?attr/colorSurfaceContainerHigh</item>
+    <item name="backgroundTint">?attr/giSurfaceReaderChrome</item>
     <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Small</item>
     <item name="android:textColor">?attr/colorOnSurface</item>
   </style>

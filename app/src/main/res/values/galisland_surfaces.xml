@@ -5,6 +5,7 @@
     <attr name="giSurfaceToolbar" format="color" />
     <attr name="giSurfaceInput" format="color" />
     <attr name="giSurfaceHover" format="color" />
+    <attr name="giSurfaceReaderChrome" format="color" />
     <attr name="giAccentSoft" format="color" />
     <attr name="giBorderStrong" format="color" />
     <!-- 网格底纹线色：随主题昼夜切换，默认复用 outlineVariant。 -->
@@ -15,7 +16,7 @@
         <item name="elevation">0dp</item>
     </style>
     <style name="Widget.GalIsland.BottomSheet" parent="Widget.Material3.BottomSheet.Modal">
-        <item name="backgroundTint">?attr/colorSurface</item>
+        <item name="backgroundTint">?attr/giSurfaceReaderChrome</item>
         <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Large</item>
     </style>
     <style name="ThemeOverlay.GalIsland.BottomSheet" parent="ThemeOverlay.Material3.BottomSheetDialog">

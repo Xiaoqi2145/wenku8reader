@@ -13,7 +13,7 @@
         android:layout_margin="@dimen/gi_page_inset"
         android:clickable="true"
         android:focusable="true"
-        app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+        app:cardBackgroundColor="?attr/giSurfaceReaderChrome"
         app:cardCornerRadius="@dimen/gi_radius_card"
         app:cardElevation="0dp"
         app:strokeColor="?attr/colorOutlineVariant"
