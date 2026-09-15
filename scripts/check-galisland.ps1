@@ -101,6 +101,10 @@ foreach ($rel in $gridSurfaceLayouts) {
     if ($text -match '(?m)^\s*android:background="\?attr/colorSurface"') {
         $failures.Add("Page still uses a flat page-level colorSurface: $rel")
     }
+    $pageBackgroundCount = ([regex]::Matches($text, 'android:background="\?android:attr/colorBackground"')).Count
+    if ($pageBackgroundCount -gt 1) {
+        $failures.Add("Page has an opaque child colorBackground covering its grid: $rel")
+    }
 }
 
 # Theme and reader Chrome tokens must remain semantic in both day and night resources.

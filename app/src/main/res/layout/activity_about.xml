@@ -12,8 +12,7 @@
   android:fitsSystemWindows="true"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
-  android:orientation="vertical"
-  android:background="?android:attr/colorBackground">
+  android:orientation="vertical">
   <com.google.android.material.appbar.AppBarLayout
     android:elevation="0dp"
     android:background="?attr/giSurfaceToolbar"
