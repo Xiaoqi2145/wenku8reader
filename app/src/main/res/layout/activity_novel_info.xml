@@ -12,7 +12,7 @@
     android:id="@+id/abl_a_novel_info"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/giSurfaceToolbar"
+    android:background="@android:color/transparent"
     app:elevation="0dp"
     style="@style/Widget.GalIsland.AppBar">
     <com.google.android.material.appbar.MaterialToolbar
@@ -48,7 +48,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="?attr/giSurfaceToolbar"
+    android:background="@android:color/transparent"
     android:visibility="gone"
     tools:visibility="visible">
     <View
