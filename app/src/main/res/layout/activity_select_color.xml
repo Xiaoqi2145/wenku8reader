@@ -13,14 +13,14 @@
     android:fitsSystemWindows="true"
     style="@style/Widget.GalIsland.AppBar"
     android:elevation="0dp"
-    android:background="?attr/giSurfaceToolbar">
+    android:background="@android:color/transparent">
     <com.google.android.material.appbar.MaterialToolbar
       android:id="@+id/tb_a_select_color"
       android:layout_width="match_parent"
       android:layout_height="?attr/actionBarSize"
       app:title="选择颜色"
       android:minHeight="@dimen/gi_toolbar_height"
-      android:background="?attr/giSurfaceToolbar"
+      android:background="@android:color/transparent"
       android:elevation="0dp" />
   </com.google.android.material.appbar.AppBarLayout>
   <androidx.core.widget.NestedScrollView

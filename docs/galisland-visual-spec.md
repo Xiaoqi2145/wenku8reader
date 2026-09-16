@@ -13,8 +13,8 @@
 | 语义 | Android token | 模板角色 |
 | --- | --- | --- |
 | 页面背景 | `colorBackground` + 40dp 网格 | `--bg-app` |
-| 侧栏 | `giSurfaceSidebar` | `--bg-sidebar` |
-| 工具栏 | `giSurfaceToolbar` | `--bg-toolbar` |
+| 侧栏/导航 | 网格根 + 透明导航层；`giSurfaceSidebar` 仅用于抽屉 | `--bg-sidebar` / grid-first chrome |
+| 工具栏/Tab | 网格根 + 透明控件层；保留描边与选中指示器 | `--bg-toolbar` / grid-first chrome |
 | 阅读器 Chrome | `giSurfaceReaderChrome` | `--bg-panel` / `--bg-toolbar` |
 | 输入框 | `giSurfaceInput` | `--bg-input` |
 | 悬停 | `giSurfaceHover` | `--bg-panel-hover` |

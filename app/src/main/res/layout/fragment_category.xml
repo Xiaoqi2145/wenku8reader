@@ -13,7 +13,7 @@
     app:layout_behavior="com.google.android.material.appbar.AppBarLayout$Behavior"
     style="@style/Widget.GalIsland.AppBar"
     android:elevation="0dp"
-    android:background="?attr/giSurfaceToolbar">
+    android:background="@android:color/transparent">
     <LinearLayout
       app:layout_scrollFlags="scroll|enterAlways"
       android:orientation="vertical"

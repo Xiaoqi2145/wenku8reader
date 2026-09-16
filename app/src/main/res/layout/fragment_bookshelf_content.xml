@@ -11,7 +11,7 @@
     android:layout_marginRight="@dimen/gi_space_lg"
     android:layout_marginTop="@dimen/gi_space_inset"
     android:layout_marginBottom="@dimen/gi_space_inset"
-    style="@style/Widget.GalIsland.CardView"
+    style="@style/Widget.GalIsland.CardView.Outline"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
     <TextView

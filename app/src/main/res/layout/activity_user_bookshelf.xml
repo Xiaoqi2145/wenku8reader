@@ -8,7 +8,7 @@
   android:background="?android:attr/colorBackground">
   <com.google.android.material.appbar.AppBarLayout
     android:elevation="0dp"
-    android:background="?attr/giSurfaceToolbar"
+    android:background="@android:color/transparent"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:fitsSystemWindows="true"

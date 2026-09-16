@@ -101,6 +101,9 @@ foreach ($rel in $gridSurfaceLayouts) {
     if ($text -match '(?m)^\s*android:background="\?attr/colorSurface"') {
         $failures.Add("Page still uses a flat page-level colorSurface: $rel")
     }
+    if ($rel -notmatch 'activity_(horizontal|vertical)_read.xml' -and $text -match 'android:background="\?attr/giSurfaceToolbar"') {
+        $failures.Add("Browsing page chrome still paints a solid toolbar surface: $rel")
+    }
     $pageBackgroundCount = ([regex]::Matches($text, 'android:background="\?android:attr/colorBackground"')).Count
     if ($pageBackgroundCount -gt 1) {
         $failures.Add("Page has an opaque child colorBackground covering its grid: $rel")

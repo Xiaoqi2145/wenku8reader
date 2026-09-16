@@ -15,7 +15,7 @@
   android:orientation="vertical">
   <com.google.android.material.appbar.AppBarLayout
     android:elevation="0dp"
-    android:background="?attr/giSurfaceToolbar"
+    android:background="@android:color/transparent"
     android:id="@+id/abl_a_about"
     app:layout_constraintTop_toTopOf="parent"
     android:layout_width="match_parent"

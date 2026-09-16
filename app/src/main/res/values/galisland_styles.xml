@@ -77,11 +77,18 @@
   <!-- ===================== 卡片 ===================== -->
   <!-- 细描边 + 8dp 圆角，无阴影（模板 .library-card） -->
   <style name="Widget.GalIsland.CardView" parent="Widget.Material3.CardView.Filled">
-    <item name="cardBackgroundColor">?attr/colorSurface</item>
+    <item name="cardBackgroundColor">@android:color/transparent</item>
     <item name="cardCornerRadius">@dimen/gi_radius_card</item>
     <item name="cardElevation">0dp</item>
     <item name="strokeWidth">1dp</item>
     <item name="strokeColor">?attr/colorOutlineVariant</item>
+  </style>
+  <!-- Transparent information cards preserve the grid surface. -->
+  <style name="Widget.GalIsland.CardView.Outline" parent="Widget.GalIsland.CardView">
+    <item name="cardBackgroundColor">@android:color/transparent</item>
+  </style>
+  <style name="Widget.GalIsland.CardView.Filled" parent="Widget.GalIsland.CardView">
+    <item name="cardBackgroundColor">?attr/giSurfaceReaderChrome</item>
   </style>
   <!-- 纯图片容器：8dp 圆角、无描边（模板 .card-cover） -->
   <style name="Widget.GalIsland.CardView.Cover" parent="Widget.GalIsland.CardView">
@@ -113,7 +120,7 @@
   <!-- ===================== 工具栏 ===================== -->
   <style name="Widget.GalIsland.Toolbar" parent="Widget.Material3.Toolbar">
     <item name="titleTextAppearance">@style/TextAppearance.GalIsland.Heading</item>
-    <item name="android:background">?attr/giSurfaceToolbar</item>
+    <item name="android:background">@android:color/transparent</item>
     <item name="android:minHeight">@dimen/gi_toolbar_height</item>
     <item name="navigationIconTint">?attr/colorOnSurfaceVariant</item>
   </style>
@@ -239,7 +246,7 @@
     <item name="tabTextColor">?attr/colorOnSurfaceVariant</item>
     <item name="tabTextAppearance">@style/TextAppearance.GalIsland.Tab</item>
     <item name="tabRippleColor">@color/galisland_interaction</item>
-    <item name="android:background">?attr/giSurfaceToolbar</item>
+    <item name="android:background">@android:color/transparent</item>
   </style>
   <!-- ===================== 底部导航激活指示器 ===================== -->
   <!-- 复刻模板 nav-item.is-active：淡主色底 + 7dp 圆角 -->

@@ -12,7 +12,7 @@
     android:fitsSystemWindows="true"
     style="@style/Widget.GalIsland.AppBar"
     android:elevation="0dp"
-    android:background="?attr/giSurfaceToolbar">
+    android:background="@android:color/transparent">
     <com.google.android.material.appbar.CollapsingToolbarLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
@@ -54,7 +54,7 @@
         app:layout_collapseMode="pin"
         app:title="@string/search_bookshelf"
         android:minHeight="@dimen/gi_toolbar_height"
-        android:background="?attr/giSurfaceToolbar"
+        android:background="@android:color/transparent"
         android:elevation="0dp" />
     </com.google.android.material.appbar.CollapsingToolbarLayout>
   </com.google.android.material.appbar.AppBarLayout>

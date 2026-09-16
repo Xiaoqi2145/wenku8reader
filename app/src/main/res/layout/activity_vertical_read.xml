@@ -19,7 +19,7 @@
     style="@style/Widget.GalIsland.Toolbar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/giSurfaceToolbar"
+    android:background="@android:color/transparent"
     tools:title="title"
     app:menu="@menu/menu_act_v_h_read"
     android:minHeight="@dimen/gi_toolbar_height"

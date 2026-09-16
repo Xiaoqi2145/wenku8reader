@@ -14,7 +14,7 @@
     app:liftOnScroll="false"
     style="@style/Widget.GalIsland.AppBar"
     android:elevation="0dp"
-    android:background="?attr/giSurfaceToolbar">
+    android:background="@android:color/transparent">
     <com.google.android.material.appbar.MaterialToolbar
       android:id="@+id/tb_f_home"
       android:layout_width="match_parent"
@@ -22,7 +22,7 @@
       app:menu="@menu/menu_frag_home"
       app:title="@string/home"
       android:minHeight="@dimen/gi_toolbar_height"
-      android:background="?attr/giSurfaceToolbar"
+      android:background="@android:color/transparent"
       android:elevation="0dp" />
     <com.google.android.material.tabs.TabLayout
       android:id="@+id/tl_f_home"

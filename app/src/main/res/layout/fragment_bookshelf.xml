@@ -15,7 +15,7 @@
     app:liftOnScroll="false"
     style="@style/Widget.GalIsland.AppBar"
     android:elevation="0dp"
-    android:background="?attr/giSurfaceToolbar">
+    android:background="@android:color/transparent">
     <FrameLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content">
@@ -26,7 +26,7 @@
         app:menu="@menu/menu_frag_bookshelf"
         app:title="@string/bookshelf"
         android:minHeight="@dimen/gi_toolbar_height"
-        android:background="?attr/giSurfaceToolbar"
+        android:background="@android:color/transparent"
         android:elevation="0dp" />
       <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/tb_f_bookshelf_selection"
@@ -38,7 +38,7 @@
         android:visibility="invisible"
         tools:visibility="visible"
         android:minHeight="@dimen/gi_toolbar_height"
-        android:background="?attr/giSurfaceToolbar" />
+        android:background="@android:color/transparent" />
     </FrameLayout>
     <com.google.android.material.tabs.TabLayout
       android:id="@+id/tl_f_bookshelf"

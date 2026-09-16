@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item><shape><solid android:color="?attr/giSurfaceSidebar" /></shape></item>
+    <item><shape><solid android:color="@android:color/transparent" /></shape></item>
     <item android:width="@dimen/gi_stroke" android:gravity="end">
         <shape><solid android:color="?attr/colorOutlineVariant" /></shape>
     </item>
