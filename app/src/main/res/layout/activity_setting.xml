@@ -59,7 +59,7 @@
           android:layout_width="0dp"
           android:layout_height="match_parent"
           android:layout_weight="1"
-          android:layout_marginLeft="@dimen/gi_control_icon"
+          android:layout_marginLeft="@dimen/gi_space_gap_xl"
           android:orientation="vertical"
           android:gravity="center_vertical">
           <TextView
@@ -99,7 +99,7 @@
           android:layout_width="0dp"
           android:layout_height="match_parent"
           android:layout_weight="1"
-          android:layout_marginLeft="@dimen/gi_control_icon"
+          android:layout_marginLeft="@dimen/gi_space_gap_xl"
           android:orientation="vertical"
           android:gravity="center_vertical">
           <TextView
@@ -119,8 +119,8 @@
       <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/gi_control_icon"
-        android:layout_marginRight="@dimen/gi_control_icon"
+        android:layout_marginLeft="@dimen/gi_space_gap_xl"
+        android:layout_marginRight="@dimen/gi_space_gap_xl"
         android:layout_marginBottom="@dimen/gi_space_inset"
         style="@style/Widget.GalIsland.CardView">
         <LinearLayout
@@ -167,7 +167,7 @@
           android:layout_width="0dp"
           android:layout_height="match_parent"
           android:layout_weight="1"
-          android:layout_marginLeft="@dimen/gi_control_icon"
+          android:layout_marginLeft="@dimen/gi_space_gap_xl"
           android:orientation="vertical"
           android:gravity="center_vertical">
           <TextView
@@ -187,8 +187,8 @@
       <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/gi_control_icon"
-        android:layout_marginRight="@dimen/gi_control_icon"
+        android:layout_marginLeft="@dimen/gi_space_gap_xl"
+        android:layout_marginRight="@dimen/gi_space_gap_xl"
         android:layout_marginBottom="@dimen/gi_space_inset"
         style="@style/Widget.GalIsland.CardView">
         <LinearLayout
@@ -235,7 +235,7 @@
           android:layout_width="0dp"
           android:layout_height="match_parent"
           android:layout_weight="1"
-          android:layout_marginLeft="@dimen/gi_control_icon"
+          android:layout_marginLeft="@dimen/gi_space_gap_xl"
           android:orientation="vertical"
           android:gravity="center_vertical">
           <TextView
@@ -277,7 +277,7 @@
           android:layout_width="0dp"
           android:layout_height="match_parent"
           android:layout_weight="1"
-          android:layout_marginLeft="@dimen/gi_control_icon"
+          android:layout_marginLeft="@dimen/gi_space_gap_xl"
           android:orientation="vertical"
           android:gravity="center_vertical">
           <TextView
@@ -319,7 +319,7 @@
           android:layout_width="0dp"
           android:layout_height="match_parent"
           android:layout_weight="1"
-          android:layout_marginLeft="@dimen/gi_control_icon"
+          android:layout_marginLeft="@dimen/gi_space_gap_xl"
           android:orientation="vertical"
           android:gravity="center_vertical">
           <TextView
@@ -339,8 +339,8 @@
       <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/gi_control_icon"
-        android:layout_marginRight="@dimen/gi_control_icon"
+        android:layout_marginLeft="@dimen/gi_space_gap_xl"
+        android:layout_marginRight="@dimen/gi_space_gap_xl"
         android:layout_marginBottom="@dimen/gi_space_inset"
         style="@style/Widget.GalIsland.CardView">
         <LinearLayout
@@ -387,7 +387,7 @@
           android:layout_width="0dp"
           android:layout_height="match_parent"
           android:layout_weight="1"
-          android:layout_marginLeft="@dimen/gi_control_icon"
+          android:layout_marginLeft="@dimen/gi_space_gap_xl"
           android:orientation="vertical"
           android:gravity="center_vertical">
           <TextView
@@ -408,8 +408,8 @@
         android:textAppearance="@style/TextAppearance.GalIsland.SectionTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/gi_metric_30dp"
-        android:layout_marginLeft="@dimen/gi_control_icon"
+        android:layout_marginTop="@dimen/gi_section_gap"
+        android:layout_marginLeft="@dimen/gi_space_gap_xl"
         android:layout_marginBottom="@dimen/gi_space_inset"
         android:textColor="?colorPrimary"
         android:textStyle="bold"
@@ -434,7 +434,7 @@
           android:layout_width="0dp"
           android:layout_height="wrap_content"
           android:layout_weight="1"
-          android:layout_marginLeft="@dimen/gi_control_icon"
+          android:layout_marginLeft="@dimen/gi_space_gap_xl"
           android:orientation="vertical">
           <TextView
             android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Title"
@@ -453,8 +453,8 @@
       <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/gi_control_icon"
-        android:layout_marginRight="@dimen/gi_control_icon"
+        android:layout_marginLeft="@dimen/gi_space_gap_xl"
+        android:layout_marginRight="@dimen/gi_space_gap_xl"
         style="@style/Widget.GalIsland.CardView">
         <LinearLayout
           android:padding="@dimen/gi_space_md"

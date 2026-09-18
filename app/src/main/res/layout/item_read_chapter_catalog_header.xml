@@ -8,7 +8,7 @@
   android:ellipsize="end"
   android:maxLines="1"
   android:paddingLeft="@dimen/gi_page_inset"
-  android:paddingTop="@dimen/gi_status_icon"
+  android:paddingTop="@dimen/gi_space_gap_lg"
   android:paddingRight="@dimen/gi_page_inset"
   android:paddingBottom="@dimen/gi_space_sm"
   android:textColor="?attr/colorPrimary"

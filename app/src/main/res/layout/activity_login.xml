@@ -18,13 +18,13 @@
     android:layout_marginRight="@dimen/gi_space_lg"
     android:background="@drawable/gi_secondary_panel"
     android:orientation="vertical"
-    android:padding="@dimen/gi_control_icon">
+    android:padding="@dimen/gi_space_gap_xl">
     <TextView
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_gravity="left"
       android:layout_marginLeft="0dp"
-      android:layout_marginBottom="@dimen/gi_control_icon"
+      android:layout_marginBottom="@dimen/gi_space_gap_xl"
       android:text="@string/login"
       android:textAppearance="@style/TextAppearance.GalIsland.Heading" />
     <com.google.android.material.textfield.TextInputLayout
@@ -83,7 +83,7 @@
       <ImageView
         android:id="@+id/iv_a_login_checkcode"
         android:padding="@dimen/gi_space_inset"
-        android:layout_width="@dimen/gi_metric_100dp"
+        android:layout_width="@dimen/gi_captcha_width"
         android:layout_height="match_parent" />
     </LinearLayout>
     <com.google.android.material.textfield.TextInputLayout
@@ -106,7 +106,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginTop="@dimen/gi_control_icon"
+      android:layout_marginTop="@dimen/gi_space_gap_xl"
       android:layout_marginLeft="0dp"
       android:layout_marginRight="0dp">
       <LinearLayout

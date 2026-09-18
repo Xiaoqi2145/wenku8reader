@@ -21,7 +21,7 @@
   <View
     android:id="@+id/v_i_read_chapter_catalog_current_marker"
     android:layout_width="@dimen/gi_stroke"
-    android:layout_height="@dimen/gi_metric_30dp"
+    android:layout_height="@dimen/gi_chapter_marker_height"
     android:layout_marginEnd="@dimen/gi_space_sm"
     android:background="?attr/colorPrimary"
     android:visibility="gone"

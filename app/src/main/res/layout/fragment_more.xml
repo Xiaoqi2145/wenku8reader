@@ -22,7 +22,7 @@
     <ImageView
       android:id="@+id/header"
       android:layout_width="wrap_content"
-      android:layout_height="@dimen/gi_metric_156dp"
+      android:layout_height="@dimen/gi_brand_header_height"
       android:padding="@dimen/gi_space_xl"
       android:src="@drawable/logo_header"
       tools:ignore="MissingConstraints"
@@ -45,7 +45,7 @@
       <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/gi_status_icon"
+        android:layout_margin="@dimen/gi_space_gap_lg"
         android:contentDescription="@null"
         android:paddingLeft="@dimen/gi_space_sm"
         android:src="@drawable/ic_person"
@@ -54,7 +54,7 @@
         android:text="@string/account"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/gi_metric_5dp"
+        android:layout_marginLeft="@dimen/gi_space_gap_xs"
         android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Title" />
     </LinearLayout>
     <LinearLayout
@@ -70,7 +70,7 @@
       <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/gi_status_icon"
+        android:layout_margin="@dimen/gi_space_gap_lg"
         android:contentDescription="@null"
         android:paddingLeft="@dimen/gi_space_sm"
         android:src="@drawable/ic_setting"
@@ -79,7 +79,7 @@
         android:text="@string/setting"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/gi_metric_5dp"
+        android:layout_marginLeft="@dimen/gi_space_gap_xs"
         android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Title" />
     </LinearLayout>
     <LinearLayout
@@ -95,7 +95,7 @@
       <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/gi_status_icon"
+        android:layout_margin="@dimen/gi_space_gap_lg"
         android:contentDescription="@null"
         android:paddingLeft="@dimen/gi_space_sm"
         android:src="@drawable/ic_info"
@@ -104,7 +104,7 @@
         android:text="@string/about"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/gi_metric_5dp"
+        android:layout_marginLeft="@dimen/gi_space_gap_xs"
         android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Title" />
     </LinearLayout>
   </LinearLayout>

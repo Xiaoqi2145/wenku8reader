@@ -14,6 +14,7 @@
     <item name="toolbarStyle">@style/Widget.GalIsland.Toolbar</item>
     <item name="sliderStyle">@style/Widget.GalIsland.Slider</item>
     <item name="textInputStyle">@style/Widget.GalIsland.TextInputLayout.OutlinedBox</item>
+    <item name="materialSwitchStyle">@style/Widget.GalIsland.Switch</item>
     <item name="snackbarStyle">@style/Widget.GalIsland.Snackbar</item>
     <item name="snackbarTextViewStyle">@style/Widget.GalIsland.Snackbar.TextView</item>
     <item name="materialAlertDialogTheme">@style/ThemeOverlay.GalIsland.MaterialAlertDialog</item>
@@ -389,6 +390,7 @@
     <item name="materialButtonStyle">@style/Widget.GalIsland.Button</item>
     <item name="chipStyle">@style/Widget.GalIsland.Chip</item>
     <item name="textInputStyle">@style/Widget.GalIsland.TextInputLayout.OutlinedBox</item>
+    <item name="materialSwitchStyle">@style/Widget.GalIsland.Switch</item>
     <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.GalIsland.Small</item>
     <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.GalIsland.Medium</item>
     <item name="giSurfaceSidebar">@color/galisland_sidebar</item>

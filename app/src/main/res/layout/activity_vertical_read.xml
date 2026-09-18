@@ -14,16 +14,15 @@
     layout="@layout/view_horizontal_read_guide"
     android:layout_width="match_parent"
     android:layout_height="match_parent" />
+  <!-- 与主视觉二级页同一工具栏样式（Secondary.Toolbar = Toolbar + elevation 0dp）；
+       透明底、minHeight、elevation 均由样式提供，不在布局重复声明。 -->
   <com.google.android.material.appbar.MaterialToolbar
     android:id="@+id/tb_a_v_read"
-    style="@style/Widget.GalIsland.Toolbar"
+    style="@style/Widget.GalIsland.Secondary.Toolbar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/transparent"
     tools:title="title"
-    app:menu="@menu/menu_act_v_h_read"
-    android:minHeight="@dimen/gi_toolbar_height"
-    android:elevation="0dp" />
+    app:menu="@menu/menu_act_v_h_read" />
   <!--
     ~ 常显状态行独立于底栏 dock：菜单呼出时由 ReaderChromeController 淡出，
     ~ 菜单隐藏时恢复，避免菜单下方残留一条同色带与双重描边。

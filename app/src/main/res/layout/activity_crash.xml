@@ -12,7 +12,7 @@
     android:id="@+id/iv_a_crash"
     app:layout_constraintTop_toTopOf="parent"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/gi_metric_130dp"
+    android:layout_height="@dimen/gi_crash_logo_height"
     android:src="@drawable/logo_header"
     android:contentDescription="@null" />
   <TextView
@@ -30,9 +30,9 @@
     app:layout_constraintTop_toBottomOf="@id/tv_a_crash_text1"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/gi_radius_tag"
-    android:paddingLeft="@dimen/gi_control_icon"
-    android:paddingRight="@dimen/gi_control_icon"
+    android:layout_marginTop="@dimen/gi_space_gap"
+    android:paddingLeft="@dimen/gi_space_gap_xl"
+    android:paddingRight="@dimen/gi_space_gap_xl"
     android:text="@string/crash_tip"
     android:textStyle="bold"
     android:textColor="?attr/colorPrimary" />
@@ -40,12 +40,12 @@
     app:layout_constraintTop_toBottomOf="@+id/tv_a_crash_tip"
     app:layout_constraintBottom_toTopOf="@id/l_a_crash"
     android:layout_marginTop="@dimen/gi_space_inset"
-    android:layout_marginRight="@dimen/gi_metric_30dp"
-    android:layout_marginLeft="@dimen/gi_metric_30dp"
+    android:layout_marginRight="@dimen/gi_section_gap"
+    android:layout_marginLeft="@dimen/gi_section_gap"
     android:layout_width="match_parent"
     android:layout_height="0dp"
     android:requiresFadingEdge="vertical"
-    android:fadingEdgeLength="@dimen/gi_metric_100dp">
+    android:fadingEdgeLength="@dimen/gi_fade_edge_long">
     <TextView
       android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Title"
       android:id="@+id/tv_a_crash_error_msg"
@@ -63,7 +63,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="@dimen/gi_control_icon">
+    android:padding="@dimen/gi_space_gap_xl">
     <com.google.android.material.button.MaterialButton
       android:minHeight="@dimen/gi_control_height"
       android:id="@+id/b_a_crash_setting"

@@ -13,6 +13,16 @@
   <dimen name="gi_space_lg">16dp</dimen>
   <dimen name="gi_space_xl">24dp</dimen>
   <dimen name="gi_space_inset">10dp</dimen>
+  <!-- 模板中存在、但不落在 4/8/12/16/24 梯级上的精细间距值。
+       独立命名，避免被误当作圆角（gi_radius_*）或图标尺寸（gi_control_icon）复用。 -->
+  <dimen name="gi_space_gap">6dp</dimen>
+  <dimen name="gi_space_gap_lg">14dp</dimen>
+  <dimen name="gi_space_gap_xl">20dp</dimen>
+  <dimen name="gi_space_gap_xxl">40dp</dimen>
+  <dimen name="gi_space_gap_xs">5dp</dimen>
+  <dimen name="gi_space_gap_micro">3dp</dimen>
+  <dimen name="gi_space_gap_md">11dp</dimen>
+  <dimen name="gi_section_gap">30dp</dimen>
   <!-- ===================== 圆角（模板 6/7/8/10） ===================== -->
   <dimen name="gi_radius_tag">6dp</dimen>
   <dimen name="gi_radius_control">7dp</dimen>
@@ -29,11 +39,44 @@
   <dimen name="gi_card_margin">6dp</dimen>
   <dimen name="gi_card_padding">12dp</dimen>
   <dimen name="gi_cover_width">112dp</dimen>
-  <dimen name="gi_cover_height">160dp</dimen>
+  <!-- 小说封面 4:5（112 x 140）。规范第 2 节：小说封面比例 4:5。 -->
+  <dimen name="gi_cover_height">140dp</dimen>
+  <!-- 历史记录缩略图（90 x 112 ≈ 4:5）与登录页品牌图高度，语义独立于封面。 -->
+  <dimen name="gi_thumbnail_width">90dp</dimen>
+  <dimen name="gi_thumbnail_height">112dp</dimen>
+  <dimen name="gi_brand_logo_height">160dp</dimen>
+  <dimen name="gi_brand_header_height">156dp</dimen>
+  <dimen name="gi_guide_logo_height">128dp</dimen>
+  <dimen name="gi_detail_cover_width">104dp</dimen>
+  <dimen name="gi_detail_cover_height">130dp</dimen>
+  <dimen name="gi_tablet_detail_column_width">212dp</dimen>
+  <dimen name="gi_tablet_detail_cover_width">180dp</dimen>
+  <dimen name="gi_tablet_detail_cover_height">225dp</dimen>
+  <dimen name="gi_account_avatar_size">120dp</dimen>
+  <dimen name="gi_captcha_width">100dp</dimen>
+  <dimen name="gi_crash_logo_height">130dp</dimen>
+  <dimen name="gi_download_cover_height">78dp</dimen>
+  <dimen name="gi_empty_icon_size">64dp</dimen>
+  <dimen name="gi_chapter_marker_height">30dp</dimen>
+  <dimen name="gi_chapter_row_compact_height">52dp</dimen>
+  <dimen name="gi_chapter_row_expanded_height">58dp</dimen>
+  <dimen name="gi_chapter_marker_icon_size">15dp</dimen>
+  <dimen name="gi_button_icon_compact_size">18dp</dimen>
+  <dimen name="gi_fade_edge_long">100dp</dimen>
+  <dimen name="gi_fade_edge_section">60dp</dimen>
+  <dimen name="gi_account_logout_bottom_margin">50dp</dimen>
   <!-- ===================== 控件尺寸（模板 36/38，移动端保底 40） ===================== -->
   <dimen name="gi_control_height">48dp</dimen>
   <dimen name="gi_icon_button_size">48dp</dimen>
   <dimen name="gi_toolbar_height">56dp</dimen>
+  <!-- 组件内部几何（Slider / Tab 指示条 / 底部导航激活指示器）。
+       集中在此，使 styles 层不再出现字面量尺寸。 -->
+  <dimen name="gi_slider_track_height">4dp</dimen>
+  <dimen name="gi_slider_thumb_radius">8dp</dimen>
+  <dimen name="gi_slider_halo_radius">16dp</dimen>
+  <dimen name="gi_tab_indicator_height">3dp</dimen>
+  <dimen name="gi_nav_indicator_width">64dp</dimen>
+  <dimen name="gi_nav_indicator_height">32dp</dimen>
   <!-- Reader HUD height is semantic; system navigation is handled by the window policy. -->
   <dimen name="gi_reader_status_line_height">28dp</dimen>
   <dimen name="gi_status_bar_height">@dimen/gi_reader_status_line_height</dimen>
@@ -43,6 +86,7 @@
   <dimen name="gi_status_icon">14dp</dimen>
   <dimen name="gi_selection_size">28dp</dimen>
   <!-- ===================== 字级 ===================== -->
+  <dimen name="gi_text_micro">10sp</dimen>
   <dimen name="gi_text_meta">11sp</dimen>
   <dimen name="gi_text_body">12sp</dimen>
   <dimen name="gi_text_section">13sp</dimen>
@@ -50,9 +94,12 @@
   <dimen name="gi_text_novel_title_plain">15sp</dimen>
   <dimen name="gi_text_list_title">15sp</dimen>
   <dimen name="gi_text_sheet_title">18sp</dimen>
+  <dimen name="gi_text_empty_title">16sp</dimen>
   <dimen name="gi_text_card_title_emphasis">14sp</dimen>
   <dimen name="gi_text_config">14sp</dimen>
   <dimen name="gi_text_heading">22sp</dimen>
+  <dimen name="gi_text_body_default">14sp</dimen>
+  <dimen name="gi_text_reader_end">20sp</dimen>
   <dimen name="gi_control_icon">20dp</dimen>
   <dimen name="gi_page_inset">16dp</dimen>
   <!-- 网格线宽对齐模板 1px @ 40px 单元。 -->
@@ -66,7 +113,6 @@
   <dimen name="gi_catalog_feature_height">192dp</dimen>
   <dimen name="gi_catalog_section_height">52dp</dimen>
   <dimen name="gi_catalog_cover_width">112dp</dimen>
-  <dimen name="gi_catalog_cover_elevation">3dp</dimen>
   <dimen name="gi_catalog_volume_item_height">56dp</dimen>
   <dimen name="gi_catalog_chapter_number_width">48dp</dimen>
 </resources>

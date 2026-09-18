@@ -85,7 +85,7 @@
           android:layout_height="wrap_content"
           android:paddingLeft="@dimen/gi_page_inset"
           android:paddingRight="@dimen/gi_page_inset"
-          android:paddingBottom="@dimen/gi_control_icon"
+          android:paddingBottom="@dimen/gi_space_gap_xl"
           android:gravity="center"
           android:orientation="horizontal">
           <androidx.recyclerview.widget.RecyclerView
@@ -93,7 +93,7 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
-            android:fadingEdgeLength="@dimen/gi_metric_30dp"
+            android:fadingEdgeLength="@dimen/gi_section_gap"
             android:requiresFadingEdge="horizontal"
             tools:listitem="@layout/item_search_history" />
           <com.google.android.material.button.MaterialButton

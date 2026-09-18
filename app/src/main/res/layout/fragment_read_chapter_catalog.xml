@@ -69,15 +69,14 @@
     android:paddingEnd="@dimen/gi_page_inset"
     android:paddingBottom="@dimen/gi_space_sm">
 
+    <!-- 外观全部来自 Widget.GalIsland.CardView.Novel.Cover：
+         8dp 圆角、0dp 描边、0dp elevation（规范第 2 节：卡片 elevation 0dp）。 -->
     <com.google.android.material.card.MaterialCardView
+      style="@style/Widget.GalIsland.CardView.Novel.Cover"
       android:layout_width="@dimen/gi_catalog_cover_width"
       android:layout_height="@dimen/gi_cover_height"
       android:contentDescription="@string/cover"
       android:foreground="?attr/selectableItemBackground"
-      app:cardCornerRadius="@dimen/gi_radius_cover_novel"
-      app:cardElevation="@dimen/gi_catalog_cover_elevation"
-      app:strokeWidth="0dp"
-      style="@style/Widget.GalIsland.CardView.Novel.Cover"
       tools:ignore="ContentDescription">
 
       <ImageView

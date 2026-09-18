@@ -5,6 +5,16 @@ foreach ($file in Get-ChildItem $res -Recurse -Filter '*.xml') {
     try { [void][xml](Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8) }
     catch { $failures.Add("Invalid XML: $($file.Name)") }
 }
+$legacyMetricRefs = Get-ChildItem $res -Recurse -Filter '*.xml' | ForEach-Object {
+    $text = Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8
+    if ($text -match 'gi_metric_') { $_.FullName }
+}
+if ($legacyMetricRefs) {
+    $legacyMetricRefs | ForEach-Object { $failures.Add("Legacy gi_metric token remains: $_") }
+}
+if (Test-Path "$res/values/galisland_layout_metrics.xml") {
+    $failures.Add('Legacy galisland_layout_metrics.xml remains; use semantic dimens instead')
+}
 foreach ($file in Get-ChildItem "$res/layout*/*.xml") {
     $text = Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8
     $text = [regex]::Replace($text, '<!--[\s\S]*?-->', '')
@@ -110,10 +120,12 @@ foreach ($rel in $gridSurfaceLayouts) {
     }
 }
 
-# Theme and reader Chrome tokens must remain semantic in both day and night resources.
+# Theme and reader Chrome tokens must remain semantic.
+# 注意：Base.Theme.HikariNovel 现在只在 values/themes.xml 维护。
+# 原 values-night/themes.xml 的内容与 values 版逐项等价（纯重复定义），已移除；
+# 昼夜差异由 values-night/colors_*.xml 的颜色变体承担，不依赖该文件。
 foreach ($themeFile in @(
     "$res/values/themes.xml",
-    "$res/values-night/themes.xml",
     "$res/values/galisland_surfaces.xml"
 )) {
     $themeText = Get-Content -LiteralPath $themeFile -Raw -Encoding UTF8

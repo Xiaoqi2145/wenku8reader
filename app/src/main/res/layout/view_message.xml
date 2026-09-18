@@ -16,7 +16,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/gi_space_inset"
-    android:layout_marginLeft="@dimen/gi_control_icon"
-    android:layout_marginRight="@dimen/gi_control_icon"
+    android:layout_marginLeft="@dimen/gi_space_gap_xl"
+    android:layout_marginRight="@dimen/gi_space_gap_xl"
     tools:text="error" />
 </LinearLayout>

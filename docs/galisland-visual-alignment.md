@@ -45,6 +45,29 @@
 - 网格线改用主题化 `giGridLine` token，宽度对齐模板 1px/40px（Android 为 1dp/40dp）。
 - `check-galisland.ps1` 增加浏览页/二级页网格根容器断言；所有检查、构建与单测通过。Lint 0 errors / 157 warnings / 2 hints。
 
+2026-09-18（审查见 `docs/galisland-visual-drift-audit.md`，修复记录见 `docs/galisland-visual-drift-fix.md`）：
+
+- 修复小说封面比例：`gi_cover_height` 由 160dp(7:10) 改为 140dp(4:5)，列表卡片与目录封面统一；登录页 logo 高度抽出 `gi_brand_logo_height` 避免连带影响。
+- 目录封面移除 3dp elevation，全项目非 0 elevation 清零；封面卡片的圆角/描边/高程全部回归样式层，`gi_catalog_cover_elevation` 删除。
+- `gi_card_stroke` 由死 token 接入 `Widget.GalIsland.NovelCards.Card`，选中/聚焦态显示主色描边，兑现「强调描边」。
+- 消除跨语义域 token 复用：新增 `gi_space_gap`(6) / `gi_space_gap_lg`(14) / `gi_space_gap_xl`(20) / `gi_space_gap_xxl`(40) 与 `gi_thumbnail_width/height`、`gi_brand_logo_height`；`gi_control_icon` 当间距的 **49 处**、`gi_status_icon` 5 处、`gi_grid_unit` 1 处、`gi_radius_tag` 4 处已替换（数值保持不变）。
+- styles 层硬编码尺寸全部回填 token：新增 `gi_text_micro`(10sp) / `gi_text_empty_title`(16sp) 与 Slider/Tab/导航指示器几何 token；`galisland_styles.xml` 除 `0dp` 外已无字面量尺寸。
+- 新增 `Widget.GalIsland.Switch` 并注册 `materialSwitchStyle`，覆盖原先 10 处未映射的 M3 默认开关（只对齐触控目标 48dp，不缩小开关本体）。
+- 删除 `values-night/themes.xml`——与 `values` 版逐项等价的重复定义，Base 主题收敛为单一定义；同步更新 `check-galisland.ps1` 的主题 token 断言（原断言会因该文件缺失而失败）。
+- 阅读设置面板（横/竖）重写为与主视觉二级页同一分组语言：`gi_secondary_panel` 分组容器、`TextAppearance.GalIsland.SectionTitle` 标题、`gi_secondary_row_height`(56dp) 行高、行内 padding；统一颜色按钮 id 为 `..._change_color`；补滑块单位注释（横竖排单位不同，勿统一取值范围）。
+- 阅读页工具栏改用 `Widget.GalIsland.Secondary.Toolbar`，删除布局中样式已声明的 `background` / `minHeight` / `elevation`。
+- 验证：`check-galisland.ps1` 全部断言通过（含 Python 等价复现）；`assembleDebug` BUILD SUCCESSFUL（4m11s，JDK 21）。**构建需显式设置 `JAVA_HOME=D:/SDK/Java/jdk-21`**——系统默认 `java` 为 Zulu JDK 25，Gradle 8.13 不支持。
+- 未修：`gi_metric_*` 伪语义 token（26 个 / 约 110 处），理由与推进顺序见 fix 文档。
+- 像素观感、触控回归仍待设备验收（安装限制未变）。
+
+2026-09-18 收束修复：
+
+- 阅读器新增共享 `ReaderChromeGeometry.contentInsets`，横排 `PageView` 与竖排 `NestedScrollView` 按实际 Toolbar、bottom dock、状态行边界动态保留内容安全区，控制栏呼出时正文不再被覆盖。
+- `ReaderChromeController` 在显隐、WindowInsets 和布局变化时回调内容边界更新；新增 3 项几何单测，单测总数 82 项全部通过。
+- `gi_metric_*` 伪语义 token 全量按用途迁移到 `dimens.xml` 的语义 token，旧资源文件删除，静态检查增加回流断言。
+- `check-galisland.ps1` 通过；`assembleDebug` 成功；`testDebugUnitTest` 82/82 通过；Lint 0 errors（165 warnings、2 hints，与基线口径一致）。
+- 本轮设备安装回归因 ADB 设备在验证前离线，横竖排截图尚未重新采集；几何单测和构建验证已完成。
+
 ## 设备验收限制
 
 检测到 Android 16 平板（2136×3200，440dpi），但 debug APK 安装返回 `INSTALL_FAILED_USER_RESTRICTED: Install canceled by user`。没有绕过该限制，也没有将旧版应用截图作为本次验证结果。

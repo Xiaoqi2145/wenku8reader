@@ -8,8 +8,8 @@
   android:gravity="center"
   android:padding="@dimen/gi_space_xl">
   <ImageView
-    android:layout_width="@dimen/gi_metric_64dp"
-    android:layout_height="@dimen/gi_metric_64dp"
+  android:layout_width="@dimen/gi_empty_icon_size"
+  android:layout_height="@dimen/gi_empty_icon_size"
     android:alpha="0.55"
     android:src="@drawable/ic_empty"
     app:tint="?attr/colorOnSurfaceVariant"

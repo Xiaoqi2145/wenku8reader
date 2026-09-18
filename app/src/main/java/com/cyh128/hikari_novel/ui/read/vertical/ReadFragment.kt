@@ -46,6 +46,8 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        (requireActivity() as? ReadActivity)?.applyReaderContentInsets()
+
         receiveEvent<Event>("event_vertical_read_fragment") { event ->
             when (event) {
                 is Event.ChangeFontSizeEvent -> {
@@ -182,6 +184,33 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
     /** Flush the latest anchor before Activity navigation or lifecycle stop. */
     fun flushProgress() {
         progressReporter?.flush()
+    }
+
+    /**
+     * Applies the measured reader chrome safe area without changing the
+     * horizontal page margins. When the reader is already scrolled, compensate
+     * for a top-inset change so the visible text anchor stays stable.
+     */
+    fun setReaderContentInsets(top: Int, bottom: Int) {
+        val scrollView = binding.nsvFVRead
+        val oldTop = scrollView.paddingTop
+        val oldScrollY = scrollView.scrollY
+        val safeTop = top.coerceAtLeast(0)
+        val safeBottom = bottom.coerceAtLeast(0)
+        if (oldTop == safeTop && scrollView.paddingBottom == safeBottom) return
+
+        scrollView.setPadding(
+            scrollView.paddingLeft,
+            safeTop,
+            scrollView.paddingRight,
+            safeBottom
+        )
+        val delta = safeTop - oldTop
+        if (oldScrollY > 0 && delta != 0) {
+            scrollView.post {
+                scrollView.scrollTo(0, (oldScrollY + delta).coerceAtLeast(0))
+            }
+        }
     }
 
     /**

@@ -5,7 +5,7 @@
   android:layout_height="wrap_content"
   android:background="?selectableItemBackground"
   android:orientation="horizontal"
-  android:minHeight="@dimen/gi_metric_58dp"
+  android:minHeight="@dimen/gi_chapter_row_expanded_height"
   android:paddingTop="@dimen/gi_space_inset"
   android:paddingBottom="@dimen/gi_space_inset"
   android:gravity="center_vertical"
@@ -27,7 +27,7 @@
       android:id="@+id/tv_i_chapter_vcss_completed"
       android:gravity="right"
       style="@style/TextAppearance.GalIsland.Meta"
-      android:layout_marginEnd="@dimen/gi_control_icon"
+      android:layout_marginEnd="@dimen/gi_space_gap_xl"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:textStyle="italic"
@@ -36,8 +36,8 @@
   </LinearLayout>
   <ImageView
     android:id="@+id/iv_i_chapter_vcss"
-    android:layout_width="@dimen/gi_metric_15dp"
-    android:layout_height="@dimen/gi_metric_15dp"
+    android:layout_width="@dimen/gi_chapter_marker_icon_size"
+    android:layout_height="@dimen/gi_chapter_marker_icon_size"
     android:src="@drawable/ic_arrow_down"
     android:layout_marginEnd="@dimen/gi_space_lg"
     android:contentDescription="@string/chapter_catalog" />

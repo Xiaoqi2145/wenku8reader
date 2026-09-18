@@ -42,7 +42,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:gravity="center_horizontal"
-    android:padding="@dimen/gi_metric_5dp"
+    android:padding="@dimen/gi_space_gap_xs"
     android:singleLine="true"
     android:textSize="@dimen/gi_text_section"
     tools:text="drawable 1" />

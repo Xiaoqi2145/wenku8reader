@@ -6,7 +6,7 @@
   style="@style/Widget.GalIsland.Chip"
   android:layout_width="wrap_content"
   android:layout_height="wrap_content"
-  android:layout_marginEnd="@dimen/gi_radius_tag"
+  android:layout_marginEnd="@dimen/gi_space_gap"
   android:clickable="false"
   android:focusable="false"
   tools:text="标签" />

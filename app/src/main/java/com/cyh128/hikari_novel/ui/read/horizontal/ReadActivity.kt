@@ -30,6 +30,7 @@ import com.cyh128.hikari_novel.databinding.ViewHorizontalReadConfigBinding
 import com.cyh128.hikari_novel.ui.read.SelectColorActivity
 import com.cyh128.hikari_novel.ui.read.catalog.ReadChapterCatalogBottomSheet
 import com.cyh128.hikari_novel.ui.read.common.ReaderChromeController
+import com.cyh128.hikari_novel.ui.read.common.ReaderChromeGeometry
 import com.cyh128.hikari_novel.ui.read.common.ReaderWindowInsetsCoordinator
 import com.cyh128.hikari_novel.util.ThemeHelper
 import com.cyh128.hikari_novel.util.getIsInDarkMode
@@ -270,7 +271,8 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             statusLine = binding.statusAHRead.root,
             shownBarColor = showBarColor,
             hiddenBarColor = ::getHideBarColor,
-            onVisibilityChanged = { viewModel.isBarShown = it }
+            onVisibilityChanged = { viewModel.isBarShown = it },
+            onContentBoundsChanged = ::applyReaderContentInsets
         )
         windowInsetsCoordinator = ReaderWindowInsetsCoordinator(
             window = window,
@@ -325,6 +327,32 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             binding.pvAHRead.textColor = ("#" + viewModel.getTextColorDay()).toColorInt()
             binding.pvAHRead.backgroundcolor = ("#" + viewModel.getBgColorDay()).toColorInt()
         }
+    }
+
+    private fun applyReaderContentInsets() {
+        val root = binding.root
+        if (root.height <= 0) {
+            root.post(::applyReaderContentInsets)
+            return
+        }
+
+        val statusLine = binding.statusAHRead.root
+        val bottomDock = binding.readBottomDock
+        val toolbar = binding.tbAHRead
+        val fallbackBottom = resources.getDimensionPixelSize(R.dimen.gi_reader_content_bottom_inset)
+        val statusLineTop = statusLine.top.takeIf { it > 0 }
+            ?: (root.height - statusLine.measuredHeight).coerceAtLeast(root.height - fallbackBottom)
+        val bottomDockTop = bottomDock.top.takeIf { it > 0 }
+            ?: (root.height - bottomDock.measuredHeight).coerceAtLeast(0)
+        val toolbarBottom = toolbar.bottom.takeIf { it > 0 } ?: toolbar.measuredHeight
+        val insets = ReaderChromeGeometry.contentInsets(
+            parentHeight = root.height,
+            toolbarBottom = toolbarBottom,
+            bottomDockTop = bottomDockTop,
+            statusLineTop = statusLineTop,
+            chromeShown = viewModel.isBarShown
+        )
+        binding.pvAHRead.setContentInsets(insets.top, insets.bottom)
     }
 
     private fun initListener() {
@@ -447,7 +475,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             }
         )
 
-        bottomViewBinding.bVHReadConfigColor.setOnClickListener {
+        bottomViewBinding.bVHReadConfigChangeColor.setOnClickListener {
             activityResultLauncher.launch(
                 Intent(
                     this,

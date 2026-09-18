@@ -30,11 +30,11 @@
     android:orientation="vertical">
     <com.google.android.material.card.MaterialCardView
       style="@style/Widget.GalIsland.CardView"
-      android:layout_width="@dimen/gi_metric_120dp"
-      android:layout_height="@dimen/gi_metric_120dp"
+      android:layout_width="@dimen/gi_account_avatar_size"
+      android:layout_height="@dimen/gi_account_avatar_size"
       android:layout_gravity="center_horizontal"
-      android:layout_marginBottom="@dimen/gi_metric_30dp"
-      android:layout_marginTop="@dimen/gi_metric_30dp"
+      android:layout_marginBottom="@dimen/gi_section_gap"
+      android:layout_marginTop="@dimen/gi_section_gap"
       app:cardCornerRadius="@dimen/gi_space_sm"
       app:cardElevation="0dp">
       <ImageView
@@ -52,15 +52,15 @@
       android:layout_height="wrap_content"
       android:text="@string/sign_in"
       app:icon="@drawable/ic_event_available"
-      android:layout_marginBottom="@dimen/gi_control_icon" />
+      android:layout_marginBottom="@dimen/gi_space_gap_xl" />
     <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:orientation="vertical"
-      android:layout_marginLeft="@dimen/gi_metric_30dp"
-      android:layout_marginRight="@dimen/gi_metric_30dp">
+      android:layout_marginLeft="@dimen/gi_section_gap"
+      android:layout_marginRight="@dimen/gi_section_gap">
       <LinearLayout
-        android:layout_margin="@dimen/gi_metric_5dp"
+        android:layout_margin="@dimen/gi_space_gap_xs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -80,7 +80,7 @@
           android:layout_height="wrap_content" />
       </LinearLayout>
       <LinearLayout
-        android:layout_margin="@dimen/gi_metric_5dp"
+        android:layout_margin="@dimen/gi_space_gap_xs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -100,7 +100,7 @@
           android:layout_height="wrap_content" />
       </LinearLayout>
       <LinearLayout
-        android:layout_margin="@dimen/gi_metric_5dp"
+        android:layout_margin="@dimen/gi_space_gap_xs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -120,7 +120,7 @@
           android:layout_height="wrap_content" />
       </LinearLayout>
       <LinearLayout
-        android:layout_margin="@dimen/gi_metric_5dp"
+        android:layout_margin="@dimen/gi_space_gap_xs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -140,7 +140,7 @@
           android:layout_height="wrap_content" />
       </LinearLayout>
       <LinearLayout
-        android:layout_margin="@dimen/gi_metric_5dp"
+        android:layout_margin="@dimen/gi_space_gap_xs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -160,7 +160,7 @@
           android:layout_height="wrap_content" />
       </LinearLayout>
       <LinearLayout
-        android:layout_margin="@dimen/gi_metric_5dp"
+        android:layout_margin="@dimen/gi_space_gap_xs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -180,7 +180,7 @@
           android:layout_height="wrap_content" />
       </LinearLayout>
       <LinearLayout
-        android:layout_margin="@dimen/gi_metric_5dp"
+        android:layout_margin="@dimen/gi_space_gap_xs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -200,7 +200,7 @@
           android:layout_height="wrap_content" />
       </LinearLayout>
       <LinearLayout
-        android:layout_margin="@dimen/gi_metric_5dp"
+        android:layout_margin="@dimen/gi_space_gap_xs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -220,7 +220,7 @@
           android:layout_height="wrap_content" />
       </LinearLayout>
       <LinearLayout
-        android:layout_margin="@dimen/gi_metric_5dp"
+        android:layout_margin="@dimen/gi_space_gap_xs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -240,7 +240,7 @@
           android:layout_height="wrap_content" />
       </LinearLayout>
       <LinearLayout
-        android:layout_margin="@dimen/gi_metric_5dp"
+        android:layout_margin="@dimen/gi_space_gap_xs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -271,7 +271,7 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_gravity="center|bottom"
-      android:layout_marginBottom="@dimen/gi_metric_50dp"
+      android:layout_marginBottom="@dimen/gi_account_logout_bottom_margin"
       android:text="@string/logout"
       android:textColor="?attr/colorError"
       app:icon="@drawable/ic_logout"

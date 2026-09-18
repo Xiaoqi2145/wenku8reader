@@ -15,7 +15,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
     <TextView
-      android:layout_margin="@dimen/gi_radius_tag"
+      android:layout_margin="@dimen/gi_space_gap"
       android:id="@+id/tv_f_bookshelf_content"
       style="@style/TextAppearance.GalIsland.Meta"
       android:layout_width="match_parent"

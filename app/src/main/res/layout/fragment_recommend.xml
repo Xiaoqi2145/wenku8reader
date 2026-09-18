@@ -36,7 +36,7 @@
             android:id="@+id/rv_f_recommend_block_1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fadingEdgeLength="@dimen/gi_metric_60dp"
+            android:fadingEdgeLength="@dimen/gi_fade_edge_section"
             android:nestedScrollingEnabled="false"
             android:requiresFadingEdge="horizontal" />
         </LinearLayout>
@@ -57,7 +57,7 @@
             android:id="@+id/rv_f_recommend_block_2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fadingEdgeLength="@dimen/gi_metric_60dp"
+            android:fadingEdgeLength="@dimen/gi_fade_edge_section"
             android:nestedScrollingEnabled="false"
             android:requiresFadingEdge="horizontal" />
         </LinearLayout>
@@ -78,7 +78,7 @@
             android:id="@+id/rv_f_recommend_block_3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fadingEdgeLength="@dimen/gi_metric_60dp"
+            android:fadingEdgeLength="@dimen/gi_fade_edge_section"
             android:nestedScrollingEnabled="false"
             android:requiresFadingEdge="horizontal" />
         </LinearLayout>
@@ -99,7 +99,7 @@
             android:id="@+id/rv_f_recommend_block_4"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fadingEdgeLength="@dimen/gi_metric_60dp"
+            android:fadingEdgeLength="@dimen/gi_fade_edge_section"
             android:nestedScrollingEnabled="false"
             android:requiresFadingEdge="horizontal" />
         </LinearLayout>
@@ -120,7 +120,7 @@
             android:id="@+id/rv_f_recommend_block_5"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fadingEdgeLength="@dimen/gi_metric_60dp"
+            android:fadingEdgeLength="@dimen/gi_fade_edge_section"
             android:nestedScrollingEnabled="false"
             android:requiresFadingEdge="horizontal" />
         </LinearLayout>

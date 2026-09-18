@@ -18,8 +18,8 @@
       android:layout_marginBottom="@dimen/gi_space_lg">
       <com.google.android.material.card.MaterialCardView
         style="@style/Widget.GalIsland.CardView.Cover"
-        android:layout_width="@dimen/gi_metric_104dp"
-        android:layout_height="@dimen/gi_metric_130dp">
+        android:layout_width="@dimen/gi_detail_cover_width"
+        android:layout_height="@dimen/gi_detail_cover_height">
         <androidx.appcompat.widget.AppCompatImageView
           android:id="@+id/iv_f_novel_info_content"
           android:layout_width="match_parent"
@@ -196,12 +196,12 @@
           android:layout_weight="1"
           android:minWidth="0dp"
           android:minHeight="@dimen/gi_control_height"
-          android:layout_margin="@dimen/gi_metric_3dp"
+          android:layout_margin="@dimen/gi_space_gap_micro"
           android:paddingStart="@dimen/gi_space_sm"
           android:paddingEnd="@dimen/gi_space_sm"
           android:text="@string/add_to_bookshelf"
           app:icon="@drawable/ic_outline_favorite"
-          app:iconSize="@dimen/gi_metric_18dp"
+          app:iconSize="@dimen/gi_button_icon_compact_size"
           app:iconGravity="textStart" />
         <com.google.android.material.button.MaterialButton
           android:id="@+id/b_f_novel_info_content_vote"
@@ -211,12 +211,12 @@
           android:layout_weight="1"
           android:minWidth="0dp"
           android:minHeight="@dimen/gi_control_height"
-          android:layout_margin="@dimen/gi_metric_3dp"
+          android:layout_margin="@dimen/gi_space_gap_micro"
           android:paddingStart="@dimen/gi_space_sm"
           android:paddingEnd="@dimen/gi_space_sm"
           android:text="@string/recommend_this_novel"
           app:icon="@drawable/ic_recommend"
-          app:iconSize="@dimen/gi_metric_18dp"
+          app:iconSize="@dimen/gi_button_icon_compact_size"
           app:iconGravity="textStart" />
       </LinearLayout>
       <LinearLayout
@@ -231,12 +231,12 @@
           android:layout_weight="1"
           android:minWidth="0dp"
           android:minHeight="@dimen/gi_control_height"
-          android:layout_margin="@dimen/gi_metric_3dp"
+          android:layout_margin="@dimen/gi_space_gap_micro"
           android:paddingStart="@dimen/gi_space_sm"
           android:paddingEnd="@dimen/gi_space_sm"
           android:text="@string/comment_area"
           app:icon="@drawable/ic_comment"
-          app:iconSize="@dimen/gi_metric_18dp"
+          app:iconSize="@dimen/gi_button_icon_compact_size"
           app:iconGravity="textStart" />
         <com.google.android.material.button.MaterialButton
           android:id="@+id/b_f_novel_info_content_download"
@@ -246,12 +246,12 @@
           android:layout_weight="1"
           android:minWidth="0dp"
           android:minHeight="@dimen/gi_control_height"
-          android:layout_margin="@dimen/gi_metric_3dp"
+          android:layout_margin="@dimen/gi_space_gap_micro"
           android:paddingStart="@dimen/gi_space_sm"
           android:paddingEnd="@dimen/gi_space_sm"
           android:text="@string/download"
           app:icon="@drawable/ic_download"
-          app:iconSize="@dimen/gi_metric_18dp"
+          app:iconSize="@dimen/gi_button_icon_compact_size"
           app:iconGravity="textStart" />
       </LinearLayout>
     </LinearLayout>

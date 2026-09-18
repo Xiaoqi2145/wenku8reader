@@ -22,7 +22,7 @@
       <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/gi_control_icon"
+        android:layout_marginTop="@dimen/gi_space_gap_xl"
         android:layout_marginLeft="@dimen/gi_page_inset"
         android:layout_marginRight="@dimen/gi_page_inset"
         android:layout_marginBottom="@dimen/gi_space_inset"
@@ -42,8 +42,8 @@
         android:requiresFadingEdge="horizontal"
         android:paddingLeft="@dimen/gi_page_inset"
         android:paddingRight="@dimen/gi_page_inset"
-        android:paddingBottom="@dimen/gi_control_icon"
-        android:fadingEdgeLength="@dimen/gi_metric_60dp"
+        android:paddingBottom="@dimen/gi_space_gap_xl"
+        android:fadingEdgeLength="@dimen/gi_fade_edge_section"
         android:scrollbars="none">
         <com.google.android.material.chip.ChipGroup
           android:id="@+id/cg_f_category"

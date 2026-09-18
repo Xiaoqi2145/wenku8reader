@@ -7,7 +7,7 @@
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:background="?selectableItemBackground"
   android:orientation="vertical"
-  android:minHeight="@dimen/gi_metric_52dp"
+  android:minHeight="@dimen/gi_chapter_row_compact_height"
   android:paddingTop="@dimen/gi_space_sm"
   android:paddingBottom="@dimen/gi_space_sm">
   <LinearLayout

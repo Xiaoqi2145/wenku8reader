@@ -12,16 +12,15 @@
   <include
     android:id="@+id/i_a_h_read_guide"
     layout="@layout/view_horizontal_read_guide" />
+  <!-- 与主视觉二级页同一工具栏样式（Secondary.Toolbar = Toolbar + elevation 0dp）；
+       透明底、minHeight、elevation 均由样式提供，不在布局重复声明。 -->
   <com.google.android.material.appbar.MaterialToolbar
     android:id="@+id/tb_a_h_read"
-    style="@style/Widget.GalIsland.Toolbar"
+    style="@style/Widget.GalIsland.Secondary.Toolbar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/transparent"
     tools:title="title"
-    app:menu="@menu/menu_act_v_h_read"
-    android:minHeight="@dimen/gi_toolbar_height"
-    android:elevation="0dp" />
+    app:menu="@menu/menu_act_v_h_read" />
   <!-- 常显状态行独立于底栏 dock，见 activity_vertical_read.xml 的说明。 -->
   <include
     android:id="@+id/status_a_h_read"

@@ -1,4 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ 横排阅读设置面板（bottom sheet 内容）
+  ~
+  ~ 与主视觉二级页（activity_setting.xml）保持同一套分组语言：
+  ~   · 分组用 @drawable/gi_secondary_panel 划出「纸片」边界
+  ~   · 分组标题用 TextAppearance.GalIsland.SectionTitle（13sp bold 主色）
+  ~   · 行高统一 gi_secondary_row_height(56dp)，左右内边距 gi_space_lg(16dp)
+  ~
+  ~ 滑块单位说明 —— 勿与竖排面板统一取值范围，两侧底层单位不同：
+  ~   · 字号     ：画笔 px（PageView.textSize），30–100
+  ~   · 行距     ：倍数（PageText 以 textSize * rowSpace 排版），1–5，步长 0.1
+  ~   · 进度文字 ：页脚画笔 px（PageView.bottomTextSize），1–100
+  ~ 竖排面板对应为：字号 sp（1–50）、额外行距 px（1–50）。
+  ~ 详见 docs/galisland-visual-drift-audit.md 的 R-4 更正说明。
+-->
 <LinearLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="match_parent"
@@ -12,8 +27,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center"
-    android:padding="@dimen/gi_space_md"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:padding="@dimen/gi_space_md">
     <TextView
       android:layout_width="0dp"
       android:layout_height="wrap_content"
@@ -33,25 +48,34 @@
       android:layout_height="wrap_content"
       android:text="@string/vertical" />
   </LinearLayout>
+  <!-- ===================== 分组：显示设置 ===================== -->
   <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_marginLeft="@dimen/gi_page_inset"
+    android:layout_marginRight="@dimen/gi_page_inset"
+    android:layout_marginTop="@dimen/gi_space_md"
+    android:background="@drawable/gi_secondary_panel"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/gi_space_md">
     <TextView
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:paddingLeft="@dimen/gi_page_inset"
-      android:paddingTop="@dimen/gi_space_md"
+      android:layout_margin="@dimen/gi_space_inset"
+      android:paddingLeft="@dimen/gi_space_inset"
       android:text="@string/display_settings"
-      android:textColor="?colorPrimary"
-      android:textStyle="bold" />
+      android:textAppearance="@style/TextAppearance.GalIsland.SectionTitle"
+      android:textColor="?attr/colorPrimary" />
     <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginLeft="@dimen/gi_page_inset"
-      android:layout_marginRight="@dimen/gi_page_inset"
-      android:gravity="center"
-      android:orientation="horizontal">
+      android:gravity="center_vertical"
+      android:minHeight="@dimen/gi_secondary_row_height"
+      android:orientation="horizontal"
+      android:paddingLeft="@dimen/gi_space_lg"
+      android:paddingTop="@dimen/gi_space_sm"
+      android:paddingRight="@dimen/gi_space_lg"
+      android:paddingBottom="@dimen/gi_space_sm">
       <TextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -70,11 +94,13 @@
     <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginLeft="@dimen/gi_page_inset"
-      android:layout_marginRight="@dimen/gi_page_inset"
-      android:layout_marginTop="@dimen/gi_space_inset"
-      android:gravity="center"
-      android:orientation="horizontal">
+      android:gravity="center_vertical"
+      android:minHeight="@dimen/gi_secondary_row_height"
+      android:orientation="horizontal"
+      android:paddingLeft="@dimen/gi_space_lg"
+      android:paddingTop="@dimen/gi_space_sm"
+      android:paddingRight="@dimen/gi_space_lg"
+      android:paddingBottom="@dimen/gi_space_sm">
       <TextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -93,11 +119,13 @@
     <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginLeft="@dimen/gi_page_inset"
-      android:layout_marginRight="@dimen/gi_page_inset"
-      android:layout_marginTop="@dimen/gi_space_inset"
-      android:gravity="center"
-      android:orientation="horizontal">
+      android:gravity="center_vertical"
+      android:minHeight="@dimen/gi_secondary_row_height"
+      android:orientation="horizontal"
+      android:paddingLeft="@dimen/gi_space_lg"
+      android:paddingTop="@dimen/gi_space_sm"
+      android:paddingRight="@dimen/gi_space_lg"
+      android:paddingBottom="@dimen/gi_space_sm">
       <TextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -113,22 +141,35 @@
         android:valueFrom="1"
         android:valueTo="100" />
     </LinearLayout>
+  </LinearLayout>
+  <!-- ===================== 分组：分页设置 ===================== -->
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="@dimen/gi_page_inset"
+    android:layout_marginRight="@dimen/gi_page_inset"
+    android:layout_marginTop="@dimen/gi_space_md"
+    android:background="@drawable/gi_secondary_panel"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/gi_space_md">
     <TextView
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:paddingLeft="@dimen/gi_page_inset"
-      android:paddingTop="@dimen/gi_status_icon"
+      android:layout_margin="@dimen/gi_space_inset"
+      android:paddingLeft="@dimen/gi_space_inset"
       android:text="@string/paging_settings"
-      android:textColor="?colorPrimary"
-      android:textStyle="bold" />
+      android:textAppearance="@style/TextAppearance.GalIsland.SectionTitle"
+      android:textColor="?attr/colorPrimary" />
     <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginLeft="@dimen/gi_page_inset"
-      android:layout_marginTop="@dimen/gi_space_inset"
-      android:layout_marginRight="@dimen/gi_page_inset"
-      android:gravity="center"
-      android:orientation="horizontal">
+      android:gravity="center_vertical"
+      android:minHeight="@dimen/gi_secondary_row_height"
+      android:orientation="horizontal"
+      android:paddingLeft="@dimen/gi_space_lg"
+      android:paddingTop="@dimen/gi_space_sm"
+      android:paddingRight="@dimen/gi_space_lg"
+      android:paddingBottom="@dimen/gi_space_sm">
       <TextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -143,11 +184,13 @@
     <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginLeft="@dimen/gi_page_inset"
-      android:layout_marginTop="@dimen/gi_space_inset"
-      android:layout_marginRight="@dimen/gi_page_inset"
-      android:gravity="center"
-      android:orientation="horizontal">
+      android:gravity="center_vertical"
+      android:minHeight="@dimen/gi_secondary_row_height"
+      android:orientation="horizontal"
+      android:paddingLeft="@dimen/gi_space_lg"
+      android:paddingTop="@dimen/gi_space_sm"
+      android:paddingRight="@dimen/gi_space_lg"
+      android:paddingBottom="@dimen/gi_space_sm">
       <TextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -162,11 +205,13 @@
     <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginLeft="@dimen/gi_page_inset"
-      android:layout_marginTop="@dimen/gi_space_inset"
-      android:layout_marginRight="@dimen/gi_page_inset"
-      android:gravity="center"
-      android:orientation="horizontal">
+      android:gravity="center_vertical"
+      android:minHeight="@dimen/gi_secondary_row_height"
+      android:orientation="horizontal"
+      android:paddingLeft="@dimen/gi_space_lg"
+      android:paddingTop="@dimen/gi_space_sm"
+      android:paddingRight="@dimen/gi_space_lg"
+      android:paddingBottom="@dimen/gi_space_sm">
       <TextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -181,11 +226,13 @@
     <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginLeft="@dimen/gi_page_inset"
-      android:layout_marginTop="@dimen/gi_space_inset"
-      android:layout_marginRight="@dimen/gi_page_inset"
-      android:gravity="center"
-      android:orientation="horizontal">
+      android:gravity="center_vertical"
+      android:minHeight="@dimen/gi_secondary_row_height"
+      android:orientation="horizontal"
+      android:paddingLeft="@dimen/gi_space_lg"
+      android:paddingTop="@dimen/gi_space_sm"
+      android:paddingRight="@dimen/gi_space_lg"
+      android:paddingBottom="@dimen/gi_space_sm">
       <TextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -200,11 +247,13 @@
     <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginLeft="@dimen/gi_page_inset"
-      android:layout_marginTop="@dimen/gi_space_inset"
-      android:layout_marginRight="@dimen/gi_page_inset"
-      android:gravity="center"
-      android:orientation="horizontal">
+      android:gravity="center_vertical"
+      android:minHeight="@dimen/gi_secondary_row_height"
+      android:orientation="horizontal"
+      android:paddingLeft="@dimen/gi_space_lg"
+      android:paddingTop="@dimen/gi_space_sm"
+      android:paddingRight="@dimen/gi_space_lg"
+      android:paddingBottom="@dimen/gi_space_sm">
       <TextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -219,11 +268,13 @@
     <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginLeft="@dimen/gi_page_inset"
-      android:layout_marginTop="@dimen/gi_space_inset"
-      android:layout_marginRight="@dimen/gi_page_inset"
-      android:gravity="center"
-      android:orientation="horizontal">
+      android:gravity="center_vertical"
+      android:minHeight="@dimen/gi_secondary_row_height"
+      android:orientation="horizontal"
+      android:paddingLeft="@dimen/gi_space_lg"
+      android:paddingTop="@dimen/gi_space_sm"
+      android:paddingRight="@dimen/gi_space_lg"
+      android:paddingBottom="@dimen/gi_space_sm">
       <TextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -238,11 +289,13 @@
     <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginLeft="@dimen/gi_page_inset"
-      android:layout_marginTop="@dimen/gi_space_inset"
-      android:layout_marginRight="@dimen/gi_page_inset"
-      android:gravity="center"
-      android:orientation="horizontal">
+      android:gravity="center_vertical"
+      android:minHeight="@dimen/gi_secondary_row_height"
+      android:orientation="horizontal"
+      android:paddingLeft="@dimen/gi_space_lg"
+      android:paddingTop="@dimen/gi_space_sm"
+      android:paddingRight="@dimen/gi_space_lg"
+      android:paddingBottom="@dimen/gi_space_sm">
       <TextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -250,7 +303,7 @@
         android:text="@string/font_color_bg_color"
         style="@style/TextAppearance.GalIsland.ConfigLabel" />
       <com.google.android.material.button.MaterialButton
-        android:id="@+id/b_v_h_read_config_color"
+        android:id="@+id/b_v_h_read_config_change_color"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/modify" />

@@ -26,13 +26,15 @@ class ReaderChromeController(
     private val statusLine: View,
     private val shownBarColor: Int,
     private val hiddenBarColor: () -> Int,
-    private val onVisibilityChanged: (Boolean) -> Unit
+    private val onVisibilityChanged: (Boolean) -> Unit,
+    private val onContentBoundsChanged: () -> Unit = {}
 ) {
     private var targetShown = true
 
     init {
         val relayout = View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
             if (!targetShown) syncHiddenPosition()
+            onContentBoundsChanged()
         }
         chromeHost.addOnLayoutChangeListener(relayout)
         bottomDock.addOnLayoutChangeListener(relayout)
@@ -52,6 +54,7 @@ class ReaderChromeController(
             .start()
         setStatusLineVisible(false)
         onVisibilityChanged(true)
+        onContentBoundsChanged()
     }
 
     fun hide() {
@@ -68,13 +71,18 @@ class ReaderChromeController(
             .start()
         setStatusLineVisible(true)
         onVisibilityChanged(false)
+        onContentBoundsChanged()
     }
 
     /** Reapply the hidden position after insets, rotation, or split-screen relayout. */
     fun onWindowGeometryChanged() {
-        if (targetShown) return
+        if (targetShown) {
+            onContentBoundsChanged()
+            return
+        }
         cancelAnimations()
         syncHiddenPosition()
+        onContentBoundsChanged()
     }
 
     /** The status line is mutually exclusive with the menu surface. */

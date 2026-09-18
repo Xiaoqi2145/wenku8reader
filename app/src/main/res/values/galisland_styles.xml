@@ -26,51 +26,51 @@
   </style>
   <!-- ===================== 字体尺度 ===================== -->
   <style name="TextAppearance.GalIsland.CardTitle" parent="TextAppearance.Material3.TitleSmall">
-    <item name="android:textSize">14sp</item>
+    <item name="android:textSize">@dimen/gi_text_card_title</item>
     <item name="android:textColor">?attr/colorOnSurface</item>
     <item name="android:letterSpacing">0</item>
   </style>
   <style name="TextAppearance.GalIsland.CardSubtitle" parent="TextAppearance.Material3.BodySmall">
-    <item name="android:textSize">11sp</item>
+    <item name="android:textSize">@dimen/gi_text_meta</item>
     <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
     <item name="android:letterSpacing">0</item>
   </style>
   <style name="TextAppearance.GalIsland.Meta" parent="TextAppearance.Material3.BodySmall">
-    <item name="android:textSize">12sp</item>
+    <item name="android:textSize">@dimen/gi_text_body</item>
     <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
     <item name="android:letterSpacing">0</item>
   </style>
   <style name="TextAppearance.GalIsland.SectionTitle" parent="TextAppearance.Material3.TitleSmall">
-    <item name="android:textSize">13sp</item>
+    <item name="android:textSize">@dimen/gi_text_section</item>
     <item name="android:textStyle">bold</item>
     <item name="android:textColor">?attr/colorOnSurface</item>
     <item name="android:letterSpacing">0</item>
   </style>
   <style name="TextAppearance.GalIsland.Eyebrow" parent="TextAppearance.Material3.LabelSmall">
-    <item name="android:textSize">10sp</item>
+    <item name="android:textSize">@dimen/gi_text_micro</item>
     <item name="android:textStyle">bold</item>
     <item name="android:textColor">?attr/colorPrimary</item>
   </style>
   <style name="TextAppearance.GalIsland.Button" parent="TextAppearance.Material3.LabelLarge">
-    <item name="android:textSize">12sp</item>
+    <item name="android:textSize">@dimen/gi_text_body</item>
     <item name="android:textStyle">bold</item>
     <item name="android:letterSpacing">0.01</item>
   </style>
   <style name="TextAppearance.GalIsland.Tab" parent="TextAppearance.Material3.TitleSmall">
-    <item name="android:textSize">13sp</item>
+    <item name="android:textSize">@dimen/gi_text_section</item>
     <item name="android:textStyle">bold</item>
     <item name="android:letterSpacing">0</item>
   </style>
   <style name="TextAppearance.GalIsland.Tag" parent="TextAppearance.Material3.LabelSmall">
-    <item name="android:textSize">10sp</item>
+    <item name="android:textSize">@dimen/gi_text_micro</item>
     <item name="android:letterSpacing">0</item>
   </style>
   <style name="TextAppearance.GalIsland.ChipLabel" parent="TextAppearance.Material3.LabelLarge">
-    <item name="android:textSize">12sp</item>
+    <item name="android:textSize">@dimen/gi_text_body</item>
     <item name="android:letterSpacing">0</item>
   </style>
   <style name="TextAppearance.GalIsland.EmptyTitle" parent="TextAppearance.Material3.TitleMedium">
-    <item name="android:textSize">16sp</item>
+    <item name="android:textSize">@dimen/gi_text_empty_title</item>
     <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
     <item name="android:letterSpacing">0</item>
   </style>
@@ -80,7 +80,7 @@
     <item name="cardBackgroundColor">@android:color/transparent</item>
     <item name="cardCornerRadius">@dimen/gi_radius_card</item>
     <item name="cardElevation">0dp</item>
-    <item name="strokeWidth">1dp</item>
+    <item name="strokeWidth">@dimen/gi_stroke</item>
     <item name="strokeColor">?attr/colorOutlineVariant</item>
   </style>
   <!-- Transparent information cards preserve the grid surface. -->
@@ -104,6 +104,8 @@
   </style>
   <style name="Widget.GalIsland.CardView.Novel.Cover" parent="Widget.GalIsland.CardView.Novel">
     <item name="cardCornerRadius">@dimen/gi_radius_cover_novel</item>
+    <!-- 封面容器无描边（模板 .card-cover）；elevation 继承父样式 0dp。 -->
+    <item name="strokeWidth">0dp</item>
   </style>
   <!-- 列表式小说卡片的封面沿用外卡圆角 -->
   <style name="Widget.GalIsland.CardView.Novel.Cover.Liner" parent="Widget.GalIsland.CardView.Novel">
@@ -112,10 +114,17 @@
   <!-- ===================== 进度条 ===================== -->
   <!-- 细轨滑块，配合阅读底栏与设置面板 -->
   <style name="Widget.GalIsland.Slider" parent="Widget.Material3.Slider">
-    <item name="trackHeight">4dp</item>
-    <item name="thumbRadius">8dp</item>
+    <item name="trackHeight">@dimen/gi_slider_track_height</item>
+    <item name="thumbRadius">@dimen/gi_slider_thumb_radius</item>
     <item name="tickVisible">false</item>
-    <item name="haloRadius">16dp</item>
+    <item name="haloRadius">@dimen/gi_slider_halo_radius</item>
+  </style>
+  <!-- ===================== 开关 ===================== -->
+  <!-- 规范第 3 节禁止使用未映射的 Material3 默认组件样式；此前 materialSwitchStyle 缺位，
+       10 处 MaterialSwitch 全部落到 M3 默认样式。开关本体尺寸沿用 M3（不缩小，保证手势可达性），
+       只把触控目标对齐 GalIsland 控件高度。 -->
+  <style name="Widget.GalIsland.Switch" parent="Widget.Material3.CompoundButton.MaterialSwitch">
+    <item name="android:minHeight">@dimen/gi_control_height</item>
   </style>
   <!-- ===================== 工具栏 ===================== -->
   <style name="Widget.GalIsland.Toolbar" parent="Widget.Material3.Toolbar">
@@ -197,8 +206,8 @@
     <item name="android:minHeight">@dimen/gi_control_height</item>
     <item name="iconSize">@dimen/gi_control_icon</item>
     <item name="android:minWidth">@dimen/gi_icon_button_size</item>
-    <item name="android:insetTop">4dp</item>
-    <item name="android:insetBottom">4dp</item>
+    <item name="android:insetTop">@dimen/gi_space_xs</item>
+    <item name="android:insetBottom">@dimen/gi_space_xs</item>
     <item name="strokeWidth">@dimen/gi_stroke</item>
     <item name="strokeColor">?attr/colorOutlineVariant</item>
     <item name="iconTint">?attr/colorOnSurfaceVariant</item>
@@ -208,7 +217,7 @@
   <style name="Widget.GalIsland.Chip" parent="Widget.Material3.Chip.Assist">
     <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Tag</item>
     <item name="chipMinHeight">@dimen/gi_chip_height</item>
-    <item name="chipStrokeWidth">1dp</item>
+    <item name="chipStrokeWidth">@dimen/gi_stroke</item>
     <item name="chipStrokeColor">?attr/colorOutlineVariant</item>
     <item name="chipBackgroundColor">@color/gi_chip_background</item>
     <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
@@ -220,7 +229,7 @@
     <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Small</item>
     <item name="chipMinHeight">@dimen/gi_chip_touch_height</item>
     <item name="android:textAppearance">@style/TextAppearance.GalIsland.ChipLabel</item>
-    <item name="chipStrokeWidth">1dp</item>
+    <item name="chipStrokeWidth">@dimen/gi_stroke</item>
     <item name="chipStrokeColor">?attr/colorOutlineVariant</item>
     <item name="chipBackgroundColor">@color/gi_chip_background</item>
     <item name="ensureMinTouchTargetSize">true</item>
@@ -229,7 +238,7 @@
   <style name="Widget.GalIsland.Chip.Filter" parent="Widget.Material3.Chip.Filter">
     <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Small</item>
     <item name="chipMinHeight">@dimen/gi_chip_touch_height</item>
-    <item name="chipStrokeWidth">1dp</item>
+    <item name="chipStrokeWidth">@dimen/gi_stroke</item>
     <item name="chipStrokeColor">?attr/colorOutlineVariant</item>
     <item name="android:textAppearance">@style/TextAppearance.GalIsland.ChipLabel</item>
     <item name="chipBackgroundColor">@color/gi_chip_background</item>
@@ -240,7 +249,7 @@
   <!-- 3dp 主色指示条、加粗 13sp 标签（模板侧栏激活态） -->
   <style name="Widget.GalIsland.TabLayout" parent="Widget.Material3.TabLayout">
     <item name="tabIndicatorColor">?attr/colorPrimary</item>
-    <item name="tabIndicatorHeight">3dp</item>
+    <item name="tabIndicatorHeight">@dimen/gi_tab_indicator_height</item>
     <item name="tabIndicatorFullWidth">false</item>
     <item name="tabSelectedTextColor">?attr/colorPrimary</item>
     <item name="tabTextColor">?attr/colorOnSurfaceVariant</item>
@@ -251,8 +260,8 @@
   <!-- ===================== 底部导航激活指示器 ===================== -->
   <!-- 复刻模板 nav-item.is-active：淡主色底 + 7dp 圆角 -->
   <style name="Widget.GalIsland.NavigationBar.ActiveIndicator" parent="">
-    <item name="android:width">64dp</item>
-    <item name="android:height">32dp</item>
+    <item name="android:width">@dimen/gi_nav_indicator_width</item>
+    <item name="android:height">@dimen/gi_nav_indicator_height</item>
     <item name="android:color">@color/galisland_nav_indicator</item>
     <item name="shapeAppearance">@style/ShapeAppearance.GalIsland.Small</item>
   </style>
@@ -262,7 +271,7 @@
     <item name="boxCornerRadiusTopEnd">@dimen/gi_radius_control</item>
     <item name="boxCornerRadiusBottomStart">@dimen/gi_radius_control</item>
     <item name="boxCornerRadiusBottomEnd">@dimen/gi_radius_control</item>
-    <item name="boxStrokeWidth">1dp</item>
+    <item name="boxStrokeWidth">@dimen/gi_stroke</item>
     <item name="boxStrokeWidthFocused">@dimen/gi_stroke</item>
     <item name="boxStrokeColor">@color/galisland_box_stroke</item>
     <item name="hintTextColor">?attr/colorPrimary</item>
@@ -273,7 +282,7 @@
     <item name="boxCornerRadiusTopEnd">@dimen/gi_radius_control</item>
     <item name="boxCornerRadiusBottomStart">@dimen/gi_radius_control</item>
     <item name="boxCornerRadiusBottomEnd">@dimen/gi_radius_control</item>
-    <item name="boxStrokeWidth">1dp</item>
+    <item name="boxStrokeWidth">@dimen/gi_stroke</item>
     <item name="boxStrokeWidthFocused">@dimen/gi_stroke</item>
     <item name="boxStrokeColor">@color/galisland_box_stroke</item>
     <item name="hintTextColor">?attr/colorPrimary</item>

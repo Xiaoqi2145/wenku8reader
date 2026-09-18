@@ -23,7 +23,7 @@
         <item name="bottomSheetStyle">@style/Widget.GalIsland.BottomSheet</item>
     </style>
     <style name="TextAppearance.GalIsland.Body" parent="TextAppearance.Material3.BodyMedium">
-        <item name="android:textSize">14sp</item>
+        <item name="android:textSize">@dimen/gi_text_body_default</item>
         <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
         <item name="android:letterSpacing">0</item>
     </style>

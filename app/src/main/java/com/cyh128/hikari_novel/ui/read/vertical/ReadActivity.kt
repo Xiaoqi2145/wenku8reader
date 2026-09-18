@@ -24,6 +24,7 @@ import com.cyh128.hikari_novel.ui.other.LoadingView
 import com.cyh128.hikari_novel.ui.read.SelectColorActivity
 import com.cyh128.hikari_novel.ui.read.catalog.ReadChapterCatalogBottomSheet
 import com.cyh128.hikari_novel.ui.read.common.ReaderChromeController
+import com.cyh128.hikari_novel.ui.read.common.ReaderChromeGeometry
 import com.cyh128.hikari_novel.ui.read.common.ReaderWindowInsetsCoordinator
 import com.cyh128.hikari_novel.util.getIsInDarkMode
 import com.cyh128.hikari_novel.util.ReaderStatusText
@@ -193,7 +194,8 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
             statusLine = binding.statusAVRead.root,
             shownBarColor = showBarColor,
             hiddenBarColor = ::getHideBarColor,
-            onVisibilityChanged = { viewModel.isBarShown = it }
+            onVisibilityChanged = { viewModel.isBarShown = it },
+            onContentBoundsChanged = ::applyReaderContentInsets
         )
         windowInsetsCoordinator = ReaderWindowInsetsCoordinator(
             window = window,
@@ -239,6 +241,33 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
         } else if (viewModel.readerState.value !is ReaderUiState.Loading) {
             showLoading()
         }
+    }
+
+    internal fun applyReaderContentInsets() {
+        val root = binding.root
+        if (root.height <= 0) {
+            root.post(::applyReaderContentInsets)
+            return
+        }
+
+        val statusLine = binding.statusAVRead.root
+        val bottomDock = binding.readBottomDock
+        val toolbar = binding.tbAVRead
+        val fallbackBottom = resources.getDimensionPixelSize(R.dimen.gi_reader_content_bottom_inset)
+        val statusLineTop = statusLine.top.takeIf { it > 0 }
+            ?: (root.height - statusLine.measuredHeight).coerceAtLeast(root.height - fallbackBottom)
+        val bottomDockTop = bottomDock.top.takeIf { it > 0 }
+            ?: (root.height - bottomDock.measuredHeight).coerceAtLeast(0)
+        val toolbarBottom = toolbar.bottom.takeIf { it > 0 } ?: toolbar.measuredHeight
+        val insets = ReaderChromeGeometry.contentInsets(
+            parentHeight = root.height,
+            toolbarBottom = toolbarBottom,
+            bottomDockTop = bottomDockTop,
+            statusLineTop = statusLineTop,
+            chromeShown = viewModel.isBarShown
+        )
+        (supportFragmentManager.findFragmentById(R.id.fcv_a_v_read) as? ReadFragment)
+            ?.setReaderContentInsets(insets.top, insets.bottom)
     }
 
     private fun initListener() {

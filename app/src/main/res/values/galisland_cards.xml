@@ -9,11 +9,12 @@
     <dimen name="galisland_novel_selection_icon_size">@dimen/gi_control_icon</dimen>
     <dimen name="galisland_novel_list_cover_width">@dimen/gi_cover_width</dimen>
     <dimen name="galisland_novel_list_cover_height">@dimen/gi_cover_height</dimen>
+    <!-- 外观全部继承 Widget.GalIsland.CardView.Novel：
+         8dp 圆角 / 1dp 描边 / 0dp elevation / colorSurface 底色，此处不再重复声明。
+         strokeColor 接入 gi_card_stroke，使选中（state_selected）与聚焦态显示主色描边，
+         兑现 galisland-visual-alignment.md 中「右上角选择角标与强调描边」的承诺。 -->
     <style name="Widget.GalIsland.NovelCards.Card" parent="Widget.GalIsland.CardView.Novel">
-        <item name="cardBackgroundColor">?attr/colorSurface</item>
-        <item name="cardElevation">0dp</item>
-        <item name="strokeWidth">@dimen/gi_stroke</item>
-        <item name="strokeColor">?attr/colorOutlineVariant</item>
+        <item name="strokeColor">@color/gi_card_stroke</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
     </style>

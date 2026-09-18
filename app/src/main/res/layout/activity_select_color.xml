@@ -37,7 +37,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/gi_page_inset"
-        android:layout_marginTop="@dimen/gi_control_icon"
+        android:layout_marginTop="@dimen/gi_space_gap_xl"
         android:layout_marginRight="@dimen/gi_page_inset"
         android:hint="字体颜色(十六进制)">
         <com.google.android.material.textfield.TextInputEditText
@@ -53,7 +53,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/gi_page_inset"
-        android:layout_marginTop="@dimen/gi_control_icon"
+        android:layout_marginTop="@dimen/gi_space_gap_xl"
         android:layout_marginRight="@dimen/gi_page_inset"
         android:hint="背景颜色(十六进制)">
         <com.google.android.material.textfield.TextInputEditText
@@ -68,7 +68,7 @@
         android:id="@+id/cv_a_select_color_recommend_day"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/gi_control_icon"
+        android:layout_margin="@dimen/gi_space_gap_xl"
         style="@style/Widget.GalIsland.CardView">
         <LinearLayout
           android:layout_width="match_parent"
@@ -84,7 +84,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginLeft="@dimen/gi_metric_11dp">
+            android:layout_marginLeft="@dimen/gi_space_gap_md">
             <TextView
               style="@style/TextAppearance.GalIsland.Secondary.Title"
               android:layout_width="match_parent"
@@ -116,7 +116,7 @@
         android:id="@+id/cv_a_select_color_recommend_night"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/gi_control_icon"
+        android:layout_margin="@dimen/gi_space_gap_xl"
         style="@style/Widget.GalIsland.CardView">
         <LinearLayout
           android:layout_width="match_parent"
@@ -132,7 +132,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginLeft="@dimen/gi_metric_11dp">
+            android:layout_marginLeft="@dimen/gi_space_gap_md">
             <TextView
               style="@style/TextAppearance.GalIsland.Secondary.Title"
               android:layout_width="match_parent"

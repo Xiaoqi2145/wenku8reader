@@ -29,8 +29,8 @@
         android:layout_height="wrap_content"
         android:paddingLeft="@dimen/gi_space_inset"
         android:paddingRight="@dimen/gi_space_inset"
-        android:paddingTop="@dimen/gi_metric_5dp"
-        android:paddingBottom="@dimen/gi_metric_5dp"
+        android:paddingTop="@dimen/gi_space_gap_xs"
+        android:paddingBottom="@dimen/gi_space_gap_xs"
         android:textStyle="bold"
         android:textColor="?attr/colorPrimary"
         tools:text="username" />

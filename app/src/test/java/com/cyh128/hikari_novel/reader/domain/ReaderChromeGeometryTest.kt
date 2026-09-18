@@ -48,4 +48,46 @@ class ReaderChromeGeometryTest {
         assertEquals(0, ReaderChromeGeometry.contentHeight(400, 600))
         assertEquals(376, ReaderChromeGeometry.contentHeight(400, 24))
     }
+
+    @Test
+    fun contentInsetsReserveToolbarAndDockWhenChromeIsShown() {
+        assertEquals(
+            ReaderChromeGeometry.ContentInsets(top = 120, bottom = 220),
+            ReaderChromeGeometry.contentInsets(
+                parentHeight = 1000,
+                toolbarBottom = 120,
+                bottomDockTop = 780,
+                statusLineTop = 960,
+                chromeShown = true
+            )
+        )
+    }
+
+    @Test
+    fun contentInsetsReserveOnlyStatusLineWhenChromeIsHidden() {
+        assertEquals(
+            ReaderChromeGeometry.ContentInsets(top = 0, bottom = 40),
+            ReaderChromeGeometry.contentInsets(
+                parentHeight = 1000,
+                toolbarBottom = 120,
+                bottomDockTop = 780,
+                statusLineTop = 960,
+                chromeShown = false
+            )
+        )
+    }
+
+    @Test
+    fun contentInsetsClampInvalidBoundsToParent() {
+        assertEquals(
+            ReaderChromeGeometry.ContentInsets(top = 0, bottom = 1000),
+            ReaderChromeGeometry.contentInsets(
+                parentHeight = 1000,
+                toolbarBottom = -20,
+                bottomDockTop = -100,
+                statusLineTop = -50,
+                chromeShown = false
+            )
+        )
+    }
 }

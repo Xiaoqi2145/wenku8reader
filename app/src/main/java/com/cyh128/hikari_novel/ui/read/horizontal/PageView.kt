@@ -69,6 +69,9 @@ class PageView: ViewFlipper, IPageView {
     private var touchStartY = 0f
     private var ignoreCurrentGesture = false
 
+    private var contentTopInset = 0
+    private var contentBottomInset = 0
+
     private var isMoved = false                       //手势判断
     private var isTouching = false                    //手势判断
     private var moveStart = FloatArray(2)        //手势判断
@@ -88,8 +91,23 @@ class PageView: ViewFlipper, IPageView {
     }
 
     private fun init() { //界面初始化
+        clipToPadding = true
         showLoadingTip()
         showNext()
+    }
+
+    /**
+     * Keeps the rendered page inside the measured reader chrome bounds. The
+     * child page views inherit these paddings, so text, images and loading
+     * states share one safe region without duplicating inset math.
+     */
+    fun setContentInsets(top: Int, bottom: Int) {
+        val safeTop = top.coerceAtLeast(0)
+        val safeBottom = bottom.coerceAtLeast(0)
+        if (safeTop == contentTopInset && safeBottom == contentBottomInset) return
+        contentTopInset = safeTop
+        contentBottomInset = safeBottom
+        setPadding(paddingLeft, safeTop, paddingRight, safeBottom)
     }
 
     @SuppressLint("ClickableViewAccessibility")

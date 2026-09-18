@@ -36,7 +36,7 @@
     <ImageView
       android:id="@+id/header"
       android:layout_width="wrap_content"
-      android:layout_height="@dimen/gi_metric_156dp"
+      android:layout_height="@dimen/gi_brand_header_height"
       android:padding="@dimen/gi_space_xl"
       android:src="@drawable/logo_header"
       tools:ignore="MissingConstraints"
@@ -54,7 +54,7 @@
       android:background="@drawable/gi_secondary_panel"
       android:paddingLeft="@dimen/gi_space_lg"
       android:paddingRight="@dimen/gi_space_lg"
-      android:paddingTop="@dimen/gi_control_icon"
+      android:paddingTop="@dimen/gi_space_gap_xl"
       android:paddingBottom="@dimen/gi_space_inset"
       android:orientation="vertical">
       <TextView
@@ -126,7 +126,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:layout_marginBottom="@dimen/gi_metric_30dp"
+    android:layout_marginBottom="@dimen/gi_section_gap"
     android:gravity="center">
     <com.google.android.material.button.MaterialButton
       android:minHeight="@dimen/gi_control_height"

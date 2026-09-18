@@ -10,7 +10,7 @@
   android:background="?android:attr/colorBackground">
   <ImageView
     android:layout_width="wrap_content"
-    android:layout_height="@dimen/gi_cover_height"
+    android:layout_height="@dimen/gi_brand_logo_height"
     android:src="@drawable/logo_header"
     tools:ignore="ContentDescription" />
   <LinearLayout
@@ -28,13 +28,13 @@
       android:textStyle="bold" />
     <androidx.core.widget.NestedScrollView
       android:layout_marginTop="@dimen/gi_space_inset"
-      android:layout_marginLeft="@dimen/gi_control_icon"
-      android:layout_marginRight="@dimen/gi_control_icon"
+      android:layout_marginLeft="@dimen/gi_space_gap_xl"
+      android:layout_marginRight="@dimen/gi_space_gap_xl"
       android:layout_width="wrap_content"
-      android:layout_height="@dimen/gi_metric_130dp"
+      android:layout_height="@dimen/gi_crash_logo_height"
       android:layout_gravity="center"
       android:fadeScrollbars="false"
-      android:padding="@dimen/gi_metric_5dp"
+      android:padding="@dimen/gi_space_gap_xs"
       android:scrollbars="vertical">
       <TextView
         android:textAppearance="@style/TextAppearance.GalIsland.Meta"
