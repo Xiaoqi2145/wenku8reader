@@ -75,7 +75,14 @@ class HikariApp : Application() {
             )
 
         RxHttpPlugins.init(client)
-        applicationScope.launch { readerRepository.resumeQueuedDownloads() }
+        // Best-effort maintenance: an exception here must not kill the process at startup.
+        applicationScope.launch {
+            try {
+                readerRepository.resumeQueuedDownloads()
+            } catch (t: Throwable) {
+                Log.e("HikariApp", "resumeQueuedDownloads failed", t)
+            }
+        }
         CrashConfig.Builder.create()
             .errorActivity(CrashActivity::class.java)
             .apply()
