@@ -230,3 +230,211 @@ Koodo 是桌面/多格式阅读器（PDF/EPUB/TXT/CBR + AI 商业化），以下
 | 10 | P2-3 / P2-4 | 长期项 |
 
 前 4 项都是阅读页可视层与配置层改动，不涉及章节拼接、锚点模型和数据迁移，回归面可控；第 7、8 项开始引入新数据表与网络检索，建议各自独立里程碑。
+
+---
+
+## 六、落地进度
+
+### 6.1 已完成
+
+上一提交 `fb9c691` 落地了 P0-1 / P0-2 / P0-4 / P1-1 的**配置层**，本轮补齐了 P0-3 的**渲染层**，并修掉配置层遗留的既有缺陷。
+
+| 项 | 状态 | 落点 |
+| --- | --- | --- |
+| P0-1 配色解耦 | ✅ | `data/model/ReaderThemeMode.kt`、`util/ReaderColorResolver.kt`；底栏「夜间」只切 `readerThemeMode`，不再 `setDefaultNightMode`。第二轮补齐 chrome 跟随阅读配色与两态收敛，见第七节 |
+| P0-2 预设 / 自定义 / 还原 | ✅ | `data/model/ReaderColorPreset.kt`、`ReadColorRepository.applyPreset/addCustomColor/restoreDefaults`；本轮补上预设色块（`util/ReaderColorSwatch.kt`） |
+| P0-3 排版四项 | ✅ 本轮 | 竖排 `ui/read/vertical/VerticalTypography.kt`；横排 `PageView.kt:69-89`、`PageText.kt:49-52`、`PageLine.kt` |
+| P0-4 滑杆数值行 + 实时预览 | ✅ | `res/layout/view_reader_slider_row.xml` + 两个 Activity 的 `setupSliderRow()` |
+| P1-1 翻页动画枚举 | ✅ | `HorizontalReadConfig.switchAnimation` 含 boolean → string 迁移 |
+| P1-2 进度语义统一 | ✅ 本轮 | `Novel.chapterProgressLabel()`（`data/model/Novel.kt:54`）为横竖排共用；章节计数可点开目录，页码可点输入跳转 |
+| P1-3 书签 | ✅ 第三轮 | 表 / DAO / 增删 / 图标态 + 目录面板「书签」tab（`ReadBookmarkAdapter`） |
+| P1-4 全书搜索 | ✅ 第三轮 | `BookSearchMatcher` + 两阶段扫描（缓存自动 / 联网显式），见第八节 |
+| P2-1 阅读标尺 | ❌ | 未开始 |
+| P2-2 阅读时长 | ❌ | 未开始 |
+| P2-3 文字选区 | ❌ | 未开始 |
+| P2-4 单书独立样式 | ❌ | 未开始 |
+| P2-5 手势分区 | ✅ 第三轮 | 策略层早已存在，本轮补 handler 接线与测试 |
+
+### 6.2 本轮修掉的既有缺陷
+
+1. **`ReaderThemeMode.System` 永远解析成日间配色。** `ReaderColorResolver` 原来用
+   `AppCompatDelegate.getDefaultNightMode() == MODE_NIGHT_YES` 判断系统深色，而默认
+   `DarkMode.System` 映射到 `MODE_NIGHT_FOLLOW_SYSTEM(-1)`，永不等于 `MODE_NIGHT_YES`。
+   这是相对旧 `getIsInDarkMode()`（读 `uiMode`）的**回退**。改为 `uiMode` 判定，构造函数
+   增加 `Context` 参数（`util/ReaderColorResolver.kt:44`）。
+2. **竖排「段间距」会把「行距」覆盖掉。** `ReadFragment` 原来在
+   `ChangeParagraphSpacingEvent` 分支里直接 `tvFVRead.setLineSpacing(event.value, 1f)`，
+   即拖段间距等于重设行距，而真正的段间距从未生效。
+3. **竖排「首行缩进」是空操作。** 原分支只做 `scrollRestorer.restoreAfterLayout()`，没有任何渲染效果。
+4. **横排「段间距 / 字间距 / 对齐 / 缩进」四项全部无效。** `PageView` 没有这四个属性，
+   设置只写进 MMKV，渲染层从不读取。
+5. **横排首行缩进是"假缩进"。** `splitContent` 给首行预留了 2 字符宽度，但 `drawPage`
+   仍从同一起点画起 —— 首行只是变短，并没有缩进。
+6. **竖排章节计数带字面反引号。** `ReadViewModel.chapterProgressText()` 返回
+   `` "`3/120`" ``，反引号会原样显示在状态行。
+7. **横排底栏章节计数从未更新。** `readChapterProgress` 只有竖排在写，横排一直显示布局默认值 `1/1`。
+8. **横排书签按钮是占位实现**，点击只弹「书签功能即将上线」，与竖排行为不一致。
+9. **`FakeReaderDao` 未跟上书签 DAO 方法**，导致 `:app:testDebugUnitTest` 的**整个测试源集无法编译**（自 `fb9c691` 起）。
+10. **`PageImage` 居中测量用了错误的字号**：先以页脚字号 `measureText` 再切回正文字号 `drawText`，
+    导致提示文案不居中。已改为先设字号再测量。
+
+### 6.3 本轮实现要点
+
+**竖排（`TextView` 连续滚动）**：新增 `VerticalTypography` + `VerticalTypographyApplier`，
+四个设置项统一走一个 applier，实时预览与重渲染不可能分叉。
+
+- 行距 → `setLineSpacing(extra, 1f)`（唯一作用于所有行的机制）
+- 段间距 → 每段首字符挂一个 `LineHeightSpan`，`fm.ascent -= extra`（只加高该段首行）
+- 首行缩进 → 每段挂 `LeadingMarginSpan.Standard(indent, 0)`
+- 字间距 → `TextView.letterSpacing`（em，由 px / textSize 换算）
+- 对齐 → `Gravity.START` + API 26 `justificationMode`（常量在公开 `android.jar` 中是 `@hide`，已镜像其值）
+- **章节标题被排除**：`VerticalContentRenderer` 记录每章标题在拼接文本中的绝对区间，applier 跳过这些段落，避免给标题加缩进和段前距
+- 全部用 span 实现，**不改变字符偏移**，`ReaderAnchor.charOffset` 在排版变更前后保持有效
+
+**横排（自绘分页）**：行数据从 `String` 换成 `PageLine(text, indent, spacingBefore, isParagraphEnd)`。
+
+- 分页由「固定行数」改为「按行高累积」（`PageView.kt:571`），否则段间距会把行挤出页底
+- 字间距同时作用于测量与绘制，避免分行后溢出
+- 首行缩进真正偏移 x；两端对齐按字符分摊空隙逐字绘制（CJK 无空格可拉伸）；段落末行不拉伸
+- `HorizontalReadConfig.firstLineIndent` 默认值取 **2**（而非 0），因为横排原本硬编码 2 字符缩进，暴露开关不应改变既有渲染
+
+### 6.4 未完成 / 后续
+
+- **P2-1 阅读标尺 / P2-2 阅读时长 / P2-3 文字选区 / P2-4 单书独立样式**（P2-5 已在第三轮完成）。
+- **横排搜索命中不高亮**：分页正文是 `Canvas` 自绘，加高亮要改分页/绘制链路，见 8.4。
+- **阅读页的模态浮层仍跟随 App 主题**（设置面板 bottom sheet、首启引导卡片）。见 6.7 的边界说明。
+- **两处 `failure.message ?: "加载失败"`**（两个 `ReadViewModel`）仍是硬编码中文，落在 `ReaderUiState.Error` 里，需要先改 `ReaderUiState` 才能本地化。
+
+### 6.5 验证情况
+
+- `:app:compileDebugKotlin` ✅
+- `:app:testDebugUnitTest` ✅ 99 tests / 0 failures（新增 `VerticalTypographyApplierTest`、`NovelChapterProgressTest`、`ReaderChromePaletteTest`、`ReaderThemeModeTest`）
+- `:app:assembleDebug` ✅
+- `build/check_galisland_py.py` → 0 failure；`build/verify_res.py` → 0 XML 错误 / 0 悬空引用
+- **像素观感未实测**：无可用设备/模拟器（安装受限见 `galisland-visual-drift-audit.md`）。
+  段间距依赖 `LineHeightSpan.chooseHeight` 的行为、两端对齐的逐字绘制效果、chrome 换色后的观感，都属静态审查结论。
+- **分页存在预期内的微差**：`linesPerPage` 由整数除法改为浮点累积，边界情况下每页行数可能相差 1 行。
+  这是支持变行高的必要代价。
+- 构建需显式 `export JAVA_HOME="D:/SDK/Java/jdk-21"`（系统默认 JDK 25 不被 Gradle 8.13 支持）。
+
+---
+
+## 七、第二轮：阅读页收敛到白天/黑夜 + chrome 跟随阅读配色
+
+本轮目标是让阅读页**只有白天/黑夜两态**，且整页视觉（含顶栏、状态行、底栏）用同一套 GalIsland 语义角色表达，颜色全部来自阅读配色而非 App 主题。
+
+### 7.1 配色收敛为两态
+
+`ReaderThemeMode` 保留三个枚举值，但 `System` 降级为**纯遗留值**：
+
+- 新增 `ReaderThemeMode.converge(systemIsDark)`：`System` → 与当前 App 主题一致的具象值（深色 App → `Night`，浅色 → `Day`），保证深色主题用户不会被翻成浅色阅读页。
+- 新增 `ReadColorRepository.convergeReaderThemeMode(systemIsDark)`：一次性折叠并落盘，用 `ReadColorConfig.hasMigratedThemeMode` 把关（该 flag 此前定义后从未被使用）。两个 Activity 在 `initView()` 开头调用，先于任何配色读取。
+- **`applyPreset` / `restoreDefaults` 不再写 `readerThemeMode = System`**。这两处是第三态"复活"的唯一来源：改色是颜色选择，不该顺手改主题模式；而 preset 会把日/夜两套写成同一组值，模式本来也影响不到显示。
+
+### 7.2 chrome 跟随阅读配色
+
+新增两个文件（`ui/read/common/`）：
+
+- **`ReaderChromePalette`**（纯计算，可单测）：`surface` = 阅读背景色、`onSurface` = 阅读文字色、`onSurfaceVariant` = 向文字色混合 62%、`outline` = 混合 24%。二次色用**混合**而不是 alpha，好处是对任意 bg/text 组合都保证对比度，且结果不透明、不依赖叠加合成。
+- **`ReaderChromeTheme`**：把调色板映射到 GalIsland 的语义角色上。
+
+要点：
+
+- **GalIsland 语言不变，只换值**：仍是「平面 + 1dp 细描边、无 elevation」，`surface` / `onSurface` / `onSurfaceVariant` / `outline` 四个角色一一对应。顶栏描边在**下缘**、底栏与状态行描边在**上缘**，两侧都与正文形成边界。
+- 背景不能用 `setBackgroundTintList` 整体染色：`bg_read_bottom_bar.xml` / `bg_read_status_bar.xml` 是「面 + 描边」的 `layer-list`，整体染色会丢掉描边。改为运行时构造等价 `LayerDrawable`（两层 `GradientDrawable` + `setLayerGravity`）。
+- 子树按类型染色：`MaterialButton`（文字按钮用 `onSurface`，纯图标按钮沿用更安静的 `onSurfaceVariant`，对齐 `Widget.GalIsland.Button.IconButton`）、`Slider`（`trackActive/Inactive` + `thumb` + `halo`）、`TextView`、`ImageView`。注意 `MaterialButton` 是 `TextView` 子类，匹配顺序必须先于 `TextView`。
+- 菜单图标：`MaterialToolbar` 只暴露导航图标 tint，菜单图标需逐个 tint，因此放在 `onCreateOptionsMenu()` 里 inflate 之后执行（`ReaderChromeTheme.tintMenuIcons`）。
+- `ReaderChromeController.shownBarColor` 由 `Int` 改为 `() -> Int`，并新增 `refreshSystemBars()`：切日夜或换配色后，系统状态栏/导航栏要跟着重绘（图标明暗本来就按亮度自动判定）。
+- 顶栏原为**透明底**（颜色来自窗口背景），现在显式画上阅读背景，否则深色 App 主题下会在白页顶部留一条深色带。
+
+### 7.3 校验脚本断言更新
+
+`scripts/check-galisland.ps1`（及其 Python 等价 `build/check_galisland_py.py`）原有一条断言「阅读 Activity 必须出现 `giSurfaceReaderChrome`」。chrome 改走运行时调色板后该断言已失效，替换为**更强的不变式**：
+
+- 必须引用 `ReaderChromePalette` 与 `ReaderChromeTheme`（颜色来源是调色板，不是主题属性）；
+- 禁止出现 `#[0-9A-Fa-f]{6}` 硬编码色；
+- 保留「禁止 `colorSurfaceContainer` 绕过语义 token」。
+
+### 7.4 边界：模态浮层不跟随阅读配色
+
+**阅读页的 bottom sheet（设置面板）与首启引导卡片继续跟随 App 主题。** 理由：
+
+- 它们是浮层/卡片，自带 surface + 同色系文字，**在任何组合下都可读**（不存在"深色浮层压在浅色正文上"的读不清问题，只是色调与页面不同）。
+- 让它们跟随阅读配色需要同时重染 `TextInputLayout` / `MaterialSwitch` / `MaterialButtonToggleGroup` / `Slider` / `gi_secondary_panel` 等一整套控件；只染 surface 不染内容反而会更糟（浅色面板 + 深色控件）。
+- 主视觉（顶栏 / 状态行 / 底栏 / 正文）已经统一，浮层保持与 App 内其它 GalIsland sheet 一致，整 App 观感更连贯。
+
+如需浮层也跟随，建议单独一个里程碑，并沿用 `ReaderChromeTheme` 的"角色映射"思路而不是逐控件打补丁。
+
+
+---
+
+## 八、第三轮：目录抽屉三 tab（书签 / 全书搜索）+ 三分区手势 + 死代码清理
+
+### 8.1 目录抽屉改为三 tab
+
+`fragment_read_chapter_catalog.xml` 从「封面 + 卷 rail + 章节列表」单视图改为 `TabLayout`（`Widget.GalIsland.TabLayout`，3dp 主色指示条）+ 三个内容容器：
+
+| tab | 内容 |
+| --- | --- |
+| 目录 | 原样保留（封面 / 卷 rail / 章节列表 / 下载多选） |
+| 书签 | `ReadBookmarkAdapter`：章节名 + 摘要 + 时间，右侧删除按钮（P1-3） |
+| 搜索 | 输入框 + 进度行 + 按章节分组的结果列表（P1-4） |
+
+面板加 `@AndroidEntryPoint` 注入 `ReaderRepository`。两个宿主 Activity（`NovelInfoActivity`、两个 `ReadActivity`）本来就是 Hilt 入口，不需要额外改动。
+
+### 8.2 P1-3 书签 tab
+
+- 表 / DAO / 增删 / 图标态在第二轮前已完成，本轮补的是列表 UI。
+- `BookmarkEntity` 只存索引不存标题，所以由面板按 `(volumeIndex, chapterIndex)` 从 `Novel` 反查标题（`chapterTitleOf`），列表行用 `BookmarkRow(bookmark, chapterTitle)`。
+- 点击 → 用书签里的 `paragraphIndex/charOffset/normalizedPercent` 重建 `ReaderAnchor` 跳转；删除走 `deleteBookmark` + 提示。
+
+### 8.3 P1-4 全书搜索
+
+**匹配**：`data/repository/reader/BookSearch.kt` 的 `BookSearchMatcher`（纯函数，可单测）。刻意不做分词 —— wenku8 是简体中文正文，大小写不敏感的子串扫描既准确又便宜。命中上限 30/章，摘要保留前后 24 字并把换行压成空格。
+
+**两阶段执行**（关键设计）：
+
+1. **阶段一（自动）**：`ReaderDao.cachedChapterContents(aid)` 一次查询取回全书已缓存正文，逐章匹配。**不联网。**
+2. **阶段二（显式点按钮才跑）**：对未缓存章节调 `chapterLoader.load(ref)`（缓存优先、网络兜底，成功后自动入缓存），边扫边出结果，可随时取消。
+
+为什么拆两阶段：一本书上千章，若搜索即触发全量联网，一次输入就会变成上千个请求。计划里写的"未缓存章节按需网络加载后再搜"是对的，但必须由用户显式确认，且结果里要标明来源 —— 所以状态行会显示"已扫描 x/y 章"，未覆盖的部分变成一颗「联网搜索剩余章节」按钮（运行中变为「取消」）。
+
+**结果呈现**：按章节分组、组可折叠（折叠态存在面板，adapter 只做渲染）、显示总数。进度回写按 200ms 节流，扫描循环里每批 `yield()` 一次，避免长书扫描卡住主线程。
+
+### 8.4 锚点跳转链路（三处点击共用）
+
+新增 `ReaderJumpTarget(volumePos, chapterPos, anchor, highlightLength)`，面板回调统一为 `onPositionSelected`（替换原来的 `onChapterSelected`）。目录点击 anchor 为 null，书签点击带书签锚点，搜索点击带命中偏移 + 匹配长度。
+
+- **竖排**：`ReadViewModel.setPendingJump/consumePendingJump`。`ReadFragment.restoreInitialPosition()` **优先消费 pendingJump**，再退回内存位置 / 持久化进度 / 旧历史 —— 目录跳转是显式意图，应当压过"上次读到哪"。消费后用 `scrollRestorer.restore(anchor)` 定位，并对搜索命中加一个临时 `BackgroundColorSpan`（2.5s 后移除）。
+  - 高亮颜色由 `ReaderChromePalette` 的 `onSurface` 取 20% alpha 得到，**跟随阅读配色**，任意 bg/text 组合都可见。
+  - 锚点的 `charOffset` 是章内偏移，用 `controller.globalOffset(anchor)` 换成拼接文本的全局偏移 —— 这也是排版用 span 而非改文本的收益之一。
+- **横排**：分页阅读没有字符级光标，只用锚点的 `normalizedPercent` 换算页码，抽成 `applyPageFromPercent()`，与进度恢复共用同一条路径（避免两处口径漂移）。
+  - **横排不做命中高亮**：正文是 `Canvas` 自绘的，加高亮需要改分页/绘制链路，收益不抵风险，留作后续。
+
+### 8.5 P2-5 竖排三分区手势
+
+计划里预估要改 `VerticalTouchPolicy` + `VerticalReaderTouchHandler` + 测试。实际情况：**策略层早就写好了三分区**（`tapArea` 返回 Previous/Center/Next），只是 handler 只接了 `onCenterTap`，左右两区被静默丢弃。
+
+本轮改动因此很小：
+
+- `VerticalTouchPolicy` 新增 `tapAction(...)`：把"是否点击 + 是否落在交互子视图上 + 落在哪个区"合成一次判定，返回 `VerticalTapArea?`；`shouldToggleReaderBar` 改为 `tapAction(...) == Center`，**策略只有一份真值**。
+- `VerticalReaderTouchHandler` 增 `onPreviousChapter` / `onNextChapter`，`ACTION_UP` 按区派发。
+- `ReadFragment` 接上 `toPreviousChapter()` / `toNextChapter()`（图片条目、翻章按钮等交互子视图仍独占触摸）。
+- 首启引导文案改为说明三分区。
+
+补了 3 组策略测试，其中一组做**交叉一致性**校验：遍历多种宽度与 x 比例，断言 `tapAction` 与 `shouldToggleReaderBar` 永不矛盾。
+
+### 8.6 死代码清理
+
+删除 `SelectColorActivity` / `SelectColorViewModel` / `activity_select_color.xml`，以及 `values` 与 `values-zh-rTW` 里的 `select_color_day`、`select_color_night`、`format_mismatch`，还有 `main`/`debug` 两个 manifest 里的 activity 条目。
+
+删除前逐项核对：全项目无调用点；布局只引用共享的 `gi_*` token 与 `ic_info` / `cancel` / `save_config`，**没有独占 drawable 会变成死资源**；三个字符串除自身定义外零引用。删除后 XML 合法性校验通过。
+
+> 遗留：`fragment_guide.xml:50` 有个 id 叫 `cv_a_select_color_recommend_day`，是 App 首启引导页自己的节点，与已删的配色页无关，只是命名撞车。本轮未改名（改 id 需要同步 Kotlin 引用），仅记录。
+
+### 8.7 验证
+
+- `:app:compileDebugKotlin` ✅ / `:app:assembleDebug` ✅
+- `:app:testDebugUnitTest` ✅（新增 `BookSearchMatcherTest` 8 例；`VerticalReaderCoreTest` 增 3 例）
+- `build/check_galisland_py.py` → 0 failure；`build/verify_res.py` → 0 XML 错误 / 0 悬空引用
+- **仍未实测**：无设备。搜索的两阶段交互、书签跳转落点、三分区手感都属静态审查结论。

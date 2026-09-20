@@ -24,7 +24,7 @@ class ReaderChromeController(
     private val toolbar: View,
     private val bottomDock: View,
     private val statusLine: View,
-    private val shownBarColor: Int,
+    private val shownBarColor: () -> Int,
     private val hiddenBarColor: () -> Int,
     private val onVisibilityChanged: (Boolean) -> Unit,
     private val onContentBoundsChanged: () -> Unit = {}
@@ -43,7 +43,7 @@ class ReaderChromeController(
     fun show() {
         targetShown = true
         cancelAnimations()
-        applySystemBars(shownBarColor)
+        applySystemBars(shownBarColor())
         toolbar.animate()
             .translationY(0f)
             .setDuration(180L)
@@ -55,6 +55,16 @@ class ReaderChromeController(
         setStatusLineVisible(false)
         onVisibilityChanged(true)
         onContentBoundsChanged()
+    }
+
+    /**
+     * Re-applies the system bar colours after the reader palette changed.
+     *
+     * The reader chrome follows the reading colours, so switching day/night or
+     * picking a preset must also repaint the status and navigation bars.
+     */
+    fun refreshSystemBars() {
+        applySystemBars(if (targetShown) shownBarColor() else hiddenBarColor())
     }
 
     fun hide() {

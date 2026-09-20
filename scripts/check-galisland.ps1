@@ -96,7 +96,6 @@ $gridSurfaceLayouts = @(
     'layout/activity_user_bookshelf.xml',
     'layout/activity_bookshelf_search.xml',
     'layout/activity_search.xml',
-    'layout/activity_select_color.xml',
     'layout/activity_login.xml',
     'layout/activity_account.xml',
     'layout/activity_about.xml',
@@ -138,11 +137,20 @@ foreach ($readerCode in @(
     "$PSScriptRoot/../app/src/main/java/com/cyh128/hikari_novel/ui/read/vertical/ReadActivity.kt"
 )) {
     $readerText = Get-Content -LiteralPath $readerCode -Raw -Encoding UTF8
+    $readerName = [IO.Path]::GetFileName($readerCode)
     if ($readerText -match 'colorSurfaceContainer') {
-        $failures.Add("Reader code bypasses the semantic Chrome token: $([IO.Path]::GetFileName($readerCode))")
+        $failures.Add("Reader code bypasses the semantic Chrome token: $readerName")
     }
-    if (!$readerText.Contains('giSurfaceReaderChrome')) {
-        $failures.Add("Reader code is missing the semantic Chrome token: $([IO.Path]::GetFileName($readerCode))")
+    # 阅读页 chrome 跟随阅读配色（P0-1）：颜色来源必须是运行时调色板而不是主题属性。
+    # 这比原先的 "必须出现 giSurfaceReaderChrome" 更强：调色板路径 + 禁止硬编码色。
+    if (!$readerText.Contains('ReaderChromePalette')) {
+        $failures.Add("Reader chrome does not derive from ReaderChromePalette: $readerName")
+    }
+    if (!$readerText.Contains('ReaderChromeTheme')) {
+        $failures.Add("Reader chrome is not applied through ReaderChromeTheme: $readerName")
+    }
+    if ($readerText -match '#[0-9A-Fa-f]{6}') {
+        $failures.Add("Reader code hardcodes a chrome colour: $readerName")
     }
 }
 foreach ($readerSurface in @('bg_read_bottom_bar.xml', 'bg_read_status_bar.xml')) {

@@ -10,6 +10,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.databinding.ItemVerticalReadImageBinding
 
 class ReadAdapter(
@@ -42,7 +43,10 @@ class ReadAdapter(
                     isFirstResource: Boolean
                 ): Boolean {
                     holder.binding.cpiIVReadImage.hide()
-                    holder.binding.tvIVReadImage.text = "插图#${p + 1} 加载失败"
+                    holder.binding.tvIVReadImage.text = holder.binding.root.context.getString(
+                        R.string.illustration_failed,
+                        p + 1
+                    )
                     return true
                 }
 
@@ -63,7 +67,7 @@ class ReadAdapter(
             ivIVReadImage.setOnClickListener {
                 onImageClick(imgUrl[p])
             }
-            tvIVReadImage.text = "插图#${p + 1}"
+            tvIVReadImage.text = tvIVReadImage.context.getString(R.string.illustration_label, p + 1)
         }
     }
 

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 书签条目：章节名 + 正文摘要 + 时间，右侧删除（P1-3）。 -->
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:background="?attr/selectableItemBackground"
+  android:gravity="center_vertical"
+  android:minHeight="@dimen/gi_secondary_row_height"
+  android:orientation="horizontal"
+  android:paddingStart="@dimen/gi_page_inset"
+  android:paddingTop="@dimen/gi_space_sm"
+  android:paddingEnd="@dimen/gi_space_xs"
+  android:paddingBottom="@dimen/gi_space_sm">
+
+  <LinearLayout
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:orientation="vertical">
+
+    <TextView
+      android:id="@+id/tv_item_bookmark_title"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:ellipsize="end"
+      android:maxLines="1"
+      style="@style/TextAppearance.GalIsland.SectionTitle"
+      tools:text="第12章 星空之下" />
+
+    <TextView
+      android:id="@+id/tv_item_bookmark_excerpt"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="@dimen/gi_space_xxs"
+      android:ellipsize="end"
+      android:maxLines="2"
+      style="@style/TextAppearance.GalIsland.Body"
+      tools:text="他抬起头，看见了那片星空。" />
+
+    <TextView
+      android:id="@+id/tv_item_bookmark_time"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="@dimen/gi_space_xxs"
+      android:maxLines="1"
+      style="@style/TextAppearance.GalIsland.Meta"
+      tools:text="2026-09-20 21:40" />
+  </LinearLayout>
+
+  <com.google.android.material.button.MaterialButton
+    android:id="@+id/b_item_bookmark_delete"
+    style="@style/Widget.GalIsland.Button.IconButton"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:contentDescription="@string/remove_bookmark"
+    app:icon="@drawable/ic_delete" />
+</LinearLayout>

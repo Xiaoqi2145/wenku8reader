@@ -231,7 +231,7 @@
     <string name="menu">菜单</string>
     <string name="menu_tip">在有图片的页面点击图片正中间可以放大查看</string>
     <string name="reader_tip_title">阅读提示</string>
-    <string name="reader_tip_body">点击屏幕中央呼出阅读菜单；在图片页面点击图片中央可以查看原图。</string>
+    <string name="reader_tip_body">点击屏幕左侧三分之一翻上一章，右侧三分之一翻下一章，中央呼出阅读菜单；在图片页面点击图片中央可以查看原图。</string>
     <string name="reader_tip_dismiss">知道了</string>
 
     <string name="go_to_download">前往下载</string>
@@ -339,9 +339,6 @@
     <string name="single_column">单列</string>
     <string name="grid">网格</string>
     <string name="loading_tip">正在加载数据中，请勿退出</string>
-    <string name="select_color_night">选择颜色(深色主题)</string>
-    <string name="select_color_day">选择颜色(浅色主题)</string>
-    <string name="format_mismatch">格式不匹配</string>
     <string name="crash_tip">请注意：向开发者报告错误时，不要截图，长按全选下面的内容并复制，然后发给开发者，这样可以帮助开发者更好地解决问题</string>
     <string name="chapter_current_page_error">发生冲突，已将当前章节的历史阅读记录清空</string>
     <string name="warning">警告</string>
@@ -393,4 +390,36 @@
     <string name="search_results_count">共 %1$d 条结果</string>
     <string name="search_no_results">未找到结果</string>
     <string name="search_loading">搜索中...</string>
+    <!-- Catalog tabs: bookmarks + in-book search (P1-3 / P1-4) -->
+    <string name="bookmark_count">共 %1$d 条</string>
+    <string name="bookmark_deleted">已删除书签</string>
+    <string name="search_online_remaining">联网搜索剩余章节</string>
+    <string name="search_status_scanning">搜索中… %1$d/%2$d</string>
+    <string name="search_status_online">联网搜索中… %1$d/%2$d</string>
+    <string name="search_status_partial">已扫描 %1$d/%2$d 章 · 共 %3$d 条</string>
+    <string name="search_status_complete">已扫描全部 %1$d 章 · 共 %2$d 条</string>
+    <string name="search_need_query">请输入关键词</string>
+    <string name="search_hits_in_chapter">%1$d 处</string>
+    <!-- Reader feedback (P0-2 / P0-3 / P1-2) -->
+    <string name="reader_status_progress">章节 %1$s · 全书 %2$d%%</string>
+    <string name="color_preset_applied">已应用：%1$s</string>
+    <string name="color_preset_label">预设 %1$d</string>
+    <string name="color_format_invalid">颜色格式不正确，请输入 6 位十六进制色值</string>
+    <string name="custom_color_saved">已保存自定义配色</string>
+    <string name="custom_color_name">自定义 %1$s</string>
+    <string name="custom_color_save_failed">保存失败：已达上限或配色已存在</string>
+    <string name="color_restored">已恢复默认配色</string>
+    <string name="bookmark_added">已添加书签</string>
+    <string name="bookmark_removed">已删除书签</string>
+    <string name="jump_to_page">跳转到页</string>
+    <string name="jump_to_page_range">跳转到页（1-%1$d）</string>
+    <!-- Reader inline status text (localization cleanup) -->
+    <string name="image_load_failed">加载图片失败</string>
+    <string name="image_loading">加载插图中</string>
+    <string name="chapter_loading">加载章节中</string>
+    <string name="illustration_failed">插图#%1$d 加载失败</string>
+    <string name="illustration_label">插图#%1$d</string>
+    <string name="load_failed">加载失败</string>
+    <string name="page_number_hint">页码</string>
+    <string name="jump">跳转</string>
 </resources>

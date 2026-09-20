@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  阅读目录抽屉：三个 tab —— 目录 / 书签 / 搜索。
+
+  · 「目录」保留原有封面 + 卷 rail + 章节列表（含下载多选）
+  · 「书签」列出本书书签，点击跳到书签锚点，右侧按钮删除（P1-3）
+  · 「搜索」先在已缓存正文里搜，再按需联网补搜剩余章节（P1-4）
+
+  分组语言与主视觉二级页一致：gi_secondary_panel 纸片边界、SectionTitle 标题、
+  gi_secondary_row_height 行高。tab 用 Widget.GalIsland.TabLayout（3dp 主色指示条）。
+-->
 <LinearLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -59,166 +69,347 @@
     android:layout_height="@dimen/gi_stroke"
     android:background="?attr/colorOutlineVariant" />
 
-  <LinearLayout
+  <!-- tab 条目在代码里添加，避免在布局里写死顺序与文案 -->
+  <com.google.android.material.tabs.TabLayout
+    android:id="@+id/tl_f_read_chapter_catalog"
+    style="@style/Widget.GalIsland.TabLayout"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/gi_catalog_feature_height"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:paddingStart="@dimen/gi_page_inset"
-    android:paddingTop="@dimen/gi_space_sm"
-    android:paddingEnd="@dimen/gi_page_inset"
-    android:paddingBottom="@dimen/gi_space_sm">
-
-    <!-- 外观全部来自 Widget.GalIsland.CardView.Novel.Cover：
-         8dp 圆角、0dp 描边、0dp elevation（规范第 2 节：卡片 elevation 0dp）。 -->
-    <com.google.android.material.card.MaterialCardView
-      style="@style/Widget.GalIsland.CardView.Novel.Cover"
-      android:layout_width="@dimen/gi_catalog_cover_width"
-      android:layout_height="@dimen/gi_cover_height"
-      android:contentDescription="@string/cover"
-      android:foreground="?attr/selectableItemBackground"
-      tools:ignore="ContentDescription">
-
-      <ImageView
-        android:id="@+id/iv_f_read_chapter_catalog_cover"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/giSurfaceInput"
-        android:contentDescription="@string/cover"
-        android:scaleType="fitCenter"
-        tools:src="@drawable/ic_empty" />
-    </com.google.android.material.card.MaterialCardView>
-
-    <LinearLayout
-      android:layout_width="0dp"
-      android:layout_height="match_parent"
-      android:layout_marginStart="@dimen/gi_space_md"
-      android:layout_weight="1"
-      android:orientation="vertical">
-
-      <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <TextView
-          android:id="@+id/tv_f_read_chapter_catalog_volume_label"
-          android:layout_width="0dp"
-          android:layout_height="wrap_content"
-          android:layout_weight="1"
-          android:text="@string/catalog_volume_label"
-          android:textColor="?attr/colorOnSurface"
-          style="@style/TextAppearance.GalIsland.SectionTitle" />
-
-        <TextView
-          android:id="@+id/tv_f_read_chapter_catalog_volume_count"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:textColor="?attr/colorOnSurfaceVariant"
-          style="@style/TextAppearance.GalIsland.Meta"
-          tools:text="8卷" />
-      </LinearLayout>
-
-      <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="@dimen/gi_space_xs"
-        android:layout_weight="1">
-
-        <androidx.recyclerview.widget.RecyclerView
-          android:id="@+id/rv_f_read_chapter_catalog_volumes"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:clipToPadding="false"
-          android:fadingEdge="vertical"
-          android:fadingEdgeLength="@dimen/gi_space_lg"
-          android:overScrollMode="always"
-          android:paddingTop="@dimen/gi_space_xs"
-          android:paddingBottom="@dimen/gi_space_xs"
-          android:requiresFadingEdge="vertical"
-          android:scrollbars="vertical"
-          android:fadeScrollbars="false"
-          tools:listitem="@layout/item_read_chapter_catalog_volume" />
-
-        <View
-          android:layout_width="match_parent"
-          android:layout_height="@dimen/gi_space_lg"
-          android:background="@drawable/bg_read_chapter_catalog_fade_top"
-          android:clickable="false"
-          android:importantForAccessibility="no"
-          android:layout_gravity="top" />
-
-        <View
-          android:layout_width="match_parent"
-          android:layout_height="@dimen/gi_space_lg"
-          android:layout_gravity="bottom"
-          android:background="@drawable/bg_read_chapter_catalog_fade_bottom"
-          android:clickable="false"
-          android:importantForAccessibility="no" />
-      </FrameLayout>
-    </LinearLayout>
-  </LinearLayout>
+    android:layout_height="wrap_content" />
 
   <View
     android:layout_width="match_parent"
     android:layout_height="@dimen/gi_stroke"
     android:background="?attr/colorOutlineVariant" />
 
-  <LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="@dimen/gi_catalog_section_height"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:paddingStart="@dimen/gi_page_inset"
-    android:paddingEnd="@dimen/gi_space_sm">
-
-    <TextView
-      android:id="@+id/tv_f_read_chapter_catalog_chapter_label"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:layout_weight="1"
-      android:text="@string/catalog_chapter_label"
-      android:textColor="?attr/colorOnSurface"
-      style="@style/TextAppearance.GalIsland.SectionTitle" />
-
-    <TextView
-      android:id="@+id/tv_f_read_chapter_catalog_chapter_count"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_marginEnd="@dimen/gi_space_xs"
-      android:textColor="?attr/colorOnSurfaceVariant"
-      style="@style/TextAppearance.GalIsland.Meta"
-      tools:text="共 24 章" />
-
-    <com.google.android.material.button.MaterialButton
-      android:id="@+id/b_f_read_chapter_catalog_select_all"
-      style="@style/Widget.GalIsland.Button.Text"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="@string/select_all"
-      android:visibility="gone"
-      tools:visibility="visible" />
-
-    <com.google.android.material.button.MaterialButton
-      android:id="@+id/b_f_read_chapter_catalog_download"
-      style="@style/Widget.GalIsland.Button.Text"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="@string/download_selected"
-      android:visibility="gone"
-      tools:visibility="visible" />
-  </LinearLayout>
-
-  <androidx.recyclerview.widget.RecyclerView
-    android:id="@+id/rv_f_read_chapter_catalog"
+  <FrameLayout
     android:layout_width="match_parent"
     android:layout_height="0dp"
-    android:layout_weight="1"
-    android:clipToPadding="false"
-    android:overScrollMode="always"
-    android:paddingBottom="@dimen/gi_space_xl"
-    android:scrollbars="vertical"
-    android:fadeScrollbars="false"
-    tools:listitem="@layout/item_read_chapter_catalog_chapter" />
+    android:layout_weight="1">
+
+    <!-- ===================== 目录 ===================== -->
+    <LinearLayout
+      android:id="@+id/ll_f_read_chapter_catalog_group"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:orientation="vertical">
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/gi_catalog_feature_height"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/gi_page_inset"
+        android:paddingTop="@dimen/gi_space_sm"
+        android:paddingEnd="@dimen/gi_page_inset"
+        android:paddingBottom="@dimen/gi_space_sm">
+
+        <!-- 外观全部来自 Widget.GalIsland.CardView.Novel.Cover：
+             8dp 圆角、0dp 描边、0dp elevation（规范第 2 节：卡片 elevation 0dp）。 -->
+        <com.google.android.material.card.MaterialCardView
+          style="@style/Widget.GalIsland.CardView.Novel.Cover"
+          android:layout_width="@dimen/gi_catalog_cover_width"
+          android:layout_height="@dimen/gi_cover_height"
+          android:contentDescription="@string/cover"
+          android:foreground="?attr/selectableItemBackground"
+          tools:ignore="ContentDescription">
+
+          <ImageView
+            android:id="@+id/iv_f_read_chapter_catalog_cover"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/giSurfaceInput"
+            android:contentDescription="@string/cover"
+            android:scaleType="fitCenter"
+            tools:src="@drawable/ic_empty" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <LinearLayout
+          android:layout_width="0dp"
+          android:layout_height="match_parent"
+          android:layout_marginStart="@dimen/gi_space_md"
+          android:layout_weight="1"
+          android:orientation="vertical">
+
+          <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+              android:id="@+id/tv_f_read_chapter_catalog_volume_label"
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:layout_weight="1"
+              android:text="@string/catalog_volume_label"
+              android:textColor="?attr/colorOnSurface"
+              style="@style/TextAppearance.GalIsland.SectionTitle" />
+
+            <TextView
+              android:id="@+id/tv_f_read_chapter_catalog_volume_count"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:textColor="?attr/colorOnSurfaceVariant"
+              style="@style/TextAppearance.GalIsland.Meta"
+              tools:text="8卷" />
+          </LinearLayout>
+
+          <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="@dimen/gi_space_xs"
+            android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+              android:id="@+id/rv_f_read_chapter_catalog_volumes"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:clipToPadding="false"
+              android:fadingEdge="vertical"
+              android:fadingEdgeLength="@dimen/gi_space_lg"
+              android:overScrollMode="always"
+              android:paddingTop="@dimen/gi_space_xs"
+              android:paddingBottom="@dimen/gi_space_xs"
+              android:requiresFadingEdge="vertical"
+              android:scrollbars="vertical"
+              android:fadeScrollbars="false"
+              tools:listitem="@layout/item_read_chapter_catalog_volume" />
+
+            <View
+              android:layout_width="match_parent"
+              android:layout_height="@dimen/gi_space_lg"
+              android:background="@drawable/bg_read_chapter_catalog_fade_top"
+              android:clickable="false"
+              android:importantForAccessibility="no"
+              android:layout_gravity="top" />
+
+            <View
+              android:layout_width="match_parent"
+              android:layout_height="@dimen/gi_space_lg"
+              android:layout_gravity="bottom"
+              android:background="@drawable/bg_read_chapter_catalog_fade_bottom"
+              android:clickable="false"
+              android:importantForAccessibility="no" />
+          </FrameLayout>
+        </LinearLayout>
+      </LinearLayout>
+
+      <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/gi_stroke"
+        android:background="?attr/colorOutlineVariant" />
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/gi_catalog_section_height"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/gi_page_inset"
+        android:paddingEnd="@dimen/gi_space_sm">
+
+        <TextView
+          android:id="@+id/tv_f_read_chapter_catalog_chapter_label"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:text="@string/catalog_chapter_label"
+          android:textColor="?attr/colorOnSurface"
+          style="@style/TextAppearance.GalIsland.SectionTitle" />
+
+        <TextView
+          android:id="@+id/tv_f_read_chapter_catalog_chapter_count"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginEnd="@dimen/gi_space_xs"
+          android:textColor="?attr/colorOnSurfaceVariant"
+          style="@style/TextAppearance.GalIsland.Meta"
+          tools:text="共 24 章" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/b_f_read_chapter_catalog_select_all"
+          style="@style/Widget.GalIsland.Button.Text"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/select_all"
+          android:visibility="gone"
+          tools:visibility="visible" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/b_f_read_chapter_catalog_download"
+          style="@style/Widget.GalIsland.Button.Text"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/download_selected"
+          android:visibility="gone"
+          tools:visibility="visible" />
+      </LinearLayout>
+
+      <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_f_read_chapter_catalog"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:overScrollMode="always"
+        android:paddingBottom="@dimen/gi_space_xl"
+        android:scrollbars="vertical"
+        android:fadeScrollbars="false"
+        tools:listitem="@layout/item_read_chapter_catalog_chapter" />
+    </LinearLayout>
+
+    <!-- ===================== 书签 ===================== -->
+    <LinearLayout
+      android:id="@+id/ll_f_read_chapter_catalog_bookmarks"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:orientation="vertical"
+      android:visibility="gone"
+      tools:visibility="gone">
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/gi_catalog_section_height"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/gi_page_inset"
+        android:paddingEnd="@dimen/gi_page_inset">
+
+        <TextView
+          android:id="@+id/tv_f_read_chapter_catalog_bookmark_label"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:text="@string/bookmark"
+          android:textColor="?attr/colorOnSurface"
+          style="@style/TextAppearance.GalIsland.SectionTitle" />
+
+        <TextView
+          android:id="@+id/tv_f_read_chapter_catalog_bookmark_count"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:textColor="?attr/colorOnSurfaceVariant"
+          style="@style/TextAppearance.GalIsland.Meta"
+          tools:text="共 3 条" />
+      </LinearLayout>
+
+      <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/gi_stroke"
+        android:background="?attr/colorOutlineVariant" />
+
+      <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+          android:id="@+id/rv_f_read_chapter_catalog_bookmarks"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:clipToPadding="false"
+          android:overScrollMode="always"
+          android:paddingBottom="@dimen/gi_space_xl"
+          android:scrollbars="vertical"
+          android:fadeScrollbars="false"
+          tools:listitem="@layout/item_read_bookmark" />
+
+        <TextView
+          android:id="@+id/tv_f_read_chapter_catalog_bookmark_empty"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:gravity="center"
+          android:padding="@dimen/gi_space_xl"
+          android:text="@string/bookmark_empty"
+          android:textColor="?attr/colorOnSurfaceVariant"
+          android:visibility="gone"
+          style="@style/TextAppearance.GalIsland.Body"
+          tools:visibility="visible" />
+      </FrameLayout>
+    </LinearLayout>
+
+    <!-- ===================== 搜索 ===================== -->
+    <LinearLayout
+      android:id="@+id/ll_f_read_chapter_catalog_search"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:orientation="vertical"
+      android:visibility="gone"
+      tools:visibility="gone">
+
+      <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_f_read_chapter_catalog_search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/gi_page_inset"
+        android:layout_marginTop="@dimen/gi_space_sm"
+        android:layout_marginEnd="@dimen/gi_page_inset"
+        android:hint="@string/search_hint"
+        app:boxBackgroundMode="outline"
+        app:startIconDrawable="@drawable/ic_search">
+
+        <com.google.android.material.textfield.TextInputEditText
+          android:id="@+id/et_f_read_chapter_catalog_search"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:imeOptions="actionSearch"
+          android:inputType="text"
+          android:maxLines="1" />
+      </com.google.android.material.textfield.TextInputLayout>
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/gi_catalog_section_height"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/gi_page_inset"
+        android:paddingEnd="@dimen/gi_space_sm">
+
+        <TextView
+          android:id="@+id/tv_f_read_chapter_catalog_search_status"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:textColor="?attr/colorOnSurfaceVariant"
+          style="@style/TextAppearance.GalIsland.Meta"
+          tools:text="共 12 条结果" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/b_f_read_chapter_catalog_search_online"
+          style="@style/Widget.GalIsland.Button.Text"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/search_online_remaining"
+          android:visibility="gone"
+          tools:visibility="visible" />
+      </LinearLayout>
+
+      <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+          android:id="@+id/rv_f_read_chapter_catalog_search"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:clipToPadding="false"
+          android:overScrollMode="always"
+          android:paddingBottom="@dimen/gi_space_xl"
+          android:scrollbars="vertical"
+          android:fadeScrollbars="false"
+          tools:listitem="@layout/item_read_search_hit" />
+
+        <TextView
+          android:id="@+id/tv_f_read_chapter_catalog_search_empty"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:gravity="center"
+          android:padding="@dimen/gi_space_xl"
+          android:textColor="?attr/colorOnSurfaceVariant"
+          android:visibility="gone"
+          style="@style/TextAppearance.GalIsland.Body"
+          tools:text="未找到结果" />
+      </FrameLayout>
+    </LinearLayout>
+  </FrameLayout>
 </LinearLayout>

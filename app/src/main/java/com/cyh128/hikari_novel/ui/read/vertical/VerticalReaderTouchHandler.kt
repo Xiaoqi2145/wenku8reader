@@ -3,18 +3,21 @@ package com.cyh128.hikari_novel.ui.read.vertical
 import android.graphics.Rect
 import android.view.MotionEvent
 import android.view.View
+import com.cyh128.hikari_novel.reader.domain.VerticalTapArea
 import com.cyh128.hikari_novel.reader.domain.VerticalTouchPolicy
 import com.cyh128.hikari_novel.util.ReaderTouchJudge
 
 /**
  * Handles only vertical-reader gesture classification. It never mutates
- * ViewModel/session state; the Fragment supplies the center-tap callback.
+ * ViewModel/session state; the Fragment supplies the callbacks.
  */
 class VerticalReaderTouchHandler(
     private val touchTarget: View,
     private val interactiveChildren: List<View>,
     private val touchJudge: ReaderTouchJudge,
-    private val onCenterTap: () -> Unit
+    private val onCenterTap: () -> Unit,
+    private val onPreviousChapter: () -> Unit,
+    private val onNextChapter: () -> Unit
 ) {
     private val interactiveRect = Rect()
     private var touchStartX = 0f
@@ -39,15 +42,20 @@ class VerticalReaderTouchHandler(
             MotionEvent.ACTION_UP -> {
                 val deltaX = event.x - touchStartX
                 val deltaY = event.y - touchStartY
-                if (!ignoreCurrentGesture &&
-                    VerticalTouchPolicy.shouldToggleReaderBar(
-                        startX = touchStartX,
-                        width = touchTarget.width,
-                        isTap = touchJudge.isTap(deltaX, deltaY),
-                        startedOnInteractiveChild = touchStartedOnInteractiveChild
-                    )
-                ) {
-                    onCenterTap()
+                if (!ignoreCurrentGesture) {
+                    when (
+                        VerticalTouchPolicy.tapAction(
+                            startX = touchStartX,
+                            width = touchTarget.width,
+                            isTap = touchJudge.isTap(deltaX, deltaY),
+                            startedOnInteractiveChild = touchStartedOnInteractiveChild
+                        )
+                    ) {
+                        VerticalTapArea.Previous -> onPreviousChapter()
+                        VerticalTapArea.Center -> onCenterTap()
+                        VerticalTapArea.Next -> onNextChapter()
+                        null -> Unit
+                    }
                 }
                 reset()
             }

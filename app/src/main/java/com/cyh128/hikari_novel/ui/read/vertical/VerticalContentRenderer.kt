@@ -18,7 +18,9 @@ data class VerticalRender(
     val chapter: CachedChapter,
     val text: SpannableStringBuilder,
     val prefixLength: Int,
-    val images: List<String>
+    val images: List<String>,
+    /** Offset range of the chapter heading inside [text], null when not found. */
+    val titleRange: IntRange? = null
 )
 
 /**
@@ -27,8 +29,17 @@ data class VerticalRender(
  * Mapping, progress, and chapter session state intentionally do not belong here;
  * the pure [VerticalRenderModel] can be validated without Android, while the
  * Android adapter applies spans and updates TextViews/image sinks.
+ *
+ * The renderer also tracks where each chapter heading landed in the concatenated
+ * session text, so typography spans (paragraph spacing, first-line indent) can
+ * skip headings — a heading is not a body paragraph.
  */
 class VerticalContentRenderer {
+    private val headingRanges = mutableListOf<IntRange>()
+
+    /** Absolute heading ranges in the currently rendered session text. */
+    fun headingRanges(): List<IntRange> = headingRanges.toList()
+
     fun renderModel(chapter: CachedChapter): VerticalRenderModel =
         VerticalRenderModelFactory.create(chapter)
 
@@ -51,6 +62,8 @@ class VerticalContentRenderer {
 
     fun setInitialText(textView: TextView, render: VerticalRender) {
         textView.text = render.text
+        headingRanges.clear()
+        render.titleRange?.let { headingRanges += it }
     }
 
     fun setInitialText(textView: TextView, chapterRender: VerticalChapterRender) {
@@ -58,7 +71,10 @@ class VerticalContentRenderer {
     }
 
     fun appendText(textView: TextView, render: VerticalRender) {
+        // Capture the append offset before mutating the text.
+        val offset = textView.length()
         textView.append(render.text)
+        render.titleRange?.let { headingRanges += (offset + it.first)..(offset + it.last) }
     }
 
     fun appendText(textView: TextView, chapterRender: VerticalChapterRender) {
@@ -73,17 +89,20 @@ class VerticalContentRenderer {
         val text = SpannableStringBuilder(model.text)
         val titleStart = model.prefix.indexOf(model.chapter.ref.title)
         val titleEnd = titleStart + model.chapter.ref.title.length
+        var titleRange: IntRange? = null
         if (titleStart >= 0 && titleStart < text.length && titleEnd > titleStart) {
+            val end = titleEnd.coerceAtMost(text.length)
+            titleRange = titleStart until end
             text.setSpan(
                 StyleSpan(Typeface.BOLD),
                 titleStart,
-                titleEnd.coerceAtMost(text.length),
+                end,
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
             )
             text.setSpan(
                 RelativeSizeSpan(1.08f),
                 titleStart,
-                titleEnd.coerceAtMost(text.length),
+                end,
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
             )
         }
@@ -91,7 +110,8 @@ class VerticalContentRenderer {
             chapter = model.chapter,
             text = text,
             prefixLength = model.prefixLength,
-            images = model.images
+            images = model.images,
+            titleRange = titleRange
         )
     }
 }

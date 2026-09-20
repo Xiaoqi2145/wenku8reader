@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 全书搜索的单条命中：带上下文的摘要，点击跳到命中位置（P1-4）。 -->
+<TextView
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/tv_item_search_hit_snippet"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:background="?attr/selectableItemBackground"
+  android:ellipsize="end"
+  android:gravity="center_vertical"
+  android:minHeight="@dimen/gi_secondary_row_height"
+  android:maxLines="3"
+  android:paddingStart="@dimen/gi_page_inset"
+  android:paddingTop="@dimen/gi_space_sm"
+  android:paddingEnd="@dimen/gi_page_inset"
+  android:paddingBottom="@dimen/gi_space_sm"
+  style="@style/TextAppearance.GalIsland.Body"
+  tools:text="他抬起头，看见了那片星空。星空之下，无人说话。" />

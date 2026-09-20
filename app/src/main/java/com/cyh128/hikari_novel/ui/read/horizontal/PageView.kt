@@ -59,9 +59,34 @@ class PageView: ViewFlipper, IPageView {
     var pageFlag = 0                          //0刚进入view，1表示目录跳转，2表示下一页，3表示上一页
     private val minMove = 80F                //翻页最小滑动距离
 
-    var textArray = mutableListOf<MutableList<String>>()
+    var textArray = mutableListOf<MutableList<PageLine>>()
     var imageArray = listOf<String>()
     var doublePageEnabled: Boolean by InvalidateAfterSet(false)
+
+    // ===== P0-3: Typography =====
+
+    /** Paragraph spacing as a multiple of the font size, 0–4, step 0.1. */
+    var paragraphSpacing: Float by InvalidateAfterSet(0f)
+
+    /** Letter spacing in px, 0–20. Converted to em for the text paint. */
+    var letterSpacing: Float by InvalidateAfterSet(0f)
+
+    /**
+     * Text alignment: "left", "justify" or "right".
+     *
+     * Named `textAlignMode` because [android.view.View.getTextAlignment] already
+     * occupies `textAlignment` with an Int.
+     */
+    var textAlignMode: String by InvalidateAfterSet("left")
+
+    /**
+     * First-line indent in characters: 0 or 2.
+     *
+     * The default is 2 because the horizontal reader has always indented the
+     * first line by two characters; exposing the setting must not change the
+     * rendering for existing users.
+     */
+    var firstLineIndent: Int by InvalidateAfterSet(2)
 
     private val readerContentBottomInset by lazy {
         resources.getDimension(R.dimen.gi_reader_content_bottom_inset)
@@ -392,6 +417,8 @@ class PageView: ViewFlipper, IPageView {
                 mTitle = title
                 mTxtFontType = txtFontType
                 mBottomTextSize = bottomTextSize
+                mLetterSpacing = letterSpacing
+                mTextAlignment = textAlignMode
             }
             displayedChild = pageTextAnother
         } else if (textArray.size < pageNum && pageNum <= maxPageNum) {
@@ -480,29 +507,29 @@ class PageView: ViewFlipper, IPageView {
     private fun getFooterReservedHeight(): Float =
         (getFooterTextSize() * 2.2f).coerceAtLeast(textSize * 1.2f)
 
-    private fun splitContent(chapterContent: String?): MutableList<MutableList<String>> {
+    private fun splitContent(chapterContent: String?): MutableList<MutableList<PageLine>> {
         if (chapterContent.isNullOrEmpty() || getTextWidth() == 0) return mutableListOf()
         title = content.title
         val textPaint = TextPaint().apply {
             textSize = this@PageView.textSize
             isAntiAlias = true
+            // Letter spacing must be applied while measuring, otherwise the
+            // split lines would overflow the page once drawn.
+            letterSpacing = emFromPx(this@PageView.letterSpacing, this@PageView.textSize)
         }
 
         val textWidth = getTextWidth() //可用的文字宽度
         val textHeight = getTextHeight() //可用的文字高度
-        val linesPerPage = (textHeight / (textSize * rowSpace).toInt()).coerceAtLeast(1) //每页可容纳的行数
+        val lineHeight = this@PageView.textSize * rowSpace
+        val paragraphGap = paragraphSpacing * this@PageView.textSize
+        val indentWidth = firstLineIndent.coerceAtLeast(0) * this@PageView.textSize
 
-        val result = mutableListOf<MutableList<String>>() //最终分页结果
-        val tmpList = mutableListOf<String>() //临时存储每行文字
-
-//        val paragraphs = chapterContent.split("\n") //分段处理
+        val lines = mutableListOf<PageLine>()
 
         //预处理内容，去除多余空行
-        val paragraphs = preprocessContent(chapterContent)
-
-        paragraphs.forEach { paragraph ->
+        preprocessContent(chapterContent).forEach { paragraph ->
             if (paragraph.isEmpty()) {
-                tmpList.add("") //空行直接添加
+                lines.add(PageLine("", isParagraphEnd = true)) //空行直接添加
                 return@forEach
             }
 
@@ -510,45 +537,63 @@ class PageView: ViewFlipper, IPageView {
             var isFirstLine = true //标记段落的首行
 
             while (remainingText.isNotEmpty()) {
-                var lineWidth = 0f
+                var lineWidth = if (isFirstLine) indentWidth else 0f
                 var charIndex = 0
-
-                //如果是段落的首行，加入首行缩进宽度
-                if (isFirstLine) {
-                    lineWidth += textSize * 2f //假设首行缩进为2个字符宽度
-                }
 
                 //逐字符测量宽度
                 while (charIndex < remainingText.length) {
-                    val char = remainingText[charIndex]
-                    val charWidth = textPaint.measureText(char.toString())
-
+                    val charWidth = textPaint.measureText(remainingText[charIndex].toString())
                     if (lineWidth + charWidth > textWidth) break //超出宽度，停止测量
                     lineWidth += charWidth
                     charIndex++
                 }
 
-                //截取当前行文字
-                val lineText = remainingText.substring(0, charIndex)
-                tmpList.add(lineText)
+                // A single glyph wider than the page must still advance, or the
+                // loop would never terminate.
+                if (charIndex == 0) charIndex = 1
 
-                //剩余文字更新
+                val lineText = remainingText.substring(0, charIndex)
                 remainingText = remainingText.substring(charIndex)
+                lines.add(
+                    PageLine(
+                        text = lineText,
+                        indent = if (isFirstLine) indentWidth else 0f,
+                        // The very first line of the chapter sits under the top
+                        // margin, so it gets no paragraph gap.
+                        spacingBefore = if (isFirstLine && lines.isNotEmpty()) paragraphGap else 0f,
+                        isParagraphEnd = remainingText.isEmpty()
+                    )
+                )
                 isFirstLine = false //处理完首行后，标记为非首行
             }
         }
 
-        //按屏幕高度分页
-        for (i in tmpList.indices step linesPerPage) {
-            val pageLines = tmpList.subList(
-                i,
-                minOf(i + linesPerPage, tmpList.size)
-            )
-            result.add(pageLines.toMutableList())
+        // 按行高累积分页：段间距让每行高度不再一致，不能再按固定行数切页
+        val result = mutableListOf<MutableList<PageLine>>()
+        var currentPage = mutableListOf<PageLine>()
+        var usedHeight = 0f
+        for (line in lines) {
+            // A page break swallows the paragraph gap: the new page already
+            // starts at the top margin.
+            val spacing = if (currentPage.isEmpty()) 0f else line.spacingBefore
+            if (currentPage.isNotEmpty() && usedHeight + lineHeight + spacing > textHeight) {
+                result.add(currentPage)
+                currentPage = mutableListOf()
+                currentPage.add(line.copy(spacingBefore = 0f))
+                usedHeight = lineHeight
+            } else {
+                currentPage.add(if (spacing == line.spacingBefore) line else line.copy(spacingBefore = 0f))
+                usedHeight += lineHeight + spacing
+            }
         }
+        if (currentPage.isNotEmpty()) result.add(currentPage)
 
         return result
     }
+
+    /** [android.graphics.Paint.setLetterSpacing] is in em, the setting is in px. */
+    private fun emFromPx(px: Float, sizePx: Float): Float =
+        if (sizePx <= 0f) 0f else px / sizePx
 
     private fun preprocessContent(content: String): List<String> {
         val lines = content.lines() //按行分割内容
@@ -583,7 +628,8 @@ class PageView: ViewFlipper, IPageView {
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
             this.value = value
             when (property.name) {
-                "rowSpace", "textSize", "bottomTextSize", "doublePageEnabled" -> {
+                "rowSpace", "textSize", "bottomTextSize", "doublePageEnabled",
+                "paragraphSpacing", "letterSpacing", "firstLineIndent" -> {
                     if (width < 1) return
                     val scale = if (maxPageNum > 0 && pageNum > 0) {
                         maxPageNum.toFloat() / pageNum

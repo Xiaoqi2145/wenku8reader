@@ -114,6 +114,12 @@ interface ReaderDao {
     @Query("DELETE FROM chapter_cache WHERE isDownloaded = 0 AND updatedAt < :before")
     suspend fun deleteExpiredCache(before: Long)
 
+    // ===== P1-4: Full-book search =====
+
+    /** Every cached chapter body for a book, in a single query. */
+    @Query("SELECT cid, content FROM chapter_cache WHERE aid = :aid")
+    suspend fun cachedChapterContents(aid: String): List<CachedChapterContent>
+
     // ===== P1-3: Bookmarks =====
 
     @Insert(onConflict = androidx.room.OnConflictStrategy.REPLACE)

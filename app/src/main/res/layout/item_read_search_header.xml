@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 全书搜索的章节分组头：章节名 + 命中数，点击折叠/展开（P1-4）。 -->
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="@dimen/gi_catalog_section_height"
+  android:background="?attr/selectableItemBackground"
+  android:gravity="center_vertical"
+  android:orientation="horizontal"
+  android:paddingStart="@dimen/gi_page_inset"
+  android:paddingEnd="@dimen/gi_page_inset">
+
+  <TextView
+    android:id="@+id/tv_item_search_header_title"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:ellipsize="end"
+    android:maxLines="1"
+    style="@style/TextAppearance.GalIsland.SectionTitle"
+    tools:text="第12章 星空之下" />
+
+  <TextView
+    android:id="@+id/tv_item_search_header_count"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    style="@style/TextAppearance.GalIsland.Meta"
+    tools:text="3 处" />
+</LinearLayout>

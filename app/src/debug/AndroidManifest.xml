@@ -82,10 +82,6 @@
             android:screenOrientation="unspecified"/>
 
         <activity
-            android:name=".ui.read.SelectColorActivity"
-            android:screenOrientation="unspecified"/>
-
-        <activity
             android:name=".ui.main.bookshelf.search.BookshelfSearchActivity"
             android:windowSoftInputMode="stateVisible|adjustResize"
             android:screenOrientation="unspecified"/>

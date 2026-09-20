@@ -91,12 +91,13 @@
   <dimen name="gi_text_body">12sp</dimen>
   <dimen name="gi_text_section">13sp</dimen>
   <dimen name="gi_text_card_title">14sp</dimen>
-  <dimen name="gi_text_novel_title_plain">15sp</dimen>
   <dimen name="gi_text_list_title">15sp</dimen>
   <dimen name="gi_text_sheet_title">18sp</dimen>
   <dimen name="gi_text_empty_title">16sp</dimen>
   <dimen name="gi_text_card_title_emphasis">14sp</dimen>
   <dimen name="gi_text_config">14sp</dimen>
+  <!-- 阅读设置滑杆行里的可编辑数值框：等宽数字、居中，独立于 ConfigLabel 的 14sp。 -->
+  <dimen name="gi_text_slider_value">13sp</dimen>
   <dimen name="gi_text_heading">22sp</dimen>
   <dimen name="gi_text_body_default">14sp</dimen>
   <dimen name="gi_text_reader_end">20sp</dimen>

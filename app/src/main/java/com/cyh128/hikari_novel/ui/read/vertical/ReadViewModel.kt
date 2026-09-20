@@ -18,6 +18,7 @@ import com.cyh128.hikari_novel.data.model.Event
 import com.cyh128.hikari_novel.data.model.ReaderThemeMode
 import com.cyh128.hikari_novel.data.model.Novel
 import com.cyh128.hikari_novel.data.model.chapterRefAt
+import com.cyh128.hikari_novel.data.model.chapterProgressLabel
 import com.cyh128.hikari_novel.data.model.chapterRefs
 import com.cyh128.hikari_novel.data.repository.ReadColorRepository
 import com.cyh128.hikari_novel.data.repository.ReaderRepository
@@ -29,6 +30,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -428,47 +430,81 @@ class ReadViewModel @Inject constructor(
 
     /** Returns "x/y" for the current chapter position within the book. */
     fun chapterProgressText(): String {
-        val totalChapters = novel?.volume?.sumOf { it.chapters.size } ?: 0
-        if (totalChapters == 0) return "0/0"
-        var offset = 0
-        for (v in 0 until (novel?.volume?.size ?: 0)) {
-            val vSize = novel!!.volume[v].chapters.size
-            if (v == curVolumePos) {
-                return "`${offset + curChapterPos + 1}/$totalChapters`"
-            }
-            offset += vSize
-        }
-        return "0/0"
+        val currentNovel = novel ?: return "0/0"
+        val volumePos = runCatching { curVolumePos }.getOrNull() ?: return "0/0"
+        val chapterPos = runCatching { curChapterPos }.getOrNull() ?: return "0/0"
+        return currentNovel.chapterProgressLabel(volumePos, chapterPos)
+    }
+
+    // ===== P1-3 / P1-4: jump targets =====
+
+    private var pendingAnchor: ReaderAnchor? = null
+    private var pendingHighlightLength = 0
+
+    /**
+     * Record where the next rendered chapter should land.
+     *
+     * The catalog drawer sets this before selecting a chapter; the Fragment
+     * consumes it once the new chapter is rendered, so the anchor survives the
+     * Fragment recreation that a chapter jump performs.
+     */
+    fun setPendingJump(anchor: ReaderAnchor?, highlightLength: Int = 0) {
+        pendingAnchor = anchor
+        pendingHighlightLength = highlightLength
+    }
+
+    /** Returns the pending anchor once, then clears it. */
+    fun consumePendingJump(): Pair<ReaderAnchor, Int>? {
+        val anchor = pendingAnchor ?: return null
+        val length = pendingHighlightLength
+        pendingAnchor = null
+        pendingHighlightLength = 0
+        return anchor to length
     }
 
     // ===== P1-3: Bookmarks =====
 
     fun observeBookmarks(aid: String) = readerRepository.observeBookmarks(aid)
 
-    fun addBookmark(): Job = viewModelScope.launch(Dispatchers.IO) {
-        val ref = currentRef()
-        val aid = ref.aid
-        val cid = ref.cid
-        val existing = readerRepository.hasBookmark(aid, cid)
-        if (existing) return@launch
-        val position = latestVerticalPosition
-        val excerpt = curNovelContent.take(200)
-        val entity = BookmarkEntity(
-            aid = aid,
-            cid = cid,
-            volumeIndex = ref.volumeIndex,
-            chapterIndex = ref.chapterIndex,
-            paragraphIndex = position?.position?.anchor?.paragraphIndex ?: 0,
-            charOffset = position?.position?.anchor?.charOffset ?: 0,
-            normalizedPercent = position?.position?.anchor?.normalizedPercent ?: 0,
-            imageIndex = position?.position?.anchor?.imageIndex,
-            excerpt = excerpt,
-            createdAt = System.currentTimeMillis()
+    /** True when the chapter currently on screen already has a bookmark. */
+    suspend fun hasBookmarkForCurrentChapter(): Boolean {
+        val ref = currentRefOrNull() ?: return false
+        return readerRepository.hasBookmark(ref.aid, ref.cid)
+    }
+
+    /**
+     * Adds a bookmark for the visible position, or removes the existing one.
+     * Returns true when the chapter ended up bookmarked.
+     */
+    suspend fun toggleBookmark(): Boolean = withContext(Dispatchers.IO) {
+        val ref = currentRefOrNull() ?: return@withContext false
+        if (readerRepository.hasBookmark(ref.aid, ref.cid)) {
+            readerRepository.deleteBookmarkByCid(ref.aid, ref.cid)
+            return@withContext false
+        }
+        val anchor = latestVerticalPosition?.position?.anchor
+        readerRepository.insertBookmark(
+            BookmarkEntity(
+                aid = ref.aid,
+                cid = ref.cid,
+                volumeIndex = ref.volumeIndex,
+                chapterIndex = ref.chapterIndex,
+                paragraphIndex = anchor?.paragraphIndex ?: 0,
+                charOffset = anchor?.charOffset ?: 0,
+                normalizedPercent = anchor?.normalizedPercent ?: 0,
+                imageIndex = anchor?.imageIndex,
+                excerpt = curNovelContent.take(BOOKMARK_EXCERPT_LENGTH),
+                createdAt = System.currentTimeMillis()
+            )
         )
-        readerRepository.insertBookmark(entity)
+        true
     }
 
     fun deleteBookmarkById(id: Long): Job = viewModelScope.launch(Dispatchers.IO) {
         readerRepository.deleteBookmark(id)
+    }
+
+    private companion object {
+        const val BOOKMARK_EXCERPT_LENGTH = 200
     }
 }

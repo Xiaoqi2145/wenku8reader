@@ -11,26 +11,50 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
+import android.view.inputmethod.EditorInfo
 import androidx.core.os.BundleCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.data.model.ChapterRef
 import com.cyh128.hikari_novel.data.model.Novel
+import com.cyh128.hikari_novel.data.model.ReaderAnchor
+import com.cyh128.hikari_novel.data.model.chapterRefs
+import com.cyh128.hikari_novel.data.repository.ReaderRepository
+import com.cyh128.hikari_novel.data.repository.reader.BookSearchHit
+import com.cyh128.hikari_novel.data.repository.reader.BookSearchMatcher
 import com.cyh128.hikari_novel.databinding.FragmentReadChapterCatalogBinding
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.tabs.TabLayout
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import java.util.Locale
+import javax.inject.Inject
 
 /**
  * Right-side chapter drawer shared by the reader and the detail-page downloader.
  *
  * The dialog window keeps the existing END-side behavior while the content is split
- * into a cover/volume rail and a remaining-height chapter list.
+ * into a cover/volume rail and a remaining-height chapter list. The drawer hosts
+ * three tabs — 目录 / 书签 / 搜索 — so bookmarks (P1-3) and in-book search (P1-4)
+ * live next to the chapter list instead of in separate screens.
  */
+@AndroidEntryPoint
 class ReadChapterCatalogBottomSheet : DialogFragment() {
-    var onChapterSelected: ((volumePos: Int, chapterPos: Int) -> Unit)? = null
+    /** Jump to a chapter, optionally at a specific anchor inside it. */
+    var onPositionSelected: ((ReaderJumpTarget) -> Unit)? = null
     var onDownloadRequested: ((List<ChapterRef>) -> Unit)? = null
+
+    @Inject
+    lateinit var readerRepository: ReaderRepository
 
     private var _binding: FragmentReadChapterCatalogBinding? = null
     private val binding get() = _binding!!
@@ -45,6 +69,19 @@ class ReadChapterCatalogBottomSheet : DialogFragment() {
     private var restoredChapterScrollPosition = RecyclerViewPosition.UNSET
     private lateinit var volumeLayoutManager: LinearLayoutManager
     private lateinit var chapterLayoutManager: LinearLayoutManager
+
+    // ===== P1-4: in-book search state =====
+
+    private var searchJob: Job? = null
+    private var searchQuery = ""
+    private val hitsByCid = linkedMapOf<String, List<BookSearchHit>>()
+    private val collapsedCids = mutableSetOf<String>()
+    private val searchedCids = mutableSetOf<String>()
+    private var scannedChapters = 0
+    private var onlineRemaining = 0
+    private var onlineTotal = 0
+    private var onlineDone = 0
+    private var searchAdapter: ReadSearchResultAdapter? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
         Dialog(requireContext()).apply {
@@ -136,17 +173,7 @@ class ReadChapterCatalogBottomSheet : DialogFragment() {
             currentVolumePos = currentVolumePos,
             currentChapterPos = currentChapterPos,
             selectedVolumePos = selectedVolumePos,
-            onChapterClick = { volumePos, chapterPos ->
-                onChapterSelected?.invoke(volumePos, chapterPos)
-                    ?: parentFragmentManager.setFragmentResult(
-                        RESULT_KEY,
-                        Bundle().apply {
-                            putInt(RESULT_VOLUME, volumePos)
-                            putInt(RESULT_CHAPTER, chapterPos)
-                        }
-                    )
-                dismiss()
-            },
+            onChapterClick = { volumePos, chapterPos -> requestJump(volumePos, chapterPos, null) },
             allowDownload = allowDownload,
             onDownload = { refs -> onDownloadRequested?.invoke(refs) }
         )
@@ -172,6 +199,9 @@ class ReadChapterCatalogBottomSheet : DialogFragment() {
             dismiss()
         }
         updateChapterCount()
+        setupTabs()
+        setupBookmarkTab()
+        setupSearchTab()
 
         binding.rvFReadChapterCatalogVolumes.post {
             if (restoredVolumeScrollPosition != RecyclerViewPosition.UNSET) {
@@ -210,11 +240,290 @@ class ReadChapterCatalogBottomSheet : DialogFragment() {
     }
 
     override fun onDestroyView() {
+        searchJob?.cancel()
+        searchAdapter = null
         super.onDestroyView()
         _binding = null
     }
 
     private fun bindingOrNull(): FragmentReadChapterCatalogBinding? = _binding
+
+    /**
+     * Single jump entry point for the chapter list, the bookmark tab and the
+     * search results. Readers register [onPositionSelected] and can restore an
+     * anchor; the detail page only listens for a fragment result and has none.
+     */
+    private fun requestJump(
+        volumePos: Int,
+        chapterPos: Int,
+        anchor: ReaderAnchor? = null,
+        highlightLength: Int = 0
+    ) {
+        val callback = onPositionSelected
+        if (callback != null) {
+            callback.invoke(
+                ReaderJumpTarget(
+                    volumePos = volumePos,
+                    chapterPos = chapterPos,
+                    anchor = anchor,
+                    highlightLength = highlightLength
+                )
+            )
+        } else {
+            parentFragmentManager.setFragmentResult(
+                RESULT_KEY,
+                Bundle().apply {
+                    putInt(RESULT_VOLUME, volumePos)
+                    putInt(RESULT_CHAPTER, chapterPos)
+                }
+            )
+        }
+        dismiss()
+    }
+
+    // ===== P1-3 / P1-4: tabs =====
+
+    private fun setupTabs() {
+        val tabs = binding.tlFReadChapterCatalog
+        tabs.addTab(tabs.newTab().setText(R.string.chapter_catalog))
+        tabs.addTab(tabs.newTab().setText(R.string.bookmark))
+        tabs.addTab(tabs.newTab().setText(R.string.search_in_book))
+        tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) = showTab(tab.position)
+            override fun onTabUnselected(tab: TabLayout.Tab) = Unit
+            override fun onTabReselected(tab: TabLayout.Tab) = Unit
+        })
+        showTab(TAB_CATALOG)
+    }
+
+    private fun showTab(index: Int) {
+        binding.llFReadChapterCatalogGroup.isVisible = index == TAB_CATALOG
+        binding.llFReadChapterCatalogBookmarks.isVisible = index == TAB_BOOKMARKS
+        binding.llFReadChapterCatalogSearch.isVisible = index == TAB_SEARCH
+        if (index == TAB_SEARCH) binding.etFReadChapterCatalogSearch.requestFocus()
+    }
+
+    // ===== P1-3: bookmark tab =====
+
+    private fun setupBookmarkTab() {
+        val adapter = ReadBookmarkAdapter(
+            onOpen = { row ->
+                requestJump(
+                    row.bookmark.volumeIndex,
+                    row.bookmark.chapterIndex,
+                    ReaderAnchor(
+                        cid = row.bookmark.cid,
+                        paragraphIndex = row.bookmark.paragraphIndex,
+                        charOffset = row.bookmark.charOffset,
+                        normalizedPercent = row.bookmark.normalizedPercent,
+                        imageIndex = row.bookmark.imageIndex
+                    )
+                )
+            },
+            onDelete = { row ->
+                viewLifecycleOwner.lifecycleScope.launch {
+                    readerRepository.deleteBookmark(row.bookmark.id)
+                    _binding?.let {
+                        Snackbar.make(it.root, R.string.bookmark_deleted, Snackbar.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        )
+        binding.rvFReadChapterCatalogBookmarks.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvFReadChapterCatalogBookmarks.adapter = adapter
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                readerRepository.observeBookmarks(novel.aid).collect { bookmarks ->
+                    val rows = bookmarks.map { bookmark ->
+                        BookmarkRow(
+                            bookmark = bookmark,
+                            chapterTitle = chapterTitleOf(bookmark.volumeIndex, bookmark.chapterIndex)
+                        )
+                    }
+                    adapter.submitList(rows)
+                    binding.tvFReadChapterCatalogBookmarkCount.text =
+                        getString(R.string.bookmark_count, rows.size)
+                    binding.tvFReadChapterCatalogBookmarkEmpty.isVisible = rows.isEmpty()
+                }
+            }
+        }
+    }
+
+    private fun chapterTitleOf(volumePos: Int, chapterPos: Int): String =
+        novel.volume.getOrNull(volumePos)?.chapters?.getOrNull(chapterPos)?.chapterTitle
+            ?: getString(R.string.chapter_catalog)
+
+    // ===== P1-4: in-book search =====
+
+    private fun setupSearchTab() {
+        val adapter = ReadSearchResultAdapter(
+            onToggleGroup = { header ->
+                if (!collapsedCids.remove(header.ref.cid)) collapsedCids += header.ref.cid
+                publishSearchRows()
+            },
+            onOpenHit = { row ->
+                requestJump(
+                    volumePos = row.hit.ref.volumeIndex,
+                    chapterPos = row.hit.ref.chapterIndex,
+                    anchor = ReaderAnchor(
+                        cid = row.hit.ref.cid,
+                        paragraphIndex = 0,
+                        charOffset = row.hit.charOffset,
+                        normalizedPercent = row.hit.normalizedPercent
+                    ),
+                    highlightLength = row.hit.matchLength
+                )
+            }
+        )
+        searchAdapter = adapter
+        binding.rvFReadChapterCatalogSearch.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvFReadChapterCatalogSearch.adapter = adapter
+
+        binding.etFReadChapterCatalogSearch.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                startCachedSearch(binding.etFReadChapterCatalogSearch.text.toString())
+                true
+            } else {
+                false
+            }
+        }
+        binding.bFReadChapterCatalogSearchOnline.setOnClickListener {
+            if (searchJob?.isActive == true) {
+                searchJob?.cancel()
+            } else {
+                startOnlineSearch()
+            }
+        }
+    }
+
+    /**
+     * Phase 1: search the bodies already on disk, in one query.
+     *
+     * Uncached chapters are deliberately *not* fetched here — a long book would
+     * turn a keystroke into hundreds of network calls. They are offered as an
+     * explicit follow-up action instead.
+     */
+    private fun startCachedSearch(rawQuery: String) {
+        val query = BookSearchMatcher.normalizeQuery(rawQuery)
+        searchJob?.cancel()
+        searchQuery = query
+        hitsByCid.clear()
+        collapsedCids.clear()
+        searchedCids.clear()
+        scannedChapters = 0
+        onlineRemaining = 0
+        onlineTotal = 0
+        onlineDone = 0
+        publishSearchRows()
+
+        if (query.isEmpty()) {
+            binding.tvFReadChapterCatalogSearchStatus.text = getString(R.string.search_need_query)
+            binding.bFReadChapterCatalogSearchOnline.isVisible = false
+            return
+        }
+
+        binding.bFReadChapterCatalogSearchOnline.isVisible = false
+        binding.tvFReadChapterCatalogSearchStatus.text = getString(R.string.search_loading)
+        searchJob = viewLifecycleOwner.lifecycleScope.launch {
+            val cached = readerRepository.cachedChapterContents(novel.aid)
+            val refs = orderedRefs()
+            var lastPublish = 0L
+            refs.forEachIndexed { index, ref ->
+                cached[ref.cid]?.let { content ->
+                    searchedCids += ref.cid
+                    val hits = BookSearchMatcher.hits(ref, content, query)
+                    if (hits.isNotEmpty()) hitsByCid[ref.cid] = hits
+                }
+                scannedChapters = index + 1
+                val now = System.currentTimeMillis()
+                if (now - lastPublish >= PROGRESS_PUBLISH_INTERVAL_MS) {
+                    lastPublish = now
+                    binding.tvFReadChapterCatalogSearchStatus.text =
+                        getString(R.string.search_status_scanning, scannedChapters, refs.size)
+                    publishSearchRows()
+                    yield()
+                }
+            }
+            onlineRemaining = refs.count { it.cid !in cached }
+            publishSearchRows()
+            updateSearchStatus(complete = onlineRemaining == 0)
+            binding.bFReadChapterCatalogSearchOnline.isVisible = onlineRemaining > 0
+        }
+    }
+
+    /**
+     * Phase 2, opt-in: fetch the chapters that are not cached yet, cache-first,
+     * and keep scanning. Cancellable at any point.
+     */
+    private fun startOnlineSearch() {
+        val query = searchQuery
+        if (query.isEmpty() || searchJob?.isActive == true) return
+        val pending = orderedRefs().filterNot { it.cid in searchedCids }
+        if (pending.isEmpty()) return
+        onlineTotal = pending.size
+        onlineDone = 0
+        binding.bFReadChapterCatalogSearchOnline.setText(R.string.cancel)
+        searchJob = viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                var lastPublish = 0L
+                for (ref in pending) {
+                    val content = readerRepository.loadChapterContent(ref)
+                    searchedCids += ref.cid
+                    if (content != null) {
+                        val hits = BookSearchMatcher.hits(ref, content, query)
+                        if (hits.isNotEmpty()) hitsByCid[ref.cid] = hits
+                    }
+                    onlineDone++
+                    val now = System.currentTimeMillis()
+                    if (now - lastPublish >= PROGRESS_PUBLISH_INTERVAL_MS) {
+                        lastPublish = now
+                        binding.tvFReadChapterCatalogSearchStatus.text =
+                            getString(R.string.search_status_online, onlineDone, onlineTotal)
+                        publishSearchRows()
+                        yield()
+                    }
+                }
+            } finally {
+                // The view may already be gone when this job is cancelled.
+                _binding?.let {
+                    onlineRemaining = orderedRefs().count { ref -> ref.cid !in searchedCids }
+                    it.bFReadChapterCatalogSearchOnline.setText(R.string.search_online_remaining)
+                    it.bFReadChapterCatalogSearchOnline.isVisible = onlineRemaining > 0
+                    publishSearchRows()
+                    updateSearchStatus(complete = onlineRemaining == 0)
+                }
+            }
+        }
+    }
+
+    private fun updateSearchStatus(complete: Boolean) {
+        val total = orderedRefs().size
+        val hitCount = hitsByCid.values.sumOf { it.size }
+        binding.tvFReadChapterCatalogSearchStatus.text = if (complete) {
+            getString(R.string.search_status_complete, total, hitCount)
+        } else {
+            getString(R.string.search_status_partial, scannedChapters, total, hitCount)
+        }
+    }
+
+    /** Rebuilds the grouped result rows in book order. */
+    private fun publishSearchRows() {
+        val adapter = searchAdapter ?: return
+        val rows = mutableListOf<SearchRow>()
+        orderedRefs().forEach { ref ->
+            val hits = hitsByCid[ref.cid] ?: return@forEach
+            val expanded = ref.cid !in collapsedCids
+            rows += SearchRow.Header(ref = ref, hitCount = hits.size, expanded = expanded)
+            if (expanded) hits.forEach { rows += SearchRow.Hit(it) }
+        }
+        adapter.submitList(rows)
+        binding.tvFReadChapterCatalogSearchEmpty.isVisible =
+            rows.isEmpty() && searchQuery.isNotEmpty() && searchJob?.isActive != true
+    }
+
+    /** Chapters in reading order; also the display order of search groups. */
+    private fun orderedRefs(): List<ChapterRef> = novel.chapterRefs().flatten()
 
     private fun selectVolume(volumePosition: Int) {
         selectedVolumePos = clampVolume(volumePosition)
@@ -332,6 +641,14 @@ class ReadChapterCatalogBottomSheet : DialogFragment() {
         private const val PANEL_WIDTH_RATIO = 0.86f
         private const val MAX_PANEL_WIDTH_DP = 420
         private const val BACKGROUND_DIM_AMOUNT = 0.32f
+
+        /** Tab order must match [setupTabs]. */
+        private const val TAB_CATALOG = 0
+        private const val TAB_BOOKMARKS = 1
+        private const val TAB_SEARCH = 2
+
+        /** Search progress repaints at most this often, to keep scanning smooth. */
+        private const val PROGRESS_PUBLISH_INTERVAL_MS = 200L
 
         fun newInstance(
             novel: Novel,

@@ -52,3 +52,14 @@ data class DownloadBookEntity(
     val totalChapters: Int,
     val updatedAt: Long
 )
+
+/**
+ * Projection for full-book search: one query returns every cached chapter body
+ * for a book, instead of one lookup per chapter.
+ *
+ * See docs/reader-koodo-alignment.md P1-4.
+ */
+data class CachedChapterContent(
+    val cid: String,
+    val content: String
+)

@@ -107,9 +107,13 @@ class HorizontalReadConfig @Inject constructor() {
 
     /**
      * First line indent: 0 (none) or 2 (two characters).
+     *
+     * Defaults to 2 because the horizontal reader has always indented the first
+     * line by two characters; exposing the setting must not change the
+     * rendering for existing users.
      */
     var firstLineIndent: Int
-        get() = cursor.decodeInt("first_line_indent", 0)
+        get() = cursor.decodeInt("first_line_indent", 2)
         set(value) {
             cursor.encode("first_line_indent", value)
         }

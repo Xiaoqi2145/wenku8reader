@@ -15,10 +15,13 @@ import com.cyh128.hikari_novel.data.model.Event
 import com.cyh128.hikari_novel.data.model.Novel
 import com.cyh128.hikari_novel.data.model.ReaderThemeMode
 import com.cyh128.hikari_novel.data.model.chapterRefAt
+import com.cyh128.hikari_novel.data.model.chapterProgressLabel
 import com.cyh128.hikari_novel.data.model.chapterRefs
 import com.cyh128.hikari_novel.data.repository.AppRepository
 import com.cyh128.hikari_novel.data.repository.HorizontalReadRepository
 import com.cyh128.hikari_novel.data.repository.ReadColorRepository
+import com.cyh128.hikari_novel.data.repository.ReaderRepository
+import com.cyh128.hikari_novel.data.source.local.database.reader.BookmarkEntity
 import com.drake.channel.sendEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +30,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.properties.Delegates
 
@@ -35,7 +39,8 @@ class ReadViewModel @Inject constructor(
     private val horizontalReadRepository: HorizontalReadRepository,
     private val readColorRepository: ReadColorRepository,
     private val appRepository: AppRepository,
-    private val sessionCoordinator: ReaderSessionCoordinator
+    private val sessionCoordinator: ReaderSessionCoordinator,
+    private val readerRepository: ReaderRepository
 ) : ViewModel() {
     private val _readerState = MutableStateFlow<ReaderUiState>(ReaderUiState.Idle)
     val readerState = _readerState.asStateFlow()
@@ -285,5 +290,92 @@ class ReadViewModel @Inject constructor(
 
     fun setSwitchAnimationMode(value: String) {
         horizontalReadRepository.setSwitchAnimation(value)
+    }
+
+    // ===== P1-3 / P1-4: jump targets =====
+
+    private var pendingAnchor: ReaderAnchor? = null
+
+    /**
+     * Record where the next loaded chapter should land.
+     *
+     * Paged reading has no character-level cursor, so only the anchor's
+     * percentage is used: the chapter is loaded and the page is derived from it.
+     */
+    fun setPendingJump(anchor: ReaderAnchor?) {
+        pendingAnchor = anchor
+    }
+
+    /** Returns the pending anchor once, then clears it. */
+    fun consumePendingJump(): ReaderAnchor? {
+        val anchor = pendingAnchor ?: return null
+        pendingAnchor = null
+        return anchor
+    }
+
+    // ===== P1-2: Progress info =====
+
+    /** Returns "x/y" for the current chapter position within the book. */
+    fun chapterProgressText(): String {
+        val currentNovel = novel ?: return "0/0"
+        val volumePos = runCatching { curVolumePos }.getOrNull() ?: return "0/0"
+        val chapterPos = runCatching { curChapterPos }.getOrNull() ?: return "0/0"
+        return currentNovel.chapterProgressLabel(volumePos, chapterPos)
+    }
+
+    // ===== P1-3: Bookmarks =====
+
+    fun observeBookmarks(aid: String) = readerRepository.observeBookmarks(aid)
+
+    /** True when the chapter currently on screen already has a bookmark. */
+    suspend fun hasBookmarkForCurrentChapter(): Boolean {
+        val ref = currentRefOrNull() ?: return false
+        return readerRepository.hasBookmark(ref.aid, ref.cid)
+    }
+
+    /**
+     * Adds a bookmark for the current chapter, or removes the existing one.
+     * Returns true when the chapter ended up bookmarked.
+     *
+     * Horizontal pages are not char-anchored, so the anchor is derived from the
+     * current page number: the page maps onto the chapter's percent range.
+     */
+    suspend fun toggleBookmark(pageNum: Int, maxPageNum: Int): Boolean = withContext(Dispatchers.IO) {
+        val ref = currentRefOrNull() ?: return@withContext false
+        if (!::curNovelContent.isInitialized) return@withContext false
+        if (readerRepository.hasBookmark(ref.aid, ref.cid)) {
+            readerRepository.deleteBookmarkByCid(ref.aid, ref.cid)
+            return@withContext false
+        }
+        val percent = if (maxPageNum > 0) {
+            (pageNum * 100 / maxPageNum).coerceIn(0, 100)
+        } else {
+            0
+        }
+        val charOffset = (curNovelContent.length * percent / 100).coerceIn(0, curNovelContent.length)
+        val paragraphIndex = curNovelContent.take(charOffset).count { it == '\n' }
+        readerRepository.insertBookmark(
+            BookmarkEntity(
+                aid = ref.aid,
+                cid = ref.cid,
+                volumeIndex = ref.volumeIndex,
+                chapterIndex = ref.chapterIndex,
+                paragraphIndex = paragraphIndex,
+                charOffset = charOffset,
+                normalizedPercent = percent,
+                imageIndex = null,
+                excerpt = curNovelContent.take(BOOKMARK_EXCERPT_LENGTH),
+                createdAt = System.currentTimeMillis()
+            )
+        )
+        true
+    }
+
+    fun deleteBookmarkById(id: Long): Job = viewModelScope.launch(Dispatchers.IO) {
+        readerRepository.deleteBookmark(id)
+    }
+
+    private companion object {
+        const val BOOKMARK_EXCERPT_LENGTH = 200
     }
 }

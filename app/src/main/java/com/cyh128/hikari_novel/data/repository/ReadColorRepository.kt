@@ -61,6 +61,24 @@ class ReadColorRepository @Inject constructor(
         readColorConfig.hasMigratedThemeMode = value
     }
 
+    /**
+     * Collapses the legacy [ReaderThemeMode.System] state into a concrete
+     * Day/Night value, once, so the reader theme has exactly two states and stops
+     * following the App theme.
+     *
+     * [systemIsDark] is read from the App's resolved configuration at the call
+     * site, so a user who was reading in a dark App theme stays on Night instead
+     * of being flipped to Day. Runs at most once; later calls only read.
+     */
+    fun convergeReaderThemeMode(systemIsDark: Boolean): ReaderThemeMode {
+        val current = readColorConfig.readerThemeMode
+        if (readColorConfig.hasMigratedThemeMode) return current.converge(systemIsDark)
+        val converged = current.converge(systemIsDark)
+        readColorConfig.readerThemeMode = converged
+        readColorConfig.hasMigratedThemeMode = true
+        return converged
+    }
+
     /** Deserialize custom color list from JSON; returns empty list on parse failure. */
     fun getCustomColors(): List<ReaderColorPreset> {
         val json = readColorConfig.customColorsJson
@@ -93,23 +111,31 @@ class ReadColorRepository @Inject constructor(
         setCustomColors(current.filterNot { it.name == name })
     }
 
-    /** Apply a preset to both day and night colors. */
+    /**
+     * Apply a preset to both day and night colors.
+     *
+     * The theme mode is deliberately left alone: a preset is a colour choice, and
+     * resetting the mode here would resurrect the third [ReaderThemeMode.System]
+     * state that [convergeReaderThemeMode] just removed. Both pairs get the same
+     * values, so the mode cannot change what is displayed anyway.
+     */
     fun applyPreset(preset: ReaderColorPreset) {
         readColorConfig.textColorDay = preset.textColor
         readColorConfig.bgColorDay = preset.bgColor
         readColorConfig.textColorNight = preset.textColor
         readColorConfig.bgColorNight = preset.bgColor
-        readColorConfig.readerThemeMode = ReaderThemeMode.System
         readColorConfig.presetColorName = preset.name
     }
 
-    /** Reset all colors to factory defaults. */
+    /**
+     * Reset all colors to factory defaults. Like [applyPreset], this restores the
+     * colour pairs only and keeps the reader in its current Day/Night state.
+     */
     fun restoreDefaults() {
         readColorConfig.textColorDay = ReaderColorPresets.DEFAULT_DAY_TEXT
         readColorConfig.bgColorDay = ReaderColorPresets.DEFAULT_DAY_BG
         readColorConfig.textColorNight = ReaderColorPresets.DEFAULT_NIGHT_TEXT
         readColorConfig.bgColorNight = ReaderColorPresets.DEFAULT_NIGHT_BG
-        readColorConfig.readerThemeMode = ReaderThemeMode.System
         readColorConfig.presetColorName = ""
     }
 

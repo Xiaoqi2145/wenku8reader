@@ -45,3 +45,19 @@ fun Novel.chapterRefs(): List<List<ChapterRef>> = volume.mapIndexed { volumeInde
 
 fun Novel.chapterRefAt(volumeIndex: Int, chapterIndex: Int): ChapterRef? =
     chapterRefs().getOrNull(volumeIndex)?.getOrNull(chapterIndex)
+
+/**
+ * "x/y" label for a chapter position inside this novel, 1-based and counted
+ * across volumes. Shared by both reader orientations so the bottom bar and the
+ * status line always agree. See docs/reader-koodo-alignment.md P1-2.
+ */
+fun Novel.chapterProgressLabel(volumeIndex: Int, chapterIndex: Int): String {
+    val total = volume.sumOf { it.chapters.size }
+    if (total == 0) return "0/0"
+    var offset = 0
+    for (v in volume.indices) {
+        if (v == volumeIndex) return "${offset + chapterIndex + 1}/$total"
+        offset += volume[v].chapters.size
+    }
+    return "0/0"
+}

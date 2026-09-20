@@ -18,13 +18,29 @@ object VerticalTouchPolicy {
         }
     }
 
+    /**
+     * Classifies a finished gesture into the action it should trigger.
+     *
+     * Returns null when the gesture was not a tap, or when it started on an
+     * interactive child (an image, or the prev/next buttons) that owns the touch.
+     *
+     * Touch-screen readers cannot hover, so Koodo's four-way hover panels become
+     * a three-zone tap split: left third = previous chapter, right third = next
+     * chapter, centre = toggle the chrome. See docs/reader-koodo-alignment.md P2-5.
+     */
+    fun tapAction(
+        startX: Float,
+        width: Int,
+        isTap: Boolean,
+        startedOnInteractiveChild: Boolean
+    ): VerticalTapArea? =
+        if (isTap && !startedOnInteractiveChild) tapArea(startX, width) else null
+
     fun shouldToggleReaderBar(
         startX: Float,
         width: Int,
         isTap: Boolean,
         startedOnInteractiveChild: Boolean
     ): Boolean =
-        isTap &&
-            !startedOnInteractiveChild &&
-            tapArea(startX, width) == VerticalTapArea.Center
+        tapAction(startX, width, isTap, startedOnInteractiveChild) == VerticalTapArea.Center
 }

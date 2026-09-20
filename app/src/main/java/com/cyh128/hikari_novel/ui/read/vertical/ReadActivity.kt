@@ -10,12 +10,15 @@ import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.Lifecycle
 import com.cyh128.hikari_novel.util.ReaderColorResolver
+import com.cyh128.hikari_novel.util.ReaderColorSwatch
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.withStarted
 import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.base.BaseActivity
 import com.cyh128.hikari_novel.data.model.Event
+import com.cyh128.hikari_novel.data.model.ReaderColorPreset
+import com.cyh128.hikari_novel.data.model.ReaderColorPresets
 import com.cyh128.hikari_novel.data.model.ReaderUiState
 import com.cyh128.hikari_novel.data.model.ReadParcel
 import com.cyh128.hikari_novel.databinding.ActivityVerticalReadBinding
@@ -25,12 +28,14 @@ import com.cyh128.hikari_novel.ui.other.LoadingView
 import com.cyh128.hikari_novel.ui.read.catalog.ReadChapterCatalogBottomSheet
 import com.cyh128.hikari_novel.ui.read.common.ReaderChromeController
 import com.cyh128.hikari_novel.ui.read.common.ReaderChromeGeometry
+import com.cyh128.hikari_novel.ui.read.common.ReaderChromePalette
+import com.cyh128.hikari_novel.ui.read.common.ReaderChromeTheme
 import com.cyh128.hikari_novel.ui.read.common.ReaderWindowInsetsCoordinator
 import com.cyh128.hikari_novel.util.ReaderStatusText
 import com.cyh128.hikari_novel.util.startActivity
 import com.drake.channel.receiveEvent
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.color.MaterialColors
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.slider.Slider
 import com.google.android.material.snackbar.Snackbar
@@ -45,7 +50,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
     private lateinit var chromeController: ReaderChromeController
     private lateinit var windowInsetsCoordinator: ReaderWindowInsetsCoordinator
     private val viewModel by lazy { ViewModelProvider(this)[ReadViewModel::class.java] }
-    private val readerColorResolver by lazy { ReaderColorResolver(viewModel.readColorRepository()) }
+    private val readerColorResolver by lazy { ReaderColorResolver(viewModel.readColorRepository(), this) }
     /** 用户正在拖动进度滑块时暂停外部回写，避免抖动 */
     private var progressSliderTracking = false
 
@@ -177,22 +182,28 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_act_v_h_read, menu)
+        // Menu icons can only be tinted once they exist, so this runs here
+        // rather than in applyReaderChrome().
+        ReaderChromeTheme.tintMenuIcons(menu, currentChromePalette())
         return true
     }
 
     private fun initView() {
         refreshStatusBar()
-        val showBarColor = MaterialColors.getColor(
-            binding.root,
-            R.attr.giSurfaceReaderChrome
-        )
+        // The reader page is two-state: fold the legacy "follow the App theme"
+        // value into a concrete Day/Night before anything reads it.
+        viewModel.readColorRepository()
+            .convergeReaderThemeMode(ReaderColorResolver.isSystemDarkMode(this))
+        // Chrome colours come from the reader palette, not the App theme, so a
+        // white page in a dark App theme no longer sits under dark bars.
+        applyReaderChrome()
         chromeController = ReaderChromeController(
             window = window,
             chromeHost = binding.root,
             toolbar = binding.tbAVRead,
             bottomDock = binding.readBottomDock,
             statusLine = binding.statusAVRead.root,
-            shownBarColor = showBarColor,
+            shownBarColor = { currentChromePalette().surface },
             hiddenBarColor = ::getHideBarColor,
             onVisibilityChanged = { viewModel.isBarShown = it },
             onContentBoundsChanged = ::applyReaderContentInsets
@@ -216,16 +227,16 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
         bottomViewBinding.sVVReadConfigRestoreChapterReadHistory.isChecked = viewModel.getIsShowChapterReadHistory()
         // P0-4: Slider rows with value display and real-time preview
-        setupSliderRow(bottomViewBinding.sliderFontSize, "字号", 1f, 50f, 1f, viewModel.getFontSize()) {
+        setupSliderRow(bottomViewBinding.sliderFontSize, getString(R.string.font_size), 1f, 50f, 1f, viewModel.getFontSize()) {
             viewModel.setFontSize(it)
         }
-        setupSliderRow(bottomViewBinding.sliderLineSpacing, "行距", 1f, 50f, 1f, viewModel.getLineSpacing()) {
+        setupSliderRow(bottomViewBinding.sliderLineSpacing, getString(R.string.line_spacing), 1f, 50f, 1f, viewModel.getLineSpacing()) {
             viewModel.setLineSpacing(it)
         }
-        setupSliderRow(bottomViewBinding.sliderParagraphSpacing, "段间距", 0f, 40f, 1f, viewModel.getParagraphSpacing()) {
+        setupSliderRow(bottomViewBinding.sliderParagraphSpacing, getString(R.string.paragraph_spacing), 0f, 40f, 1f, viewModel.getParagraphSpacing()) {
             viewModel.setParagraphSpacing(it)
         }
-        setupSliderRow(bottomViewBinding.sliderLetterSpacing, "字间距", 0f, 20f, 1f, viewModel.getLetterSpacing()) {
+        setupSliderRow(bottomViewBinding.sliderLetterSpacing, getString(R.string.letter_spacing), 0f, 20f, 1f, viewModel.getLetterSpacing()) {
             viewModel.setLetterSpacing(it)
         }
 
@@ -248,6 +259,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
         setBottomBarIsEnable(false)
         showBar()
+        refreshBookmarkState()
         if (viewModel.readerState.value is ReaderUiState.Ready) {
             showContent()
         } else if (viewModel.readerState.value !is ReaderUiState.Loading) {
@@ -296,10 +308,15 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
         // ProgressReporter owns throttling and anchor persistence. The Activity
         // only mirrors the display value and no longer schedules a second write.
-        // P1-2: Unify progress semantics: slider = chapter-local, status = chapter x/y + full book %
+        // P1-2: Unified progress semantics: slider = loaded-content scroll ratio,
+        // status line = chapter x/y + full-book %.
         viewModel.progressText.observe(this) {
-            val chapterProgress = viewModel.chapterProgressText()
-            binding.statusAVRead.readStatusProgress.text = "章节 $chapterProgress · 全书 ${it.trimEnd('%')}%"
+            val fullBookPercent = parsePercent(it).toInt()
+            binding.statusAVRead.readStatusProgress.text = getString(
+                R.string.reader_status_progress,
+                viewModel.chapterProgressText(),
+                fullBookPercent
+            )
             if (!progressSliderTracking) {
                 binding.barAVRead.readProgressSlider.value = parsePercent(it)
             }
@@ -331,12 +348,20 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
             toNextChapter()
         }
 
-        // P1-3: Bookmark button
+        // P1-2: Tapping the chapter counter opens the catalog at the visible chapter.
+        binding.barAVRead.readChapterProgress.setOnClickListener { showChapterCatalog() }
+
+        // P1-3: Bookmark toggle. The icon mirrors whether the visible chapter is bookmarked.
         binding.barAVRead.readBookmark.setOnClickListener {
-            viewModel.addBookmark()
-            com.google.android.material.snackbar.Snackbar.make(
-                binding.root, "书签已添加", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
-            ).show()
+            lifecycleScope.launch {
+                val added = viewModel.toggleBookmark()
+                Snackbar.make(
+                    binding.root,
+                    if (added) R.string.bookmark_added else R.string.bookmark_removed,
+                    Snackbar.LENGTH_SHORT
+                ).show()
+                refreshBookmarkState()
+            }
         }
 
         binding.barAVRead.readSettings.setOnClickListener { bottomSheetDialog.show() }
@@ -401,11 +426,15 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
             viewModel.setIsShowChapterReadHistoryWithoutConfirm(isChecked)
         }
 
-        // P0-2: Preset color buttons
-        bottomViewBinding.bPresetColor1.setOnClickListener { applyPreset(0) }
-        bottomViewBinding.bPresetColor2.setOnClickListener { applyPreset(1) }
-        bottomViewBinding.bPresetColor3.setOnClickListener { applyPreset(2) }
-        bottomViewBinding.bPresetColor4.setOnClickListener { applyPreset(3) }
+        // P0-2: Preset colour buttons
+        setupPresetButtons(
+            listOf(
+                bottomViewBinding.bPresetColor1,
+                bottomViewBinding.bPresetColor2,
+                bottomViewBinding.bPresetColor3,
+                bottomViewBinding.bPresetColor4
+            )
+        )
 
         // P0-2: Save custom color
         bottomViewBinding.bVVReadConfigSaveCustomColor.setOnClickListener { saveCustomColor() }
@@ -422,8 +451,9 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
         ReadChapterCatalogBottomSheet
             .newInstance(novel, visibleVolume, visibleChapter)
             .apply {
-                onChapterSelected = { volumePos, chapterPos ->
-                    jumpToChapter(volumePos, chapterPos)
+                onPositionSelected = { target ->
+                    viewModel.setPendingJump(target.anchor, target.highlightLength)
+                    jumpToChapter(target.volumePos, target.chapterPos)
                 }
             }
             .show(supportFragmentManager, "vertical_read_chapter_catalog")
@@ -506,6 +536,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
             .replace(R.id.fcv_a_v_read, ReadFragment())
             .commit()
         updateChapterProgress()
+        refreshBookmarkState()
     }
 
     private fun showLoading() { //显示正在加载
@@ -540,6 +571,28 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
     private fun getHideBarColor(): Int = android.graphics.Color.parseColor(getHideBarColorString())
 
+    /** Chrome colours follow the reading colours, not the App theme. */
+    private fun currentChromePalette(): ReaderChromePalette =
+        ReaderChromePalette.from(
+            readerColorResolver.bgColorHex(),
+            readerColorResolver.textColorHex()
+        )
+
+    /**
+     * Re-colours the toolbar, status line and bottom dock, then repaints the
+     * system bars. Safe to call before the chrome controller exists.
+     */
+    private fun applyReaderChrome() {
+        ReaderChromeTheme.apply(
+            context = this,
+            toolbar = binding.tbAVRead,
+            statusLine = binding.statusAVRead.root,
+            bottomDock = binding.readBottomDock,
+            palette = currentChromePalette()
+        )
+        if (::chromeController.isInitialized) chromeController.refreshSystemBars()
+    }
+
     /** Re-apply reader colors (text + bg) to the content area. */
     private fun applyReaderColors() {
         val fragment = supportFragmentManager
@@ -549,6 +602,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
         (supportFragmentManager.findFragmentById(R.id.fcv_a_v_read) as? com.cyh128.hikari_novel.ui.other.LoadingView)
             ?.view
             ?.setBackgroundColor(android.graphics.Color.parseColor(readerColorResolver.bgColorHex()))
+        applyReaderChrome()
     }
 
     /** 常显状态行：时间与电量，在分钟边界刷新（百分比由进度回写）。 */
@@ -610,39 +664,54 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
         }
     }
 
+    /**
+     * P0-2: Wire the four colour presets.
+     *
+     * The swatch mirrors Koodo's colour blocks, so the presets are identifiable
+     * without tapping each one; the label and content description carry the
+     * index and the preset name for accessibility.
+     */
+    private fun setupPresetButtons(buttons: List<MaterialButton>) {
+        buttons.forEachIndexed { index, button ->
+            val preset = ReaderColorPresets.PRESETS.getOrNull(index) ?: return@forEachIndexed
+            button.text = getString(R.string.color_preset_label, index + 1)
+            button.icon = ReaderColorSwatch.create(this, preset.bgColor, preset.textColor)
+            button.contentDescription = preset.name
+            button.setOnClickListener { applyPreset(index) }
+        }
+    }
+
     /** P0-2: Apply a preset color by index. */
     private fun applyPreset(index: Int) {
-        val preset = com.cyh128.hikari_novel.data.model.ReaderColorPresets.PRESETS.getOrNull(index) ?: return
+        val preset = ReaderColorPresets.PRESETS.getOrNull(index) ?: return
         viewModel.readColorRepository().applyPreset(preset)
         applyReaderColors()
         updateColorInputs()
-        com.google.android.material.snackbar.Snackbar.make(
-            binding.root, "已应用: ${preset.name}", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
-        ).show()
+        Snackbar.make(binding.root, getString(R.string.color_preset_applied, preset.name), Snackbar.LENGTH_SHORT).show()
     }
 
     /** P0-2: Save current hex colors as a custom preset. */
     private fun saveCustomColor() {
         val textColor = bottomViewBinding.editTextColor.text.toString().trim()
         val bgColor = bottomViewBinding.editBgColor.text.toString().trim()
-        val hexPattern = Regex("^([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")
-        if (!hexPattern.matches(textColor) || !hexPattern.matches(bgColor)) {
-            com.google.android.material.snackbar.Snackbar.make(
-                binding.root, "颜色格式不正确", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
-            ).show()
+        if (!HEX_PATTERN.matches(textColor) || !HEX_PATTERN.matches(bgColor)) {
+            Snackbar.make(binding.root, R.string.color_format_invalid, Snackbar.LENGTH_SHORT).show()
             return
         }
-        val preset = com.cyh128.hikari_novel.data.model.ReaderColorPreset(
-            name = "自定义 " + java.text.SimpleDateFormat("MM-dd HH:mm", java.util.Locale.getDefault())
-                .format(java.util.Date()),
+        val preset = ReaderColorPreset(
+            name = getString(
+                R.string.custom_color_name,
+                java.text.SimpleDateFormat("MM-dd HH:mm", java.util.Locale.getDefault())
+                    .format(java.util.Date())
+            ),
             textColor = textColor,
             bgColor = bgColor
         )
         val result = viewModel.readColorRepository().addCustomColor(preset)
-        com.google.android.material.snackbar.Snackbar.make(
+        Snackbar.make(
             binding.root,
-            if (result) "已保存自定义配色" else "保存失败：已达上限或已存在",
-            com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
+            if (result) R.string.custom_color_saved else R.string.custom_color_save_failed,
+            Snackbar.LENGTH_SHORT
         ).show()
     }
 
@@ -651,9 +720,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
         viewModel.readColorRepository().restoreDefaults()
         applyReaderColors()
         updateColorInputs()
-        com.google.android.material.snackbar.Snackbar.make(
-            binding.root, "已恢复默认配色", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
-        ).show()
+        Snackbar.make(binding.root, R.string.color_restored, Snackbar.LENGTH_SHORT).show()
     }
 
     /** Update the hex input fields with current colors. */
@@ -668,9 +735,28 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
         binding.barAVRead.readChapterProgress.text = viewModel.chapterProgressText()
     }
 
+    /** P1-3: Mirror the bookmark state of the visible chapter on the bottom bar icon. */
+    private fun refreshBookmarkState() {
+        lifecycleScope.launch {
+            val bookmarked = viewModel.hasBookmarkForCurrentChapter()
+            binding.barAVRead.readBookmark.setIconResource(
+                if (bookmarked) {
+                    R.drawable.ic_baseline_collections_bookmark
+                } else {
+                    R.drawable.ic_outline_collections_bookmark
+                }
+            )
+        }
+    }
+
     private fun setBottomBarIsEnable(isEnable: Boolean) {
         binding.barAVRead.readNextChapter.isEnabled = isEnable
         binding.barAVRead.readPreviousChapter.isEnabled = isEnable
         binding.barAVRead.readProgressSlider.isEnabled = isEnable
+    }
+
+    private companion object {
+        /** 6-digit or 3-digit hex without the leading '#'. */
+        val HEX_PATTERN = Regex("^([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")
     }
 }

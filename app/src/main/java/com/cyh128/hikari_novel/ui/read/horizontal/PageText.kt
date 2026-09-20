@@ -32,8 +32,8 @@ class PageText : View {
     }
 
     var mBgColor = Color.WHITE
-    var mTextArray: MutableList<String>? = null
-    var mSecondTextArray: MutableList<String>? = null
+    var mTextArray: MutableList<PageLine>? = null
+    var mSecondTextArray: MutableList<PageLine>? = null
     var mTextColor: Int = Color.BLACK
     var mTxtFontType: Typeface = Typeface.DEFAULT
     var mBottomTextSize = 45f
@@ -44,6 +44,12 @@ class PageText : View {
             }
         }
     var mRowSpace = 2f
+
+    /** Letter spacing in px; converted to em for the paint. */
+    var mLetterSpacing = 0f
+
+    /** Text alignment: "left", "justify" or "right". */
+    var mTextAlignment = "left"
 
     var mTitle: String? = null
     var mPageNum: Int = 0
@@ -69,6 +75,9 @@ class PageText : View {
         mPaint.color = mTextColor
         mPaint.typeface = mTxtFontType
         mPaint.textSize = getFooterTextSize()
+        // The footer keeps the plain metrics; letter spacing only applies to the
+        // chapter body below.
+        mPaint.letterSpacing = 0f
         canvas.drawColor(mBgColor)
 
         val currentPage = if (mPageNum > mMaxPageNum) 0 else mPageNum
@@ -82,6 +91,7 @@ class PageText : View {
         if (mTextArray == null || mMaxPageNum < 1) return
 
         mPaint.textSize = mTextSize
+        mPaint.letterSpacing = if (mTextSize <= 0f) 0f else mLetterSpacing / mTextSize
         val pageWidth = if (mDoublePageMode) width / 2f else width.toFloat()
         drawPage(canvas, mTextArray, 0f, pageWidth)
         if (mDoublePageMode) {
@@ -93,17 +103,57 @@ class PageText : View {
 
     private fun drawPage(
         canvas: Canvas,
-        textArray: MutableList<String>?,
+        textArray: MutableList<PageLine>?,
         pageLeft: Float,
         pageWidth: Float
     ) {
-        for (i in 0 until (textArray?.size ?: 0)) {
-            canvas.drawText(
-                textArray!![i].replace(" ", "  "),
-                pageLeft + getMarginLeft(pageWidth),
-                getMarginTop() + i * mTextSize * mRowSpace,
-                mPaint
-            )
+        if (textArray == null) return
+        val left = pageLeft + getMarginLeft(pageWidth)
+        val textWidth = getTextWidth(pageWidth).toFloat()
+        val lineHeight = mTextSize * mRowSpace
+        var y = getMarginTop(textArray)
+
+        for (line in textArray) {
+            y += line.spacingBefore
+            val drawn = line.text.replace(" ", "  ")
+            when (mTextAlignment) {
+                "right" -> canvas.drawText(
+                    drawn,
+                    left + textWidth - mPaint.measureText(drawn),
+                    y,
+                    mPaint
+                )
+
+                "justify" -> if (line.isParagraphEnd || drawn.length < 2) {
+                    // A paragraph's last line keeps its natural width.
+                    canvas.drawText(drawn, left + line.indent, y, mPaint)
+                } else {
+                    drawJustified(canvas, drawn, left, textWidth, y)
+                }
+
+                else -> canvas.drawText(drawn, left + line.indent, y, mPaint)
+            }
+            y += lineHeight
+        }
+    }
+
+    /**
+     * Stretches one line to the full text width by distributing the slack over
+     * the gaps between glyphs. CJK text has no spaces to expand, so per-glyph
+     * drawing is the only way to justify it.
+     */
+    private fun drawJustified(canvas: Canvas, text: String, left: Float, width: Float, y: Float) {
+        val natural = mPaint.measureText(text)
+        val gap = (width - natural) / (text.length - 1)
+        if (gap <= 0f) {
+            canvas.drawText(text, left, y, mPaint)
+            return
+        }
+        var x = left
+        for (char in text) {
+            val glyph = char.toString()
+            canvas.drawText(glyph, x, y, mPaint)
+            x += mPaint.measureText(glyph) + gap
         }
     }
 
@@ -140,9 +190,10 @@ class PageText : View {
         return (pageWidth - count * mTextSize) / 2
     }
 
-    private fun getMarginTop(): Float {
-        val count = getTextHeight() / (mTextSize * mRowSpace).toInt()
-        return (getContentHeight() - count * mTextSize * mRowSpace) / 2 + mTextSize
+    private fun getMarginTop(lines: MutableList<PageLine>): Float {
+        val lineHeight = mTextSize * mRowSpace
+        val blockHeight = lines.sumOf { (lineHeight + it.spacingBefore).toDouble() }.toFloat()
+        return (getContentHeight() - blockHeight) / 2 + mTextSize
     }
 
     private fun getTextWidth(pageWidth: Float): Int =

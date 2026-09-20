@@ -17,6 +17,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.util.ReaderTapArea
 import com.cyh128.hikari_novel.util.ReaderTouchJudge
 import kotlin.math.abs
@@ -248,28 +249,19 @@ class PageImage : AppCompatImageView {
         drawFooter(canvas, pageText)
 
         if (imageBitmap == null) {
-            if (isLoadFailed) {
-                val fontMetrics = mPaint.fontMetrics
-                val textHeight = fontMetrics.top - fontMetrics.bottom
-                val textWidth = mPaint.measureText("加载图片失败")
-                val pivotX = (width - textWidth) / 2
-                val pivotY = (height - textHeight) / 2
-                mPaint.textSize = mTextSize
-                canvas.drawText("加载图片失败", pivotX, pivotY, mPaint)
-
-                imageRect = null
-            } else {
-                //将提示语句放到正中间
-                val fontMetrics = mPaint.fontMetrics
-                val textHeight = fontMetrics.top - fontMetrics.bottom
-                val textWidth = mPaint.measureText("加载插图中")
-                val pivotX = (width - textWidth) / 2
-                val pivotY = (height - textHeight) / 2
-                mPaint.textSize = mTextSize
-                canvas.drawText("加载插图中", pivotX, pivotY, mPaint)
-
-                imageRect = null
-            }
+            val message = context.getString(
+                if (isLoadFailed) R.string.image_load_failed else R.string.image_loading
+            )
+            val fontMetrics = mPaint.fontMetrics
+            val textHeight = fontMetrics.top - fontMetrics.bottom
+            // Set the body text size before measuring, otherwise the message is
+            // centred using the footer metrics and drifts off centre.
+            mPaint.textSize = mTextSize
+            val textWidth = mPaint.measureText(message)
+            val pivotX = (width - textWidth) / 2
+            val pivotY = (height - textHeight) / 2
+            canvas.drawText(message, pivotX, pivotY, mPaint)
+            imageRect = null
         }
 
         super.onDraw(canvas)

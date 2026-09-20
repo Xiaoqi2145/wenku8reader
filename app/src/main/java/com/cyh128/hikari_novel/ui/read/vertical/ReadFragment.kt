@@ -3,8 +3,12 @@ package com.cyh128.hikari_novel.ui.read.vertical
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
+import android.text.Spannable
+import android.text.Spanned
+import android.text.style.BackgroundColorSpan
 import android.view.View
 import android.view.ViewTreeObserver
+import androidx.core.graphics.ColorUtils
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -15,6 +19,7 @@ import com.cyh128.hikari_novel.data.model.Event
 import com.cyh128.hikari_novel.data.model.ReaderAnchor
 import com.cyh128.hikari_novel.databinding.FragmentVerticalReadBinding
 import com.cyh128.hikari_novel.reader.domain.ReaderPosition
+import com.cyh128.hikari_novel.ui.read.common.ReaderChromePalette
 import com.cyh128.hikari_novel.util.ReaderTouchJudge
 import com.cyh128.hikari_novel.util.ReaderColorResolver
 import com.cyh128.hikari_novel.util.startActivity
@@ -50,45 +55,16 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
 
         receiveEvent<Event>("event_vertical_read_fragment") { event ->
             when (event) {
-                is Event.ChangeFontSizeEvent -> {
-                    val anchor = progressReporter?.latest()?.anchor
-                    binding.tvFVRead.textSize = event.value
-                    anchor?.let { scrollRestorer?.restoreAfterLayout(it) }
-                }
-                is Event.ChangeLineSpacingEvent -> {
-                    val anchor = progressReporter?.latest()?.anchor
-                    binding.tvFVRead.setLineSpacing(event.value, 1f)
-                    anchor?.let { scrollRestorer?.restoreAfterLayout(it) }
-                }
-                is Event.ChangeParagraphSpacingEvent -> {
-                    val anchor = progressReporter?.latest()?.anchor
-                    // Paragraph spacing is applied via the renderer on re-render.
-                    // For real-time preview, we adjust line spacing as a proxy.
-                    binding.tvFVRead.setLineSpacing(event.value, 1f)
-                    anchor?.let { scrollRestorer?.restoreAfterLayout(it) }
-                }
-                is Event.ChangeLetterSpacingEvent -> {
-                    val anchor = progressReporter?.latest()?.anchor
-                    binding.tvFVRead.letterSpacing = event.value /
-                        (binding.tvFVRead.textSize * 2).coerceAtLeast(1f)
-                    anchor?.let { scrollRestorer?.restoreAfterLayout(it) }
-                }
-                is Event.ChangeTextAlignmentEvent -> {
-                    val anchor = progressReporter?.latest()?.anchor
-                    binding.tvFVRead.gravity = when (event.value) {
-                        // Gravity.JUSTIFY was removed in API 25; FILL_HORIZONTAL is the
-                        // closest available approximation for the live preview.
-                        "justify" -> android.view.Gravity.FILL_HORIZONTAL
-                        else -> android.view.Gravity.START
-                    }
-                    anchor?.let { scrollRestorer?.restoreAfterLayout(it) }
-                }
-                is Event.ChangeFirstLineIndentEvent -> {
-                    // First line indent is applied on re-render via the renderer.
-                    // For real-time preview, we just save the value.
-                    val anchor = progressReporter?.latest()?.anchor
-                    anchor?.let { scrollRestorer?.restoreAfterLayout(it) }
-                }
+                // Every typography setting is applied through one applier that
+                // reads the persisted values, so the live preview can never
+                // diverge from what a re-render produces. See P0-3.
+                is Event.ChangeFontSizeEvent,
+                is Event.ChangeLineSpacingEvent,
+                is Event.ChangeParagraphSpacingEvent,
+                is Event.ChangeLetterSpacingEvent,
+                is Event.ChangeTextAlignmentEvent,
+                is Event.ChangeFirstLineIndentEvent -> applyTypography()
+
                 else -> Unit
             }
         }
@@ -157,14 +133,36 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
             adapter = readAdapter
         }
 
-        binding.tvFVRead.textSize = viewModel.getFontSize()
-        binding.tvFVRead.setLineSpacing(viewModel.getLineSpacing(), 1f)
+        applyTypography()
 
-        applyReaderColors(viewModel.readColorRepository().let {
-            ReaderColorResolver(it)
-        }.textColorHex(), viewModel.readColorRepository().let {
-            ReaderColorResolver(it)
-        }.bgColorHex())
+        val resolver = colorResolver()
+        applyReaderColors(resolver.textColorHex(), resolver.bgColorHex())
+    }
+
+    /** Single construction point for the reader colour resolver. */
+    private fun colorResolver() = ReaderColorResolver(viewModel.readColorRepository(), requireContext())
+
+    /**
+     * Applies the persisted typography to the rendered session and keeps the
+     * visible anchor stable. Paragraph spacing and first-line indent are spans
+     * over the concatenated text, so they must be re-applied whenever new
+     * chapter text is appended.
+     */
+    private fun applyTypography(preserveAnchor: Boolean = true) {
+        val anchor = progressReporter?.latest()?.anchor
+        VerticalTypographyApplier.apply(
+            binding.tvFVRead,
+            VerticalTypography.from(
+                fontSizeSp = viewModel.getFontSize(),
+                lineSpacingExtraPx = viewModel.getLineSpacing(),
+                paragraphSpacingPx = viewModel.getParagraphSpacing(),
+                letterSpacingPx = viewModel.getLetterSpacing(),
+                textAlignment = viewModel.getTextAlignment(),
+                firstLineIndentChars = viewModel.getFirstLineIndent()
+            ),
+            contentRenderer?.headingRanges().orEmpty()
+        )
+        if (preserveAnchor) anchor?.let { scrollRestorer?.restoreAfterLayout(it) }
     }
 
     private fun initReaderCollaborators() {
@@ -259,8 +257,34 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
         scrollView.post { progressReporter?.report() }
     }
 
-    fun appendCurrentChapter(): Boolean {
-        val controller = readerController ?: return false
+    /**
+     * Briefly marks a search hit in the rendered session.
+     *
+     * The anchor's offset is chapter-local; the mapper turns it into an offset of
+     * the concatenated session text, which is what the TextView actually holds.
+     * The tint is derived from the reader colours, so it stays visible on every
+     * background the user can pick.
+     */
+    private fun highlightAnchor(anchor: ReaderAnchor, matchLength: Int) {
+        val controller = readerController ?: return
+        val textView = binding.tvFVRead
+        val text = textView.text as? Spannable ?: return
+        val start = controller.globalOffset(anchor) ?: return
+        val end = (start + matchLength).coerceAtMost(text.length)
+        if (start < 0 || end <= start) return
+
+        val resolver = colorResolver()
+        val palette = ReaderChromePalette.from(resolver.bgColorHex(), resolver.textColorHex())
+        val span = BackgroundColorSpan(
+            ColorUtils.setAlphaComponent(palette.onSurface, HIGHLIGHT_ALPHA)
+        )
+        text.setSpan(span, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        textView.postDelayed({
+            (textView.text as? Spannable)?.removeSpan(span)
+        }, HIGHLIGHT_DURATION_MS)
+    }
+
+    fun appendCurrentChapter(): Boolean {        val controller = readerController ?: return false
         val renderer = contentRenderer ?: return false
         val chapter = viewModel.currentCachedChapter()
         if (renderedChapterCids.contains(chapter.ref.cid)) return true
@@ -271,6 +295,9 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
         renderer.appendImages(readAdapter, chapter.images)
         renderedChapterCids += chapter.ref.cid
         controller.onChapterAppended()
+        // Re-apply so the appended paragraphs get their spacing/indent spans.
+        // No anchor restore: the new text only extends the session below.
+        applyTypography(preserveAnchor = false)
         binding.tvFVReadEndTip.text = getString(R.string.continue_reading)
         binding.nsvFVRead.post { progressReporter?.report() }
         return true
@@ -286,7 +313,9 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
                 binding.bFVReadNextChapter
             ),
             touchJudge = ReaderTouchJudge(requireContext()),
-            onCenterTap = ::toggleReaderBar
+            onCenterTap = ::toggleReaderBar,
+            onPreviousChapter = { (requireActivity() as ReadActivity).toPreviousChapter() },
+            onNextChapter = { (requireActivity() as ReadActivity).toNextChapter() }
         )
         binding.nsvFVRead.setOnTouchListener { _, event ->
             touchHandler?.onTouch(event) ?: false
@@ -312,6 +341,15 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
                 override fun onGlobalLayout() {
                     binding.nsvFVRead.viewTreeObserver.removeOnGlobalLayoutListener(this)
                     lifecycleScope.launch {
+                        // A catalog jump (bookmark or search hit) outranks any
+                        // remembered position: it is the explicit user intent.
+                        viewModel.consumePendingJump()?.let { (anchor, highlightLength) ->
+                            viewModel.goToLatest = false
+                            scrollRestorer?.restore(anchor)
+                            if (highlightLength > 0) highlightAnchor(anchor, highlightLength)
+                            return@launch
+                        }
+
                         viewModel.latestVerticalPosition()?.let { position ->
                             if (readerController?.contains(position.anchor.cid) == true) {
                                 scrollRestorer?.restore(position.anchor)
@@ -406,5 +444,13 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
                 controller.onChapterAppended()
             }
         }
+    }
+
+    private companion object {
+        /** Search-hit highlight: a tint of the reader text colour, so it works on any background. */
+        const val HIGHLIGHT_ALPHA = 0x33
+
+        /** Long enough to find the hit, short enough not to linger. */
+        const val HIGHLIGHT_DURATION_MS = 2500L
     }
 }

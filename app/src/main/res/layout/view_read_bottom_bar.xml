@@ -77,7 +77,8 @@
       android:orientation="horizontal"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintTop_toBottomOf="@id/read_progress_row">
-      <!-- P1-3: Bookmark button -->
+      <!-- P1-3: Bookmark button. Default icon is the outline state; the Activity
+           swaps to the filled icon when the visible chapter is bookmarked. -->
       <com.google.android.material.button.MaterialButton
         android:id="@+id/read_bookmark"
         style="@style/Widget.GalIsland.Button.Text.Icon"
@@ -85,7 +86,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="@string/bookmark"
-        app:icon="@drawable/ic_baseline_collections_bookmark"
+        app:icon="@drawable/ic_outline_collections_bookmark"
         app:iconGravity="textTop" />
       <com.google.android.material.button.MaterialButton
         android:id="@+id/read_night"

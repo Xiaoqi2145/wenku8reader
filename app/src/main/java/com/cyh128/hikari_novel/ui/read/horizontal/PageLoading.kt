@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.graphics.Typeface
 import android.util.AttributeSet
 import android.view.View
+import com.cyh128.hikari_novel.R
 
 /*
  * Copyright 2018 ya-b
@@ -64,11 +65,12 @@ class PageLoading: View {
         canvas.drawColor(mBgColor)
 
         //将提示语句放到正中间
+        val message = context.getString(R.string.chapter_loading)
         val fontMetrics = mPaint.fontMetrics
         val textHeight = fontMetrics.top - fontMetrics.bottom
-        val textWidth = mPaint.measureText("加载章节中")
+        val textWidth = mPaint.measureText(message)
         val pivotX = (width - textWidth) / 2
         val pivotY = (height - textHeight) / 2
-        canvas.drawText("加载章节中", pivotX, pivotY, mPaint)
+        canvas.drawText(message, pivotX, pivotY, mPaint)
     }
 }

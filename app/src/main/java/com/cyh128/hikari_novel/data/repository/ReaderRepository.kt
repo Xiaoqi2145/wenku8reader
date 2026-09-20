@@ -294,6 +294,20 @@ class ReaderRepository @Inject constructor(
 
     suspend fun deleteBookmarkByCid(aid: String, cid: String) = dao.deleteBookmarkByCid(aid, cid)
 
+    // ===== P1-4: Full-book search =====
+
+    /** Cached chapter bodies for a book, keyed by cid. One query, no network. */
+    suspend fun cachedChapterContents(aid: String): Map<String, String> =
+        dao.cachedChapterContents(aid).associate { it.cid to it.content }
+
+    /**
+     * Cache-first chapter body lookup with a network fallback, used by the
+     * search's opt-in online phase. A successful load also fills the cache, so
+     * repeating the same search gets cheaper.
+     */
+    suspend fun loadChapterContent(ref: ChapterRef): String? =
+        chapterLoader.load(ref).getOrNull()?.first?.content
+
     private suspend fun downloadImages(chapter: CachedChapter): List<String> =
         withContext(Dispatchers.IO) {
             if (chapter.images.isEmpty()) return@withContext emptyList()

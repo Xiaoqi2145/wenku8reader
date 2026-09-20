@@ -1,11 +1,14 @@
 package com.cyh128.hikari_novel.data.repository.reader
 
+import com.cyh128.hikari_novel.data.source.local.database.reader.BookmarkEntity
+import com.cyh128.hikari_novel.data.source.local.database.reader.CachedChapterContent
 import com.cyh128.hikari_novel.data.source.local.database.reader.ChapterCacheEntity
 import com.cyh128.hikari_novel.data.source.local.database.reader.DownloadBookEntity
 import com.cyh128.hikari_novel.data.source.local.database.reader.DownloadTaskEntity
 import com.cyh128.hikari_novel.data.source.local.database.reader.ReaderDao
 import com.cyh128.hikari_novel.data.source.local.database.reader.ReaderProgressEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 
 class FakeReaderDao : ReaderDao {
@@ -117,6 +120,43 @@ class FakeReaderDao : ReaderDao {
 
     override suspend fun deleteExpiredCache(before: Long) {
         chapters.entries.removeIf { !it.value.isDownloaded && it.value.updatedAt < before }
+    }
+
+    // ===== P1-4: Full-book search =====
+
+    override suspend fun cachedChapterContents(aid: String): List<CachedChapterContent> =
+        chapters.values
+            .filter { it.aid == aid }
+            .map { CachedChapterContent(cid = it.cid, content = it.content) }
+
+    // ===== P1-3: Bookmarks =====
+
+    val bookmarks = linkedMapOf<Long, BookmarkEntity>()
+    private var nextBookmarkId = 1L
+
+    override suspend fun insertBookmark(bookmark: BookmarkEntity): Long {
+        val id = if (bookmark.id != 0L) bookmark.id else nextBookmarkId++
+        bookmarks[id] = bookmark.copy(id = id)
+        return id
+    }
+
+    override fun observeBookmarks(aid: String): Flow<List<BookmarkEntity>> =
+        MutableStateFlow(
+            bookmarks.values.filter { it.aid == aid }.sortedByDescending { it.createdAt }
+        )
+
+    override suspend fun getBookmark(aid: String, cid: String): BookmarkEntity? =
+        bookmarks.values.firstOrNull { it.aid == aid && it.cid == cid }
+
+    override suspend fun hasBookmark(aid: String, cid: String): Boolean =
+        getBookmark(aid, cid) != null
+
+    override suspend fun deleteBookmark(id: Long) {
+        bookmarks.remove(id)
+    }
+
+    override suspend fun deleteBookmarkByCid(aid: String, cid: String) {
+        bookmarks.entries.removeIf { it.value.aid == aid && it.value.cid == cid }
     }
 
     private fun progressKey(aid: String, cid: String) = aid + ":" + cid

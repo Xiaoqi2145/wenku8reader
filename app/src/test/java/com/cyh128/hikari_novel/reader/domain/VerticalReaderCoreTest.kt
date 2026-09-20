@@ -68,6 +68,41 @@ class VerticalReaderCoreTest {
         assertEquals(false, VerticalTouchPolicy.shouldToggleReaderBar(150f, 300, true, true))
     }
 
+    @Test
+    fun tapActionSplitsTheScreenIntoThreeZones() {
+        // P2-5: left third = previous chapter, right third = next, centre = chrome.
+        assertEquals(VerticalTapArea.Previous, VerticalTouchPolicy.tapAction(0f, 300, true, false))
+        assertEquals(VerticalTapArea.Center, VerticalTouchPolicy.tapAction(150f, 300, true, false))
+        assertEquals(VerticalTapArea.Next, VerticalTouchPolicy.tapAction(299f, 300, true, false))
+    }
+
+    @Test
+    fun tapActionIgnoresSwipesAndInteractiveChildren() {
+        assertNull(VerticalTouchPolicy.tapAction(0f, 300, isTap = false, startedOnInteractiveChild = false))
+        assertNull(VerticalTouchPolicy.tapAction(0f, 300, isTap = true, startedOnInteractiveChild = true))
+        // A zero-width target must not throw or claim an edge zone.
+        assertEquals(
+            VerticalTapArea.Center,
+            VerticalTouchPolicy.tapAction(0f, 0, isTap = true, startedOnInteractiveChild = false)
+        )
+    }
+
+    @Test
+    fun tapActionStaysConsistentWithShouldToggleReaderBar() {
+        val widths = listOf(0, 1, 300, 1080)
+        val xs = listOf(0f, 0.2f, 0.5f, 0.8f, 1f)
+        for (width in widths) {
+            for (ratio in xs) {
+                val x = width * ratio
+                val action = VerticalTouchPolicy.tapAction(x, width, true, false)
+                assertEquals(
+                    action == VerticalTapArea.Center,
+                    VerticalTouchPolicy.shouldToggleReaderBar(x, width, true, false)
+                )
+            }
+        }
+    }
+
     private fun ref(cid: String, index: Int) = ChapterRef(
         aid = "book-1",
         cid = cid,
