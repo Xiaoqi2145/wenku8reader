@@ -59,4 +59,30 @@ class VerticalReadRepository @Inject constructor(
     fun setIsShowChapterReadHistoryWithoutConfirm(value: Boolean) {
         verticalReadConfig.isShowChapterReadHistoryWithoutConfirm = value
     }
+
+    // ===== P0-3: Typography =====
+
+    fun getParagraphSpacing() = verticalReadConfig.paragraphSpacing
+
+    fun setParagraphSpacing(value: Float) {
+        verticalReadConfig.paragraphSpacing = value
+    }
+
+    fun getLetterSpacing() = verticalReadConfig.letterSpacing
+
+    fun setLetterSpacing(value: Float) {
+        verticalReadConfig.letterSpacing = value
+    }
+
+    fun getTextAlignment() = verticalReadConfig.textAlignment
+
+    fun setTextAlignment(value: String) {
+        verticalReadConfig.textAlignment = value
+    }
+
+    fun getFirstLineIndent() = verticalReadConfig.firstLineIndent
+
+    fun setFirstLineIndent(value: Int) {
+        verticalReadConfig.firstLineIndent = value
+    }
 }

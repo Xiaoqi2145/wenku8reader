@@ -13,6 +13,7 @@ import com.cyh128.hikari_novel.data.model.ReaderUiState
 import com.cyh128.hikari_novel.data.model.EmptyException
 import com.cyh128.hikari_novel.data.model.Event
 import com.cyh128.hikari_novel.data.model.Novel
+import com.cyh128.hikari_novel.data.model.ReaderThemeMode
 import com.cyh128.hikari_novel.data.model.chapterRefAt
 import com.cyh128.hikari_novel.data.model.chapterRefs
 import com.cyh128.hikari_novel.data.repository.AppRepository
@@ -193,6 +194,22 @@ class ReadViewModel @Inject constructor(
 
     fun getLineSpacing() = horizontalReadRepository.getLineSpacing()
 
+    fun readColorRepository() = readColorRepository
+
+    fun getReaderThemeMode() = readColorRepository.getReaderThemeMode()
+
+    fun setReaderThemeMode(mode: ReaderThemeMode) {
+        readColorRepository.setReaderThemeMode(mode)
+    }
+
+    /** Toggle between Day and Night reader theme; returns the new mode. */
+    fun toggleReaderThemeMode(): ReaderThemeMode {
+        val current = readColorRepository.getReaderThemeMode()
+        val next = if (current == ReaderThemeMode.Night) ReaderThemeMode.Day else ReaderThemeMode.Night
+        readColorRepository.setReaderThemeMode(next)
+        return next
+    }
+
     fun getTextColorDay() = readColorRepository.getTextColorDay()
 
     fun getTextColorNight() = readColorRepository.getTextColorNight()
@@ -215,10 +232,6 @@ class ReadViewModel @Inject constructor(
 
     fun getSwitchAnimation() = horizontalReadRepository.getSwitchAnimation()
 
-    fun setSwitchAnimation(value: Boolean) {
-        horizontalReadRepository.setSwitchAnimation(value)
-    }
-
     fun getTabletDoublePage() = horizontalReadRepository.getTabletDoublePage()
 
     fun setTabletDoublePage(value: Boolean) {
@@ -236,5 +249,41 @@ class ReadViewModel @Inject constructor(
 
     fun setIsShowChapterReadHistoryWithoutConfirm(value: Boolean) {
         horizontalReadRepository.setIsShowChapterReadHistoryWithoutConfirm(value)
+    }
+
+    // ===== P0-3: Typography =====
+
+    fun getParagraphSpacing() = horizontalReadRepository.getParagraphSpacing()
+
+    fun setParagraphSpacing(value: Float) {
+        horizontalReadRepository.setParagraphSpacing(value)
+    }
+
+    fun getLetterSpacing() = horizontalReadRepository.getLetterSpacing()
+
+    fun setLetterSpacing(value: Float) {
+        horizontalReadRepository.setLetterSpacing(value)
+    }
+
+    fun getTextAlignment() = horizontalReadRepository.getTextAlignment()
+
+    fun setTextAlignment(value: String) {
+        horizontalReadRepository.setTextAlignment(value)
+    }
+
+    fun getFirstLineIndent() = horizontalReadRepository.getFirstLineIndent()
+
+    fun setFirstLineIndent(value: Int) {
+        horizontalReadRepository.setFirstLineIndent(value)
+    }
+
+    // ===== P1-1: Animation enum =====
+
+    fun getSwitchAnimationMode(): String {
+        return horizontalReadRepository.migrateSwitchAnimation()
+    }
+
+    fun setSwitchAnimationMode(value: String) {
+        horizontalReadRepository.setSwitchAnimation(value)
     }
 }

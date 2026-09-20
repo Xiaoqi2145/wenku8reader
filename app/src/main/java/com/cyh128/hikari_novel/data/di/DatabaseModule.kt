@@ -26,7 +26,8 @@ object DatabaseModule {
         Room.databaseBuilder(context, ReaderDatabase::class.java, "reader_data")
             .addMigrations(
                 ReaderDatabaseMigrations.READER_1_2,
-                ReaderDatabaseMigrations.READER_2_3
+                ReaderDatabaseMigrations.READER_2_3,
+                ReaderDatabaseMigrations.READER_3_4
             )
             .build()
 

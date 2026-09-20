@@ -62,10 +62,6 @@ class HorizontalReadRepository @Inject constructor(
 
     fun getSwitchAnimation() = horizontalReadConfig.switchAnimation
 
-    fun setSwitchAnimation(value: Boolean) {
-        horizontalReadConfig.switchAnimation = value
-    }
-
     fun getTabletDoublePage() = horizontalReadConfig.tabletDoublePage
 
     fun setTabletDoublePage(value: Boolean) {
@@ -83,5 +79,57 @@ class HorizontalReadRepository @Inject constructor(
 
     fun setIsShowChapterReadHistoryWithoutConfirm(value: Boolean) {
         horizontalReadConfig.isShowChapterReadHistoryWithoutConfirm = value
+    }
+
+    // ===== P0-3: Typography =====
+
+    fun getParagraphSpacing() = horizontalReadConfig.paragraphSpacing
+
+    fun setParagraphSpacing(value: Float) {
+        horizontalReadConfig.paragraphSpacing = value
+    }
+
+    fun getLetterSpacing() = horizontalReadConfig.letterSpacing
+
+    fun setLetterSpacing(value: Float) {
+        horizontalReadConfig.letterSpacing = value
+    }
+
+    fun getTextAlignment() = horizontalReadConfig.textAlignment
+
+    fun setTextAlignment(value: String) {
+        horizontalReadConfig.textAlignment = value
+    }
+
+    fun getFirstLineIndent() = horizontalReadConfig.firstLineIndent
+
+    fun setFirstLineIndent(value: Int) {
+        horizontalReadConfig.firstLineIndent = value
+    }
+
+    // ===== P1-1: Animation enum =====
+
+    /**
+     * Persist the page turn animation mode: "none", "sliding", or "mimical".
+     * Reading is covered by [getSwitchAnimation]; the legacy boolean is
+     * migrated inside HorizontalReadConfig.switchAnimation.
+     */
+    fun setSwitchAnimation(value: String) {
+        horizontalReadConfig.switchAnimation = value
+    }
+
+    /**
+     * Migrate from the old boolean value if the user hasn't set the new string
+     * value yet. Returns the migrated value.
+     */
+    fun migrateSwitchAnimation(): String {
+        val current = horizontalReadConfig.switchAnimation
+        if (current == "none" || current == "sliding" || current == "mimical") return current
+        // If the value is "false" or "true" (old boolean serialized), migrate
+        return when (current) {
+            "false" -> "none"
+            "true" -> "sliding"
+            else -> "none"
+        }.also { horizontalReadConfig.switchAnimation = it }
     }
 }

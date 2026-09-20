@@ -13,7 +13,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.OnBackPressedCallback
 import androidx.core.graphics.toColorInt
-import androidx.appcompat.app.AppCompatDelegate
+import com.cyh128.hikari_novel.util.ReaderColorResolver
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -27,13 +27,12 @@ import com.cyh128.hikari_novel.data.model.ReadParcel
 import com.cyh128.hikari_novel.data.source.local.database.read_history.horizontal_read_history.HorizontalReadHistoryEntity
 import com.cyh128.hikari_novel.databinding.ActivityHorizontalReadBinding
 import com.cyh128.hikari_novel.databinding.ViewHorizontalReadConfigBinding
-import com.cyh128.hikari_novel.ui.read.SelectColorActivity
+
 import com.cyh128.hikari_novel.ui.read.catalog.ReadChapterCatalogBottomSheet
 import com.cyh128.hikari_novel.ui.read.common.ReaderChromeController
 import com.cyh128.hikari_novel.ui.read.common.ReaderChromeGeometry
 import com.cyh128.hikari_novel.ui.read.common.ReaderWindowInsetsCoordinator
-import com.cyh128.hikari_novel.util.ThemeHelper
-import com.cyh128.hikari_novel.util.getIsInDarkMode
+
 import com.cyh128.hikari_novel.util.ReaderStatusText
 import com.cyh128.hikari_novel.util.startActivity
 import com.drake.channel.receiveEvent
@@ -57,6 +56,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
     private lateinit var chromeController: ReaderChromeController
     private lateinit var windowInsetsCoordinator: ReaderWindowInsetsCoordinator
     private var saveReadHistoryJob: Job? = null
+    private val readerColorResolver by lazy { ReaderColorResolver(viewModel.readColorRepository()) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -243,12 +243,8 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
         refreshStatusBar()
         binding.statusAHRead.readStatusProgress.text = "0%"
         //初始化阅读器的背景颜色和字体颜色
-        binding.pvAHRead.backgroundcolor =
-            if (ThemeHelper.isDarkMode()) ("#" + viewModel.getBgColorNight()).toColorInt()
-            else ("#" + viewModel.getBgColorDay()).toColorInt()
-        binding.pvAHRead.textColor =
-            if (ThemeHelper.isDarkMode()) ("#" + viewModel.getTextColorNight()).toColorInt()
-            else ("#" + viewModel.getTextColorDay()).toColorInt()
+        binding.pvAHRead.backgroundcolor = readerColorResolver.bgColorHex().toColorInt()
+        binding.pvAHRead.textColor = readerColorResolver.textColorHex().toColorInt()
 
         setBottomBarIsEnable(false)
 
@@ -291,11 +287,32 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             dismissWithAnimation = true
         }
 
-        bottomViewBinding.sVHReadConfigFontSize.value = viewModel.getFontSize()
-        bottomViewBinding.sVHReadConfigBottomTextSize.value = viewModel.getBottomFontSize()
-        bottomViewBinding.sVHReadConfigLineSpacing.value = viewModel.getLineSpacing()
+        // P0-4: Slider rows with value display and real-time preview
+        setupSliderRow(bottomViewBinding.sliderFontSize, "字号", 30f, 100f, 1f, viewModel.getFontSize()) {
+            binding.pvAHRead.textSize = it
+            viewModel.setFontSize(it)
+        }
+        setupSliderRow(bottomViewBinding.sliderBottomTextSize, "进度文字", 1f, 100f, 1f, viewModel.getBottomFontSize()) {
+            binding.pvAHRead.bottomTextSize = it
+            viewModel.setBottomFontSize(it)
+        }
+        setupSliderRow(bottomViewBinding.sliderLineSpacing, "行距", 1f, 5f, 0.1f, viewModel.getLineSpacing()) {
+            binding.pvAHRead.rowSpace = it
+            viewModel.setLineSpacing(it)
+        }
+        setupSliderRow(bottomViewBinding.sliderParagraphSpacing, "段间距", 0f, 4f, 0.1f, viewModel.getParagraphSpacing()) {
+            viewModel.setParagraphSpacing(it)
+        }
+        setupSliderRow(bottomViewBinding.sliderLetterSpacing, "字间距", 0f, 20f, 1f, viewModel.getLetterSpacing()) {
+            viewModel.setLetterSpacing(it)
+        }
         bottomViewBinding.sVHReadConfigKeyDownSwitchChapter.isChecked = viewModel.getKeyDownSwitchChapter()
-        bottomViewBinding.sVHReadConfigSwitchAnimation.isChecked = viewModel.getSwitchAnimation()
+        // P1-1: Set animation mode toggle group
+        when (viewModel.getSwitchAnimationMode()) {
+            "sliding" -> bottomViewBinding.animationModeGroup.check(R.id.b_animation_sliding)
+            "mimical" -> bottomViewBinding.animationModeGroup.check(R.id.b_animation_mimical)
+            else -> bottomViewBinding.animationModeGroup.check(R.id.b_animation_none)
+        }
         bottomViewBinding.sVHReadConfigTabletDoublePage.isChecked = viewModel.getTabletDoublePage()
         bottomViewBinding.sVHReadConfigTabletDoublePage.isEnabled =
             resources.configuration.screenWidthDp >= 600 ||
@@ -312,7 +329,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
         binding.pvAHRead.rowSpace = viewModel.getLineSpacing()
         binding.pvAHRead.textSize = viewModel.getFontSize()
         binding.pvAHRead.bottomTextSize = viewModel.getBottomFontSize()
-        binding.pvAHRead.switchAnimation = viewModel.getSwitchAnimation()
+        binding.pvAHRead.switchAnimation = viewModel.getSwitchAnimationMode()
         binding.pvAHRead.doublePageEnabled = viewModel.getTabletDoublePage()
 
         setColor()
@@ -320,13 +337,8 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
     }
 
     private fun setColor() {
-        if (getIsInDarkMode()) { //夜间模式
-            binding.pvAHRead.textColor = ("#" + viewModel.getTextColorNight()).toColorInt()
-            binding.pvAHRead.backgroundcolor = ("#" + viewModel.getBgColorNight()).toColorInt()
-        } else {
-            binding.pvAHRead.textColor = ("#" + viewModel.getTextColorDay()).toColorInt()
-            binding.pvAHRead.backgroundcolor = ("#" + viewModel.getBgColorDay()).toColorInt()
-        }
+        binding.pvAHRead.textColor = readerColorResolver.textColorHex().toColorInt()
+        binding.pvAHRead.backgroundcolor = readerColorResolver.bgColorHex().toColorInt()
     }
 
     private fun applyReaderContentInsets() {
@@ -367,14 +379,6 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             }
         }
 
-        val activityResultLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                //当SelectColorActivity退出后所要做的语句体
-                if (result.resultCode == RESULT_OK) { //刷新界面，使设置的文字颜色和背景颜色生效
-                    setColor()
-                }
-            }
-
         binding.pvAHRead.setImageClickListener { imageUrl ->
             startActivity<com.cyh128.hikari_novel.ui.other.PhotoViewActivity> {
                 putExtra("url", imageUrl)
@@ -411,6 +415,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
                 try {
                     if (binding.pvAHRead.maxPageNum == 1) {
                         binding.barAHRead.readProgressSlider.visibility = View.INVISIBLE
+                        binding.barAHRead.readPageProgress.text = "1/1"
                         return
                     } else {
                         binding.barAHRead.readProgressSlider.visibility = View.VISIBLE
@@ -418,6 +423,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
 
                     binding.barAHRead.readProgressSlider.valueTo = binding.pvAHRead.maxPageNum.toFloat()
                     binding.barAHRead.readProgressSlider.value = index.toFloat()
+                    binding.barAHRead.readPageProgress.text = "​${index}/${binding.pvAHRead.maxPageNum}"
                     updateProgressPercent(index, binding.pvAHRead.maxPageNum)
                 } catch (e: IllegalArgumentException) { //防止历史记录的页数大于当前章节的最大页数
                     binding.barAHRead.readProgressSlider.value = 1f
@@ -442,54 +448,39 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             }
         )
 
-        bottomViewBinding.sVHReadConfigFontSize.addOnSliderTouchListener(
-            object : Slider.OnSliderTouchListener {
-                override fun onStartTrackingTouch(slider: Slider) {}
 
-                override fun onStopTrackingTouch(slider: Slider) {
-                    binding.pvAHRead.textSize = slider.value
-                    viewModel.setFontSize(slider.value)
-                }
-            }
-        )
 
-        bottomViewBinding.sVHReadConfigBottomTextSize.addOnSliderTouchListener(
-            object : Slider.OnSliderTouchListener {
-                override fun onStartTrackingTouch(slider: Slider) {}
 
-                override fun onStopTrackingTouch(slider: Slider) {
-                    binding.pvAHRead.bottomTextSize = slider.value
-                    viewModel.setBottomFontSize(slider.value)
-                }
-            }
-        )
 
-        bottomViewBinding.sVHReadConfigLineSpacing.addOnSliderTouchListener(
-            object : Slider.OnSliderTouchListener {
-                override fun onStartTrackingTouch(slider: Slider) {}
 
-                override fun onStopTrackingTouch(slider: Slider) {
-                    binding.pvAHRead.rowSpace = slider.value
-                    viewModel.setLineSpacing(slider.value)
-                }
-            }
-        )
 
-        bottomViewBinding.bVHReadConfigChangeColor.setOnClickListener {
-            activityResultLauncher.launch(
-                Intent(
-                    this,
-                    SelectColorActivity::class.java
-                )
-            )
+        // P0-2: Preset color buttons
+        bottomViewBinding.bPresetColor1.setOnClickListener { applyPreset(0) }
+        bottomViewBinding.bPresetColor2.setOnClickListener { applyPreset(1) }
+        bottomViewBinding.bPresetColor3.setOnClickListener { applyPreset(2) }
+        bottomViewBinding.bPresetColor4.setOnClickListener { applyPreset(3) }
+
+        // P0-2: Save custom color
+        bottomViewBinding.bVHReadConfigSaveCustomColor.setOnClickListener { saveCustomColor() }
+
+        // P0-2: Restore defaults
+        bottomViewBinding.bVHReadConfigRestoreDefaults.setOnClickListener { restoreColorDefaults() }
+
+        // P1-3: Bookmark button
+        binding.barAHRead.readBookmark.setOnClickListener {
+            com.google.android.material.snackbar.Snackbar.make(
+                binding.root, "书签功能即将上线", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
+            ).show()
         }
+
+        // P1-2: Show page progress label
+        binding.barAHRead.readPageProgress.visibility = View.VISIBLE
 
         binding.barAHRead.readSettings.setOnClickListener { bottomSheetDialog.show() }
         binding.barAHRead.readCatalog.setOnClickListener { showChapterCatalog() }
         binding.barAHRead.readNight.setOnClickListener {
-            AppCompatDelegate.setDefaultNightMode(
-                if (getIsInDarkMode()) AppCompatDelegate.MODE_NIGHT_NO else AppCompatDelegate.MODE_NIGHT_YES
-            )
+            viewModel.toggleReaderThemeMode()
+            setColor()
         }
         bottomViewBinding.bHReadConfigVertical.setOnClickListener {
             lifecycleScope.launch {
@@ -521,9 +512,45 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
 
-        bottomViewBinding.sVHReadConfigSwitchAnimation.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.setSwitchAnimation(isChecked)
-            binding.pvAHRead.switchAnimation = isChecked
+        // P1-1: Animation mode toggle group (none/sliding/mimical)
+        bottomViewBinding.animationModeGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (!isChecked) return@addOnButtonCheckedListener
+            val mode = when (checkedId) {
+                R.id.b_animation_none -> "none"
+                R.id.b_animation_sliding -> "sliding"
+                R.id.b_animation_mimical -> "mimical"
+                else -> "none"
+            }
+            viewModel.setSwitchAnimationMode(mode)
+            binding.pvAHRead.switchAnimation = mode
+        }
+
+        // P0-3: Text alignment toggle
+        bottomViewBinding.textAlignmentGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (!isChecked) return@addOnButtonCheckedListener
+            when (checkedId) {
+                R.id.b_alignment_left -> viewModel.setTextAlignment("left")
+                R.id.b_alignment_justify -> viewModel.setTextAlignment("justify")
+                R.id.b_alignment_right -> viewModel.setTextAlignment("right")
+            }
+        }
+        when (viewModel.getTextAlignment()) {
+            "justify" -> bottomViewBinding.textAlignmentGroup.check(R.id.b_alignment_justify)
+            "right" -> bottomViewBinding.textAlignmentGroup.check(R.id.b_alignment_right)
+            else -> bottomViewBinding.textAlignmentGroup.check(R.id.b_alignment_left)
+        }
+
+        // P0-3: First line indent toggle
+        bottomViewBinding.firstLineIndentGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (!isChecked) return@addOnButtonCheckedListener
+            when (checkedId) {
+                R.id.b_indent_none -> viewModel.setFirstLineIndent(0)
+                R.id.b_indent_two_chars -> viewModel.setFirstLineIndent(2)
+            }
+        }
+        when (viewModel.getFirstLineIndent()) {
+            2 -> bottomViewBinding.firstLineIndentGroup.check(R.id.b_indent_two_chars)
+            else -> bottomViewBinding.firstLineIndentGroup.check(R.id.b_indent_none)
         }
 
         bottomViewBinding.sVHReadConfigTabletDoublePage.setOnCheckedChangeListener { _, isChecked ->
@@ -622,12 +649,90 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
         chromeController.hide()
     }
 
-    private fun getHideBarColorString() = getIsInDarkMode().let {
-        if (it) "#" + viewModel.getBgColorNight()
-        else "#" + viewModel.getBgColorDay()
-    }
+    private fun getHideBarColorString() = readerColorResolver.bgColorHex()
 
     private fun getHideBarColor(): Int = getHideBarColorString().toColorInt()
+
+    /**
+     * Configure a reusable slider row with label, value display, range, and real-time preview.
+     */
+    private fun setupSliderRow(
+        binding: com.cyh128.hikari_novel.databinding.ViewReaderSliderRowBinding,
+        label: String,
+        valueFrom: Float,
+        valueTo: Float,
+        stepSize: Float,
+        initialValue: Float,
+        onValueChange: (Float) -> Unit
+    ) {
+        binding.sliderRowLabel.text = label
+        binding.sliderRowSlider.valueFrom = valueFrom
+        binding.sliderRowSlider.valueTo = valueTo
+        binding.sliderRowSlider.stepSize = stepSize
+        binding.sliderRowSlider.value = initialValue
+        binding.sliderRowValue.setText(initialValue.toString())
+        binding.sliderRowSlider.addOnChangeListener { _, value, _ ->
+            onValueChange(value)
+            binding.sliderRowValue.setText(value.toString())
+        }
+        binding.sliderRowValue.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                val newValue = binding.sliderRowValue.text.toString().toFloatOrNull()
+                if (newValue != null) {
+                    val clamped = newValue.coerceIn(valueFrom, valueTo)
+                    binding.sliderRowSlider.value = clamped
+                    onValueChange(clamped)
+                    binding.sliderRowValue.setText(clamped.toString())
+                } else {
+                    binding.sliderRowValue.setText(binding.sliderRowSlider.value.toString())
+                }
+            }
+        }
+    }
+
+    /** P0-2: Apply a preset color by index. */
+    private fun applyPreset(index: Int) {
+        val preset = com.cyh128.hikari_novel.data.model.ReaderColorPresets.PRESETS.getOrNull(index) ?: return
+        viewModel.readColorRepository().applyPreset(preset)
+        setColor()
+        com.google.android.material.snackbar.Snackbar.make(
+            binding.root, "已应用: ${preset.name}", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
+        ).show()
+    }
+
+    /** P0-2: Save current hex colors as a custom preset. */
+    private fun saveCustomColor() {
+        val textColor = bottomViewBinding.editTextColor.text.toString().trim()
+        val bgColor = bottomViewBinding.editBgColor.text.toString().trim()
+        val hexPattern = Regex("^([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")
+        if (!hexPattern.matches(textColor) || !hexPattern.matches(bgColor)) {
+            com.google.android.material.snackbar.Snackbar.make(
+                binding.root, "颜色格式不正确", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
+            ).show()
+            return
+        }
+        val preset = com.cyh128.hikari_novel.data.model.ReaderColorPreset(
+            name = "自定义 " + java.text.SimpleDateFormat("MM-dd HH:mm", java.util.Locale.getDefault())
+                .format(java.util.Date()),
+            textColor = textColor,
+            bgColor = bgColor
+        )
+        val result = viewModel.readColorRepository().addCustomColor(preset)
+        com.google.android.material.snackbar.Snackbar.make(
+            binding.root,
+            if (result) "已保存自定义配色" else "保存失败：已达上限或已存在",
+            com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
+        ).show()
+    }
+
+    /** P0-2: Restore default colors. */
+    private fun restoreColorDefaults() {
+        viewModel.readColorRepository().restoreDefaults()
+        setColor()
+        com.google.android.material.snackbar.Snackbar.make(
+            binding.root, "已恢复默认配色", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
+        ).show()
+    }
 
     private fun setBottomBarIsEnable(value: Boolean) {
         binding.barAHRead.readNextChapter.isEnabled = value
@@ -636,9 +741,21 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
     }
 
     /** 与竖排保持一致，用百分比文字补充说明滑块进度 */
+    /** P1-2: Unified progress: chapter x/y + full book % */
     private fun updateProgressPercent(pageNum: Int, maxPageNum: Int) {
         val percent = if (maxPageNum > 0) (pageNum * 100 / maxPageNum).coerceIn(0, 100) else 0
-        binding.statusAHRead.readStatusProgress.text = "$percent%"
+        // Compute linear chapter position
+        val novel = viewModel.novel
+        val totalChapters = novel?.volume?.sumOf { it.chapters.size } ?: 0
+        val curVol = viewModel.curVolumePos
+        val curCh = viewModel.curChapterPos
+        var chapterPos = 0
+        for (v in 0 until curVol) {
+            chapterPos += novel?.volume?.getOrNull(v)?.chapters?.size ?: 0
+        }
+        chapterPos += curCh + 1
+        val chapterText = if (totalChapters > 0) "$chapterPos/$totalChapters" else "0/0"
+        binding.statusAHRead.readStatusProgress.text = "章节 $chapterText · 全书 $percent%"
     }
 
     /** 常显状态行：时间与电量，在分钟边界刷新。 */

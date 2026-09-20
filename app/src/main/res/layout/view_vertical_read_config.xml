@@ -1,23 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ 竖排阅读设置面板（bottom sheet 内容）
-  ~
-  ~ 与主视觉二级页（activity_setting.xml）保持同一套分组语言：
-  ~   · 分组用 @drawable/gi_secondary_panel 划出「纸片」边界
-  ~   · 分组标题用 TextAppearance.GalIsland.SectionTitle（13sp bold 主色）
-  ~   · 行高统一 gi_secondary_row_height(56dp)，左右内边距 gi_space_lg(16dp)
-  ~
-  ~ 本面板只有「显示设置」一个分组：竖排是连续滚动，没有分页概念，
-  ~ 因此不存在平板双页 / 按键翻章 / 翻页动画 / 页脚字号等横排特有设置项。
-  ~
-  ~ 滑块单位说明 —— 勿与横排面板统一取值范围，两侧底层单位不同：
-  ~   · 字号 ：sp（最终交给 TextView.setTextSize），1–50
-  ~   · 行距 ：额外行距 px（TextView.setLineSpacing(add, mult) 的 add），1–50
-  ~ 横排面板对应为：字号画笔 px（30–100）、行距倍数（1–5，步长 0.1）。
-  ~ 详见 docs/galisland-visual-drift-audit.md 的 R-4 更正说明。
+  竖排阅读设置面板（bottom sheet 内容）
+  
+  与主视觉二级页（activity_setting.xml）保持同一套分组语言：
+    · 分组用 @drawable/gi_secondary_panel 划出「纸片」边界
+    · 分组标题用 TextAppearance.GalIsland.SectionTitle（13sp bold 主色）
+    · 行高统一 gi_secondary_row_height(56dp)，左右内边距 gi_space_lg(16dp)
+  
+  本面板只有「显示设置」一个分组：竖排是连续滚动，没有分页概念，
+  因此不存在平板双页 / 按键翻章 / 翻页动画 / 页脚字号等横排特有设置项。
+  
+  滑块单位说明 —— 勿与横排面板统一取值范围，两侧底层单位不同：
+    · 字号：sp（最终交给 TextView.setTextSize），1–50
+    · 行距：额外行距 px（TextView.setLineSpacing(add, mult) 的 add），1–50
+    · 段间距：额外段间距 px，0–40
+    · 字间距：letter spacing px，0–20
+  横排面板对应为：字号画笔 px（30–100）、行距倍数（1–5，步长 0.1）。
+  详见 docs/galisland-visual-drift-audit.md 的 R-4 更正说明。
+  
+  P0-2: 预设配色 + 自定义配色 + 一键还原
+  P0-3: 排版核心六项（段间距/字间距/对齐/缩进）
+  P0-4: 滑杆数值可视化与实时预览
 -->
 <LinearLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
   android:layout_gravity="bottom"
@@ -68,6 +75,31 @@
       android:text="@string/display_settings"
       android:textAppearance="@style/TextAppearance.GalIsland.SectionTitle"
       android:textColor="?attr/colorPrimary" />
+    <!-- P0-4: Font size slider with value display -->
+    <include
+      layout="@layout/view_reader_slider_row"
+      android:id="@+id/slider_font_size"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+    <!-- P0-4: Line spacing slider with value display -->
+    <include
+      layout="@layout/view_reader_slider_row"
+      android:id="@+id/slider_line_spacing"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+    <!-- P0-3: Paragraph spacing -->
+    <include
+      layout="@layout/view_reader_slider_row"
+      android:id="@+id/slider_paragraph_spacing"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+    <!-- P0-3: Letter spacing -->
+    <include
+      layout="@layout/view_reader_slider_row"
+      android:id="@+id/slider_letter_spacing"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+    <!-- P0-3: Text alignment toggle -->
     <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
@@ -82,17 +114,29 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="@string/font_size"
+        android:text="@string/text_alignment"
         style="@style/TextAppearance.GalIsland.ConfigLabel" />
-      <com.google.android.material.slider.Slider
-        android:id="@+id/s_v_v_read_config_font_size"
-        android:layout_width="0dp"
+      <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/text_alignment_group"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="4"
-        android:stepSize="1"
-        android:valueFrom="1"
-        android:valueTo="50" />
+        app:singleSelection="true"
+        app:selectionRequired="true">
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/b_alignment_left"
+          style="@style/Widget.GalIsland.Button.Outlined"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/alignment_left" />
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/b_alignment_justify"
+          style="@style/Widget.GalIsland.Button.Outlined"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/alignment_justify" />
+      </com.google.android.material.button.MaterialButtonToggleGroup>
     </LinearLayout>
+    <!-- P0-3: First line indent toggle -->
     <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
@@ -107,16 +151,27 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="@string/line_spacing"
+        android:text="@string/first_line_indent"
         style="@style/TextAppearance.GalIsland.ConfigLabel" />
-      <com.google.android.material.slider.Slider
-        android:id="@+id/s_v_v_read_config_line_spacing"
-        android:layout_width="0dp"
+      <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/first_line_indent_group"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="4"
-        android:stepSize="1"
-        android:valueFrom="1"
-        android:valueTo="50" />
+        app:singleSelection="true"
+        app:selectionRequired="true">
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/b_indent_none"
+          style="@style/Widget.GalIsland.Button.Outlined"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/indent_none" />
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/b_indent_two_chars"
+          style="@style/Widget.GalIsland.Button.Outlined"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/indent_two_chars" />
+      </com.google.android.material.button.MaterialButtonToggleGroup>
     </LinearLayout>
     <LinearLayout
       android:layout_width="match_parent"
@@ -181,6 +236,62 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
     </LinearLayout>
+  </LinearLayout>
+  <!-- ===================== 分组：阅读配色（P0-2） ===================== -->
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="@dimen/gi_page_inset"
+    android:layout_marginRight="@dimen/gi_page_inset"
+    android:layout_marginTop="@dimen/gi_space_md"
+    android:background="@drawable/gi_secondary_panel"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/gi_space_md">
+    <TextView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_margin="@dimen/gi_space_inset"
+      android:paddingLeft="@dimen/gi_space_inset"
+      android:text="@string/color_settings"
+      android:textAppearance="@style/TextAppearance.GalIsland.SectionTitle"
+      android:textColor="?attr/colorPrimary" />
+    <!-- Preset color buttons row -->
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:gravity="center"
+      android:orientation="horizontal"
+      android:padding="@dimen/gi_space_md">
+      <com.google.android.material.button.MaterialButton
+        android:id="@+id/b_preset_color_1"
+        style="@style/Widget.GalIsland.Button.Outlined"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="预设1" />
+      <com.google.android.material.button.MaterialButton
+        android:id="@+id/b_preset_color_2"
+        style="@style/Widget.GalIsland.Button.Outlined"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="预设2" />
+      <com.google.android.material.button.MaterialButton
+        android:id="@+id/b_preset_color_3"
+        style="@style/Widget.GalIsland.Button.Outlined"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="预设3" />
+      <com.google.android.material.button.MaterialButton
+        android:id="@+id/b_preset_color_4"
+        style="@style/Widget.GalIsland.Button.Outlined"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="预设4" />
+    </LinearLayout>
+    <!-- Custom color hex inputs -->
     <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
@@ -195,13 +306,72 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="@string/font_color_bg_color"
+        android:text="@string/text_color"
         style="@style/TextAppearance.GalIsland.ConfigLabel" />
-      <com.google.android.material.button.MaterialButton
-        android:id="@+id/b_v_v_read_config_change_color"
-        android:layout_width="wrap_content"
+      <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/modify" />
+        android:layout_weight="2"
+        app:boxBackgroundMode="outline">
+        <com.google.android.material.textfield.TextInputEditText
+          android:id="@+id/edit_text_color"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:inputType="text"
+          android:maxLength="7"
+          android:hint="000000" />
+      </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:gravity="center_vertical"
+      android:minHeight="@dimen/gi_secondary_row_height"
+      android:orientation="horizontal"
+      android:paddingLeft="@dimen/gi_space_lg"
+      android:paddingTop="@dimen/gi_space_sm"
+      android:paddingRight="@dimen/gi_space_lg"
+      android:paddingBottom="@dimen/gi_space_sm">
+      <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/bg_color"
+        style="@style/TextAppearance.GalIsland.ConfigLabel" />
+      <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        app:boxBackgroundMode="outline">
+        <com.google.android.material.textfield.TextInputEditText
+          android:id="@+id/edit_bg_color"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:inputType="text"
+          android:maxLength="7"
+          android:hint="ffffff" />
+      </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:gravity="center"
+      android:orientation="horizontal"
+      android:padding="@dimen/gi_space_md">
+      <com.google.android.material.button.MaterialButton
+        android:id="@+id/b_v_v_read_config_save_custom_color"
+        style="@style/Widget.GalIsland.Button.Outlined"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/save_custom_color" />
+      <com.google.android.material.button.MaterialButton
+        android:id="@+id/b_v_v_read_config_restore_defaults"
+        style="@style/Widget.GalIsland.Button.Outlined"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/restore_defaults" />
     </LinearLayout>
   </LinearLayout>
 </LinearLayout>

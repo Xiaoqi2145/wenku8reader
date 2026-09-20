@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  阅读器设置面板复用的滑杆行：label + 可编辑数值 + Slider + 范围提示。
+  用法：在父布局中 include 并用 layout 属性设置 id、文字、范围、步长。
+  详见 docs/reader-koodo-alignment.md P0-4。
+-->
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:gravity="center_vertical"
+  android:minHeight="@dimen/gi_secondary_row_height"
+  android:orientation="horizontal"
+  android:paddingLeft="@dimen/gi_space_lg"
+  android:paddingTop="@dimen/gi_space_sm"
+  android:paddingRight="@dimen/gi_space_lg"
+  android:paddingBottom="@dimen/gi_space_sm">
+  <TextView
+    android:id="@+id/slider_row_label"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="3"
+    style="@style/TextAppearance.GalIsland.ConfigLabel" />
+  <com.google.android.material.textfield.TextInputLayout
+    android:id="@+id/slider_row_value_til"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    app:boxBackgroundMode="outline"
+    app:boxStrokeWidth="0dp">
+    <com.google.android.material.textfield.TextInputEditText
+      android:id="@+id/slider_row_value"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:gravity="center"
+      android:inputType="numberDecimal"
+      android:maxLength="6"
+      android:textSize="13sp"
+      android:maxLines="1" />
+  </com.google.android.material.textfield.TextInputLayout>
+  <com.google.android.material.slider.Slider
+    android:id="@+id/slider_row_slider"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="4"
+    android:stepSize="1"
+    android:valueFrom="1"
+    android:valueTo="50"
+    android:value="1" />
+</LinearLayout>

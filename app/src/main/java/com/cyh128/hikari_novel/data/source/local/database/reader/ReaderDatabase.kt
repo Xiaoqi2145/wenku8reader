@@ -4,8 +4,8 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [ChapterCacheEntity::class, ReaderProgressEntity::class, DownloadTaskEntity::class, DownloadBookEntity::class],
-    version = 3,
+    entities = [ChapterCacheEntity::class, ReaderProgressEntity::class, DownloadTaskEntity::class, DownloadBookEntity::class, BookmarkEntity::class],
+    version = 4,
     exportSchema = true
 )
 abstract class ReaderDatabase : RoomDatabase() {

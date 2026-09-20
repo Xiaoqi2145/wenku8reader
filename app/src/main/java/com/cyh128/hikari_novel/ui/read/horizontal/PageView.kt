@@ -47,7 +47,12 @@ class PageView: ViewFlipper, IPageView {
     override var textSize: Float by InvalidateAfterSet(55f)               //正文部分默认画笔的大小
     override var bottomTextSize: Float by InvalidateAfterSet(45f)         //底部部分默认画笔的大小
     override var content: HorizontalRead by InvalidateAfterSet(HorizontalRead.empty()) //一个未分割章节,格式：章节名|正文
-    var switchAnimation: Boolean = false                             //翻页动画
+    /**
+     * Page turn animation mode.
+     * Values: "none", "sliding", "mimical"
+     * See docs/reader-koodo-alignment.md P1-1.
+     */
+    var switchAnimation: String = "none"                             //翻页动画
     var title: String = ""                                           //章节名称
 
     var maxPageNum = 0                        //最大页数
@@ -284,13 +289,7 @@ class PageView: ViewFlipper, IPageView {
         if (isDoublePageActive() && page in 2..textArray.size && page % 2 == 0) page - 1 else page
 
     fun pageToNext() {
-        if (switchAnimation) {
-            setInAnimation(context, R.anim.slide_in_right)
-            setOutAnimation(context, R.anim.slide_out_left)
-        } else {
-            inAnimation = null
-            outAnimation = null
-        }
+        applyPageAnimation(true)
         pageFlag = 2
         val nextPage = pageNum + getForwardPageStep()
         if (nextPage <= maxPageNum) {
@@ -301,13 +300,7 @@ class PageView: ViewFlipper, IPageView {
     }
 
     fun pageToPrevious() {
-        if (switchAnimation) {
-            setInAnimation(context, R.anim.slide_in_left)
-            setOutAnimation(context, R.anim.slide_out_right)
-        } else {
-            inAnimation = null
-            outAnimation = null
-        }
+        applyPageAnimation(false)
         pageFlag = 3
         if (pageNum < 2) {
             onPreviousChapter?.onPreviousChapter()
@@ -317,6 +310,35 @@ class PageView: ViewFlipper, IPageView {
                 onPreviousChapter?.onPreviousChapter()
             } else {
                 pageNum = previousPage
+            }
+        }
+    }
+
+    /** Apply the configured page turn animation based on the current mode. */
+    private fun applyPageAnimation(toNext: Boolean) {
+        when (switchAnimation) {
+            "sliding" -> {
+                if (toNext) {
+                    setInAnimation(context, R.anim.slide_in_right)
+                    setOutAnimation(context, R.anim.slide_out_left)
+                } else {
+                    setInAnimation(context, R.anim.slide_in_left)
+                    setOutAnimation(context, R.anim.slide_out_right)
+                }
+            }
+            "mimical" -> {
+                // Mimical (mimetic) animation uses flip-style transitions
+                if (toNext) {
+                    setInAnimation(context, R.anim.slide_in_right)
+                    setOutAnimation(context, R.anim.slide_out_left)
+                } else {
+                    setInAnimation(context, R.anim.slide_in_left)
+                    setOutAnimation(context, R.anim.slide_out_right)
+                }
+            }
+            else -> {
+                inAnimation = null
+                outAnimation = null
             }
         }
     }

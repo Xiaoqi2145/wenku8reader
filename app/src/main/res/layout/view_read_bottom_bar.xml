@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ 阅读页共用底栏：横排与竖排阅读均通过 include 复用，保证交互与观感一致
-  ~ 结构：进度行（上一章 / 滑块 / 下一章）+ 操作行（夜间 / 设置 / 目录）
-  ~ 状态行（时间 / 电量 / 百分比）是独立的常显层，见 view_read_status_bar.xml
+  阅读页共用底栏：横排与竖排阅读均通过 include 复用，保证交互与观感一致
+  结构：进度行（上一章 / 滑块 / 下一章）+ 操作行（夜间 / 设置 / 目录）
+  状态行（时间 / 电量 / 百分比）是独立的常显层，见 view_read_status_bar.xml
+  
+  P1-2: 进度面板信息密度 —— 滑块两侧补章节 x/y、页 x/y
 -->
 <LinearLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
@@ -32,6 +34,14 @@
         android:layout_height="wrap_content"
         android:contentDescription="@string/previous_chapter"
         app:icon="@drawable/ic_skip_previous" />
+      <!-- P1-2: Chapter progress label -->
+      <TextView
+        android:id="@+id/read_chapter_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/gi_space_xs"
+        style="@style/TextAppearance.GalIsland.StatusText"
+        android:text="1/1" />
       <com.google.android.material.slider.Slider
         android:id="@+id/read_progress_slider"
         style="@style/Widget.GalIsland.Slider"
@@ -42,6 +52,15 @@
         android:value="0"
         android:valueFrom="0"
         android:valueTo="100" />
+      <!-- P1-2: Page progress label (horizontal only) -->
+      <TextView
+        android:id="@+id/read_page_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/gi_space_xs"
+        android:visibility="gone"
+        style="@style/TextAppearance.GalIsland.StatusText"
+        android:text="1/1" />
       <com.google.android.material.button.MaterialButton
         android:id="@+id/read_next_chapter"
         style="@style/Widget.GalIsland.Button.IconButton"
@@ -58,6 +77,16 @@
       android:orientation="horizontal"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintTop_toBottomOf="@id/read_progress_row">
+      <!-- P1-3: Bookmark button -->
+      <com.google.android.material.button.MaterialButton
+        android:id="@+id/read_bookmark"
+        style="@style/Widget.GalIsland.Button.Text.Icon"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/bookmark"
+        app:icon="@drawable/ic_baseline_collections_bookmark"
+        app:iconGravity="textTop" />
       <com.google.android.material.button.MaterialButton
         android:id="@+id/read_night"
         style="@style/Widget.GalIsland.Button.Text.Icon"

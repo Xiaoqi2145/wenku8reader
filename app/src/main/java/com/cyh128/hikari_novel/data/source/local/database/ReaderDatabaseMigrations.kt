@@ -35,6 +35,28 @@ object ReaderDatabaseMigrations {
         }
     }
 
+    val READER_3_4 = object : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS bookmark (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    aid TEXT NOT NULL,
+                    cid TEXT NOT NULL,
+                    volumeIndex INTEGER NOT NULL,
+                    chapterIndex INTEGER NOT NULL,
+                    paragraphIndex INTEGER NOT NULL,
+                    charOffset INTEGER NOT NULL,
+                    normalizedPercent INTEGER NOT NULL,
+                    imageIndex INTEGER,
+                    excerpt TEXT NOT NULL,
+                    createdAt INTEGER NOT NULL
+                )
+                """.trimIndent()
+            )
+        }
+    }
+
     val HORIZONTAL_HISTORY_1_2 = object : Migration(1, 2) {
         override fun migrate(db: SupportSQLiteDatabase) {
             recreateHistoryTable(db, "horizontal_read_history")

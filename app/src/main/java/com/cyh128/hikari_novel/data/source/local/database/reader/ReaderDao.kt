@@ -1,6 +1,7 @@
 package com.cyh128.hikari_novel.data.source.local.database.reader
 
 import androidx.room.Dao
+import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
@@ -112,4 +113,24 @@ interface ReaderDao {
 
     @Query("DELETE FROM chapter_cache WHERE isDownloaded = 0 AND updatedAt < :before")
     suspend fun deleteExpiredCache(before: Long)
+
+    // ===== P1-3: Bookmarks =====
+
+    @Insert(onConflict = androidx.room.OnConflictStrategy.REPLACE)
+    suspend fun insertBookmark(bookmark: BookmarkEntity): Long
+
+    @Query("SELECT * FROM bookmark WHERE aid = :aid ORDER BY createdAt DESC")
+    fun observeBookmarks(aid: String): Flow<List<BookmarkEntity>>
+
+    @Query("SELECT * FROM bookmark WHERE aid = :aid AND cid = :cid LIMIT 1")
+    suspend fun getBookmark(aid: String, cid: String): BookmarkEntity?
+
+    @Query("SELECT EXISTS(SELECT 1 FROM bookmark WHERE aid = :aid AND cid = :cid)")
+    suspend fun hasBookmark(aid: String, cid: String): Boolean
+
+    @Query("DELETE FROM bookmark WHERE id = :id")
+    suspend fun deleteBookmark(id: Long)
+
+    @Query("DELETE FROM bookmark WHERE aid = :aid AND cid = :cid")
+    suspend fun deleteBookmarkByCid(aid: String, cid: String)
 }

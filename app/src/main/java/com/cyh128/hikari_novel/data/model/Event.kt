@@ -46,6 +46,10 @@ sealed class Event {
 
     data class ChangeLineSpacingEvent(val value: Float): Event() //修改行距事件
     data class ChangeFontSizeEvent(val value: Float): Event() //修改字体大小事件
+    data class ChangeParagraphSpacingEvent(val value: Float): Event() //修改段间距事件 (P0-3)
+    data class ChangeLetterSpacingEvent(val value: Float): Event() //修改字间距事件 (P0-3)
+    data class ChangeTextAlignmentEvent(val value: String): Event() //修改对齐方式事件 (P0-3)
+    data class ChangeFirstLineIndentEvent(val value: Int): Event() //修改首行缩进事件 (P0-3)
     
     data object HaveAvailableUpdateEvent: Event() //有更新
     data object NoAvailableUpdateEvent: Event() //无更新

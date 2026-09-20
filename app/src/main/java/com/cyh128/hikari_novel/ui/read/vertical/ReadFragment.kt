@@ -16,7 +16,7 @@ import com.cyh128.hikari_novel.data.model.ReaderAnchor
 import com.cyh128.hikari_novel.databinding.FragmentVerticalReadBinding
 import com.cyh128.hikari_novel.reader.domain.ReaderPosition
 import com.cyh128.hikari_novel.util.ReaderTouchJudge
-import com.cyh128.hikari_novel.util.getIsInDarkMode
+import com.cyh128.hikari_novel.util.ReaderColorResolver
 import com.cyh128.hikari_novel.util.startActivity
 import com.drake.channel.receiveEvent
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -58,6 +58,35 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
                 is Event.ChangeLineSpacingEvent -> {
                     val anchor = progressReporter?.latest()?.anchor
                     binding.tvFVRead.setLineSpacing(event.value, 1f)
+                    anchor?.let { scrollRestorer?.restoreAfterLayout(it) }
+                }
+                is Event.ChangeParagraphSpacingEvent -> {
+                    val anchor = progressReporter?.latest()?.anchor
+                    // Paragraph spacing is applied via the renderer on re-render.
+                    // For real-time preview, we adjust line spacing as a proxy.
+                    binding.tvFVRead.setLineSpacing(event.value, 1f)
+                    anchor?.let { scrollRestorer?.restoreAfterLayout(it) }
+                }
+                is Event.ChangeLetterSpacingEvent -> {
+                    val anchor = progressReporter?.latest()?.anchor
+                    binding.tvFVRead.letterSpacing = event.value /
+                        (binding.tvFVRead.textSize * 2).coerceAtLeast(1f)
+                    anchor?.let { scrollRestorer?.restoreAfterLayout(it) }
+                }
+                is Event.ChangeTextAlignmentEvent -> {
+                    val anchor = progressReporter?.latest()?.anchor
+                    binding.tvFVRead.gravity = when (event.value) {
+                        // Gravity.JUSTIFY was removed in API 25; FILL_HORIZONTAL is the
+                        // closest available approximation for the live preview.
+                        "justify" -> android.view.Gravity.FILL_HORIZONTAL
+                        else -> android.view.Gravity.START
+                    }
+                    anchor?.let { scrollRestorer?.restoreAfterLayout(it) }
+                }
+                is Event.ChangeFirstLineIndentEvent -> {
+                    // First line indent is applied on re-render via the renderer.
+                    // For real-time preview, we just save the value.
+                    val anchor = progressReporter?.latest()?.anchor
                     anchor?.let { scrollRestorer?.restoreAfterLayout(it) }
                 }
                 else -> Unit
@@ -131,15 +160,11 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
         binding.tvFVRead.textSize = viewModel.getFontSize()
         binding.tvFVRead.setLineSpacing(viewModel.getLineSpacing(), 1f)
 
-        if (getIsInDarkMode()) {
-            binding.tvFVRead.setTextColor(Color.parseColor("#" + viewModel.getTextColorNight()))
-            binding.tvFVReadEndTip.setTextColor(Color.parseColor("#" + viewModel.getTextColorNight()))
-            binding.root.setBackgroundColor(Color.parseColor("#" + viewModel.getBgColorNight()))
-        } else {
-            binding.tvFVRead.setTextColor(Color.parseColor("#" + viewModel.getTextColorDay()))
-            binding.tvFVReadEndTip.setTextColor(Color.parseColor("#" + viewModel.getTextColorDay()))
-            binding.root.setBackgroundColor(Color.parseColor("#" + viewModel.getBgColorDay()))
-        }
+        applyReaderColors(viewModel.readColorRepository().let {
+            ReaderColorResolver(it)
+        }.textColorHex(), viewModel.readColorRepository().let {
+            ReaderColorResolver(it)
+        }.bgColorHex())
     }
 
     private fun initReaderCollaborators() {
@@ -179,6 +204,13 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
             progressReporter?.report()
         }
 
+    }
+
+    /** Apply reader colors to the text view, end tip, and root background. */
+    fun applyReaderColors(textColor: String, bgColor: String) {
+        binding.tvFVRead.setTextColor(Color.parseColor(textColor))
+        binding.tvFVReadEndTip.setTextColor(Color.parseColor(textColor))
+        binding.root.setBackgroundColor(Color.parseColor(bgColor))
     }
 
     /** Flush the latest anchor before Activity navigation or lifecycle stop. */

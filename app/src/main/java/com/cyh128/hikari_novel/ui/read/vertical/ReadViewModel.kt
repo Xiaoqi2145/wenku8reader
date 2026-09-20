@@ -15,10 +15,13 @@ import com.cyh128.hikari_novel.data.model.ReaderEffect
 import com.cyh128.hikari_novel.data.model.ReaderUiState
 import com.cyh128.hikari_novel.data.model.EmptyException
 import com.cyh128.hikari_novel.data.model.Event
+import com.cyh128.hikari_novel.data.model.ReaderThemeMode
 import com.cyh128.hikari_novel.data.model.Novel
 import com.cyh128.hikari_novel.data.model.chapterRefAt
 import com.cyh128.hikari_novel.data.model.chapterRefs
 import com.cyh128.hikari_novel.data.repository.ReadColorRepository
+import com.cyh128.hikari_novel.data.repository.ReaderRepository
+import com.cyh128.hikari_novel.data.source.local.database.reader.BookmarkEntity
 import com.cyh128.hikari_novel.data.repository.VerticalReadRepository
 import com.cyh128.hikari_novel.data.repository.AppRepository
 import com.drake.channel.sendEvent
@@ -37,7 +40,8 @@ class ReadViewModel @Inject constructor(
     private val verticalReadRepository: VerticalReadRepository,
     private val readColorRepository: ReadColorRepository,
     private val appRepository: AppRepository,
-    private val sessionCoordinator: ReaderSessionCoordinator
+    private val sessionCoordinator: ReaderSessionCoordinator,
+    private val readerRepository: ReaderRepository
 ) : ViewModel() {
     private val _readerState = MutableStateFlow<ReaderUiState>(ReaderUiState.Idle)
     val readerState = _readerState.asStateFlow()
@@ -341,6 +345,22 @@ class ReadViewModel @Inject constructor(
         verticalReadRepository.setKeepScreenOn(value)
     }
 
+    fun readColorRepository() = readColorRepository
+
+    fun getReaderThemeMode() = readColorRepository.getReaderThemeMode()
+
+    fun setReaderThemeMode(mode: ReaderThemeMode) {
+        readColorRepository.setReaderThemeMode(mode)
+    }
+
+    /** Toggle between Day and Night reader theme; returns the new mode. */
+    fun toggleReaderThemeMode(): ReaderThemeMode {
+        val current = readColorRepository.getReaderThemeMode()
+        val next = if (current == ReaderThemeMode.Night) ReaderThemeMode.Day else ReaderThemeMode.Night
+        readColorRepository.setReaderThemeMode(next)
+        return next
+    }
+
     fun getTextColorDay() = readColorRepository.getTextColorDay()
 
     fun getTextColorNight() = readColorRepository.getTextColorNight()
@@ -360,5 +380,95 @@ class ReadViewModel @Inject constructor(
 
     fun setIsShowChapterReadHistoryWithoutConfirm(value: Boolean) {
         verticalReadRepository.setIsShowChapterReadHistoryWithoutConfirm(value)
+    }
+
+    // ===== P0-3: Typography =====
+
+    fun getParagraphSpacing() = verticalReadRepository.getParagraphSpacing()
+
+    fun setParagraphSpacing(value: Float) {
+        viewModelScope.launch {
+            verticalReadRepository.setParagraphSpacing(value)
+            sendEvent(Event.ChangeParagraphSpacingEvent(value), "event_vertical_read_fragment")
+        }
+    }
+
+    fun getLetterSpacing() = verticalReadRepository.getLetterSpacing()
+
+    fun setLetterSpacing(value: Float) {
+        viewModelScope.launch {
+            verticalReadRepository.setLetterSpacing(value)
+            sendEvent(Event.ChangeLetterSpacingEvent(value), "event_vertical_read_fragment")
+        }
+    }
+
+    fun getTextAlignment() = verticalReadRepository.getTextAlignment()
+
+    fun setTextAlignment(value: String) {
+        viewModelScope.launch {
+            verticalReadRepository.setTextAlignment(value)
+            sendEvent(Event.ChangeTextAlignmentEvent(value), "event_vertical_read_fragment")
+        }
+    }
+
+    fun getFirstLineIndent() = verticalReadRepository.getFirstLineIndent()
+
+    fun setFirstLineIndent(value: Int) {
+        viewModelScope.launch {
+            verticalReadRepository.setFirstLineIndent(value)
+            sendEvent(Event.ChangeFirstLineIndentEvent(value), "event_vertical_read_fragment")
+        }
+    }
+
+    // ===== P0-4: Real-time preview =====
+
+    fun getReaderConfig() = verticalReadRepository
+
+    // ===== P1-2: Progress info =====
+
+    /** Returns "x/y" for the current chapter position within the book. */
+    fun chapterProgressText(): String {
+        val totalChapters = novel?.volume?.sumOf { it.chapters.size } ?: 0
+        if (totalChapters == 0) return "0/0"
+        var offset = 0
+        for (v in 0 until (novel?.volume?.size ?: 0)) {
+            val vSize = novel!!.volume[v].chapters.size
+            if (v == curVolumePos) {
+                return "`${offset + curChapterPos + 1}/$totalChapters`"
+            }
+            offset += vSize
+        }
+        return "0/0"
+    }
+
+    // ===== P1-3: Bookmarks =====
+
+    fun observeBookmarks(aid: String) = readerRepository.observeBookmarks(aid)
+
+    fun addBookmark(): Job = viewModelScope.launch(Dispatchers.IO) {
+        val ref = currentRef()
+        val aid = ref.aid
+        val cid = ref.cid
+        val existing = readerRepository.hasBookmark(aid, cid)
+        if (existing) return@launch
+        val position = latestVerticalPosition
+        val excerpt = curNovelContent.take(200)
+        val entity = BookmarkEntity(
+            aid = aid,
+            cid = cid,
+            volumeIndex = ref.volumeIndex,
+            chapterIndex = ref.chapterIndex,
+            paragraphIndex = position?.position?.anchor?.paragraphIndex ?: 0,
+            charOffset = position?.position?.anchor?.charOffset ?: 0,
+            normalizedPercent = position?.position?.anchor?.normalizedPercent ?: 0,
+            imageIndex = position?.position?.anchor?.imageIndex,
+            excerpt = excerpt,
+            createdAt = System.currentTimeMillis()
+        )
+        readerRepository.insertBookmark(entity)
+    }
+
+    fun deleteBookmarkById(id: Long): Job = viewModelScope.launch(Dispatchers.IO) {
+        readerRepository.deleteBookmark(id)
     }
 }

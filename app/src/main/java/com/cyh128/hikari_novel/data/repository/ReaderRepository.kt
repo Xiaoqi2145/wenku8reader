@@ -15,6 +15,7 @@ import com.cyh128.hikari_novel.data.repository.reader.ReaderDaoProgressStore
 import com.cyh128.hikari_novel.data.repository.reader.RoomChapterCache
 import com.cyh128.hikari_novel.data.repository.reader.ReaderProgressStore
 import com.cyh128.hikari_novel.data.repository.reader.Wenku8ChapterRemoteSource
+import com.cyh128.hikari_novel.data.source.local.database.reader.BookmarkEntity
 import com.cyh128.hikari_novel.data.source.local.database.reader.DownloadBookEntity
 import com.cyh128.hikari_novel.data.source.local.database.reader.DownloadTaskEntity
 import com.cyh128.hikari_novel.data.source.local.database.reader.ReaderDao
@@ -280,6 +281,18 @@ class ReaderRepository @Inject constructor(
     ): ReaderProgressEntity? = progressStore.get(ref, content, orientation)
 
     fun observeProgress(aid: String) = progressStore.observe(aid)
+
+    // ===== P1-3: Bookmarks =====
+
+    fun observeBookmarks(aid: String) = dao.observeBookmarks(aid)
+
+    suspend fun insertBookmark(bookmark: BookmarkEntity): Long = dao.insertBookmark(bookmark)
+
+    suspend fun hasBookmark(aid: String, cid: String): Boolean = dao.hasBookmark(aid, cid)
+
+    suspend fun deleteBookmark(id: Long) = dao.deleteBookmark(id)
+
+    suspend fun deleteBookmarkByCid(aid: String, cid: String) = dao.deleteBookmarkByCid(aid, cid)
 
     private suspend fun downloadImages(chapter: CachedChapter): List<String> =
         withContext(Dispatchers.IO) {
