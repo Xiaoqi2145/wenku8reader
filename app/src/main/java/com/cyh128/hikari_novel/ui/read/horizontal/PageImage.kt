@@ -52,6 +52,9 @@ class PageImage : AppCompatImageView {
         }
     }
     var mBgColor = Color.WHITE
+
+    /** Reader page background (reading colour + GalIsland grid); null = flat mBgColor. */
+    var mPageBackground: android.graphics.drawable.Drawable? = null
     var mTextColor: Int = Color.BLACK
     var mTxtFontType: Typeface = Typeface.DEFAULT
     var mBottomTextSize = 45f
@@ -242,7 +245,7 @@ class PageImage : AppCompatImageView {
         mPaint.color = mTextColor                             //字体颜色
         mPaint.typeface = mTxtFontType
         mPaint.textSize = getFooterTextSize()
-        canvas.drawColor(mBgColor)
+        drawPageBackground(canvas, mPageBackground, mBgColor)
 
         //底部右下角绘制：章节相关信息    格式为:   第 XXX 章节 YYY章节名  ：  n / 该章节总共页数
         val pageText = "${if (mPageNum > mMaxPageNum) 0 else mPageNum}/$mMaxPageNum"

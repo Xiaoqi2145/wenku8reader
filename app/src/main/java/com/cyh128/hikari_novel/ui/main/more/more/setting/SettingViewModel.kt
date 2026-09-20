@@ -21,6 +21,11 @@ class SettingViewModel @Inject constructor(
 
     fun setIsAutoUpdate(isAutoUpdate: Boolean) = appRepository.setIsAutoUpdate(isAutoUpdate)
 
+    fun getIsVibrationEnabled() = appRepository.getIsVibrationEnabled()
+
+    fun setIsVibrationEnabled(isVibrationEnabled: Boolean) =
+        appRepository.setIsVibrationEnabled(isVibrationEnabled)
+
     fun getReaderOrientation() = appRepository.getReaderOrientation()
 
     fun setReaderOrientation(orientation: ReaderOrientation) = appRepository.setReaderOrientation(orientation)

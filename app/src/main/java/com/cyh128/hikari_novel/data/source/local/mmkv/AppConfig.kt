@@ -38,6 +38,18 @@ class AppConfig @Inject constructor() {
             cursor.encode("is_auto_update", value)
         }
 
+    /**
+     * Haptic feedback for reader interactions (bar toggle, chapter step, slider
+     * release).
+     *
+     * Defaults to true so existing users keep the feedback they already had.
+     */
+    var isVibrationEnabled: Boolean
+        get() = cursor.decodeBool("is_vibration_enabled", true)
+        set(value) {
+            cursor.encode("is_vibration_enabled", value)
+        }
+
     var readerOrientation: Int
         get() = cursor.decodeInt("reader_orientation",ReaderOrientation.Horizontal.ordinal)
         set(value) {

@@ -54,6 +54,7 @@
     <string name="app_crashed">软件崩溃了</string>
     <string name="common">通用</string>
     <string name="auto_check_update">自动检查更新</string>
+    <string name="vibration_feedback">震动反馈</string>
 
     <string name="app_version">软件版本</string>
     <string name="check_update">检查更新</string>

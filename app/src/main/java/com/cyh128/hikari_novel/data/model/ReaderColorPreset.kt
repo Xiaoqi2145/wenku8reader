@@ -22,9 +22,19 @@ object ReaderColorPresets {
         ReaderColorPreset("Light Green + Dark Green", "36503E", "C5E7CF")
     )
 
-    /** Default day colors for "Restore defaults". */
+    /**
+     * Default day colors for "Restore defaults".
+     *
+     * The day background is the App's warm off-white (`galisland_background`),
+     * not pure white: the reading page now shares the browsing surfaces' grid, so
+     * it also shares their paper tone. The "White + Black" preset still offers
+     * pure white for anyone who wants it.
+     */
     const val DEFAULT_DAY_TEXT = "000000"
-    const val DEFAULT_DAY_BG = "ffffff"
+    const val DEFAULT_DAY_BG = "EFEDEA"
+
+    /** The day background this app shipped before the grid surface landed. */
+    const val LEGACY_DEFAULT_DAY_BG = "ffffff"
 
     /** Default night colors for "Restore defaults". */
     const val DEFAULT_NIGHT_TEXT = "ffffff"

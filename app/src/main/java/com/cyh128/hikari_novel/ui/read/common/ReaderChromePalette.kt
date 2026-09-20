@@ -15,7 +15,8 @@ import kotlin.math.roundToInt
  * pick — including the presets and arbitrary custom hex. The blend result is
  * opaque, so nothing depends on alpha compositing over the page.
  *
- * See docs/reader-koodo-alignment.md P0-1.
+ * [accent] is the exception: it is the App theme's `colorPrimary`, kept so the
+ * reader menu still carries the brand accent. See docs/reader-koodo-alignment.md P0-1.
  */
 data class ReaderChromePalette(
     /** Chrome background: exactly the reading background, so bars melt into the page. */
@@ -25,7 +26,17 @@ data class ReaderChromePalette(
     /** Secondary chrome content (labels, status text, icons). */
     val onSurfaceVariant: Int,
     /** Hairline separators between chrome and content. */
-    val outline: Int
+    val outline: Int,
+    /**
+     * Brand accent for the menu's *active* affordances — the four labelled dock
+     * buttons (bookmark / night / settings / catalog) and the progress slider.
+     *
+     * This is the one role that deliberately does NOT follow the reading colours:
+     * it is the App theme's `colorPrimary`, so the reader menu carries the same
+     * accent as the rest of the app. It therefore has to be passed in rather than
+     * blended from bg/text.
+     */
+    val accent: Int
 ) {
     companion object {
         /** How far [onSurfaceVariant] moves from the background towards the text. */
@@ -35,14 +46,15 @@ data class ReaderChromePalette(
         const val OUTLINE_RATIO = 0.24f
 
         /** Build the palette from the active reader colours (hex, '#' optional). */
-        fun from(bgColorHex: String, textColorHex: String): ReaderChromePalette {
+        fun from(bgColorHex: String, textColorHex: String, accent: Int): ReaderChromePalette {
             val surface = parseHex(bgColorHex)
             val onSurface = parseHex(textColorHex)
             return ReaderChromePalette(
                 surface = surface,
                 onSurface = onSurface,
                 onSurfaceVariant = blend(surface, onSurface, VARIANT_RATIO),
-                outline = blend(surface, onSurface, OUTLINE_RATIO)
+                outline = blend(surface, onSurface, OUTLINE_RATIO),
+                accent = accent
             )
         }
 

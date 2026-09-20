@@ -94,12 +94,14 @@
   <style name="Widget.GalIsland.CardView.Cover" parent="Widget.GalIsland.CardView">
     <item name="strokeWidth">0dp</item>
   </style>
-  <!-- 小说卡片：模板式 8dp 圆角、细描边、零高程。 -->
+  <!-- 小说卡片：模板式 8dp 圆角、细描边、零高程。
+       底色透明（无纯色填充），只保留缩略图 + 标题，让底层网格表面透出；
+       描边仍保留，否则 gi_card_stroke 的选中态主色描边无处可见。 -->
   <style name="Widget.GalIsland.CardView.Novel" parent="Widget.Material3.CardView.Filled">
     <item name="cardCornerRadius">@dimen/gi_radius_card_novel</item>
     <item name="cardElevation">0dp</item>
     <item name="strokeWidth">@dimen/gi_stroke</item>
-    <item name="cardBackgroundColor">?attr/colorSurface</item>
+    <item name="cardBackgroundColor">@android:color/transparent</item>
     <item name="strokeColor">?attr/colorOutlineVariant</item>
   </style>
   <style name="Widget.GalIsland.CardView.Novel.Cover" parent="Widget.GalIsland.CardView.Novel">

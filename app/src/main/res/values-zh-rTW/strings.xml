@@ -41,6 +41,7 @@
     <string name="app_crashed">軟體當機了</string>
     <string name="common">一般</string>
     <string name="auto_check_update">自動檢查更新</string>
+    <string name="vibration_feedback">震動回饋</string>
 
     <string name="app_version">軟體版本</string>
     <string name="check_update">檢查更新</string>

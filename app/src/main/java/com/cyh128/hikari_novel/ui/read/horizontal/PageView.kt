@@ -41,6 +41,12 @@ import kotlin.reflect.KProperty
 class PageView: ViewFlipper, IPageView {
     override var pageNum: Int by InvalidateAfterSet(1)                  //页数
     override var backgroundcolor: Int by InvalidateAfterSet(Color.WHITE)    //背景颜色
+
+    /**
+     * Reader page background (reading colour + GalIsland grid) handed to every
+     * page child. Null keeps the flat [backgroundcolor] fill. See [drawPageBackground].
+     */
+    var pageBackground: android.graphics.drawable.Drawable? by InvalidateAfterSet(null)
     override var textColor: Int by InvalidateAfterSet(Color.BLACK)             //字体颜色
     override var txtFontType: Typeface by InvalidateAfterSet(Typeface.DEFAULT)  //正文字体类型
     override var rowSpace: Float by InvalidateAfterSet(1f)          //行距
@@ -373,6 +379,7 @@ class PageView: ViewFlipper, IPageView {
             this.removeAllViews()
             PageLoading(context).apply {
                 mBgColor = backgroundcolor
+                mPageBackground = pageBackground
                 mTextSize = textSize
                 mTextColor = textColor
                 mTxtFontType = txtFontType
@@ -392,6 +399,7 @@ class PageView: ViewFlipper, IPageView {
             val pageTextAnother = if (displayedChild == 0) 1 else 0
             (getChildAt(pageTextAnother) as PageText).apply {
                 mBgColor = backgroundcolor
+                mPageBackground = pageBackground
                 if (maxPageNum > 0) {
                     if (pageNum > textArray.size) pageNum = textArray.size
                     if (pageNum == 0) pageNum = 1
@@ -426,6 +434,7 @@ class PageView: ViewFlipper, IPageView {
             val imageUrl = imageArray[pageNum - textArray.size - 1].trim()
             (getChildAt(pageImageAnother) as PageImage).apply {
                 mBgColor = backgroundcolor
+                mPageBackground = pageBackground
                 mImageurl = imageUrl
                 mRowSpace = rowSpace
                 mTextSize = textSize
@@ -450,6 +459,7 @@ class PageView: ViewFlipper, IPageView {
             this.removeAllViews()
             PageText(context).apply {
                 mBgColor = backgroundcolor
+                mPageBackground = pageBackground
                 mTextSize = textSize
                 mBottomTextSize = bottomTextSize
                 mRowSpace = rowSpace
@@ -461,6 +471,7 @@ class PageView: ViewFlipper, IPageView {
             }
             PageText(context).apply {
                 mBgColor = backgroundcolor
+                mPageBackground = pageBackground
                 mTextSize = textSize
                 mBottomTextSize = bottomTextSize
                 mRowSpace = rowSpace
@@ -476,6 +487,7 @@ class PageView: ViewFlipper, IPageView {
             for (i in imageArray) {
                 PageImage(context).apply {
                     mBgColor = backgroundcolor
+                    mPageBackground = pageBackground
                     mTextSize = textSize
                     mBottomTextSize = bottomTextSize
                     mRowSpace = rowSpace

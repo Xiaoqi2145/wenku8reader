@@ -53,6 +53,14 @@ class AppRepository @Inject constructor(
         appConfig.isAutoUpdate = isAutoUpdate
     }
 
+    //获取震动反馈状态
+    fun getIsVibrationEnabled() = appConfig.isVibrationEnabled
+
+    //设置震动反馈状态
+    fun setIsVibrationEnabled(isVibrationEnabled: Boolean) {
+        appConfig.isVibrationEnabled = isVibrationEnabled
+    }
+
     //获取阅读器阅读方式
     fun getReaderOrientation() = enumValues<ReaderOrientation>()[appConfig.readerOrientation]
 

@@ -14,6 +14,7 @@ import android.widget.TextView
 import com.cyh128.hikari_novel.R
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.slider.Slider
 
 /**
@@ -31,6 +32,26 @@ import com.google.android.material.slider.Slider
 object ReaderChromeTheme {
 
     private enum class StrokeEdge { Top, Bottom }
+
+    /**
+     * Builds the chrome palette for [view]'s context from the active reading colours.
+     *
+     * The accent comes from the App theme's `colorPrimary` (GalIsland:
+     * `#BC5E96`) rather than from the reading colours, because the reader menu
+     * should carry the same accent as the rest of the app. When the running theme
+     * has no `colorPrimary` the accent degrades to the reading text colour, so a
+     * missing token leaves the chrome readable and monochrome instead of crashing.
+     */
+    fun paletteFor(view: View, bgColorHex: String, textColorHex: String): ReaderChromePalette =
+        ReaderChromePalette.from(
+            bgColorHex,
+            textColorHex,
+            MaterialColors.getColor(
+                view,
+                androidx.appcompat.R.attr.colorPrimary,
+                ReaderChromePalette.parseHex(textColorHex)
+            )
+        )
 
     /**
      * Applies [palette] to the three chrome roots.
@@ -81,12 +102,15 @@ object ReaderChromeTheme {
     private fun tintChromeContent(view: View, palette: ReaderChromePalette) {
         when (view) {
             is MaterialButton -> {
-                // Text buttons carry their label; icon-only buttons keep the
+                // Labelled buttons are the reader menu entries (bookmark / night /
+                // settings / catalog) and carry the brand accent, which is what
+                // Material3's TextButton would have used before the chrome was
+                // re-coloured from the reading palette. Icon-only buttons keep the
                 // quieter GalIsland role, matching Widget.GalIsland.Button.IconButton.
                 val content = if (view.text.isNullOrEmpty()) {
                     palette.onSurfaceVariant
                 } else {
-                    palette.onSurface
+                    palette.accent
                 }
                 view.setTextColor(content)
                 view.iconTint = ColorStateList.valueOf(content)
@@ -94,10 +118,12 @@ object ReaderChromeTheme {
             }
 
             is Slider -> {
-                view.trackActiveTintList = ColorStateList.valueOf(palette.onSurface)
+                view.trackActiveTintList = ColorStateList.valueOf(palette.accent)
                 view.trackInactiveTintList = ColorStateList.valueOf(palette.onSurfaceVariant)
-                view.thumbTintList = ColorStateList.valueOf(palette.onSurface)
-                view.haloTintList = ColorStateList.valueOf(palette.onSurfaceVariant)
+                view.thumbTintList = ColorStateList.valueOf(palette.accent)
+                // The halo only shows while dragging; leaving it grey under an
+                // accent thumb reads as a mismatch on touch.
+                view.haloTintList = ColorStateList.valueOf(palette.accent)
             }
 
             is TextView -> view.setTextColor(palette.onSurfaceVariant)

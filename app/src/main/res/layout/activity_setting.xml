@@ -450,6 +450,39 @@
           android:layout_height="wrap_content"
           tools:text="横向" />
       </LinearLayout>
+      <LinearLayout
+        android:paddingBottom="@dimen/gi_space_sm"
+        android:paddingTop="@dimen/gi_space_sm"
+        android:minHeight="@dimen/gi_secondary_row_height"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingRight="@dimen/gi_space_lg"
+        android:paddingLeft="@dimen/gi_space_lg"
+        android:orientation="horizontal">
+        <androidx.appcompat.widget.AppCompatImageView
+          android:layout_width="@dimen/gi_space_xl"
+          android:layout_height="@dimen/gi_space_xl"
+          app:srcCompat="@drawable/ic_vibration" />
+        <LinearLayout
+          android:layout_width="0dp"
+          android:layout_height="match_parent"
+          android:layout_weight="1"
+          android:layout_marginLeft="@dimen/gi_space_gap_xl"
+          android:orientation="vertical"
+          android:gravity="center_vertical">
+          <TextView
+            android:textAppearance="@style/TextAppearance.GalIsland.Secondary.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="@string/vibration_feedback" />
+        </LinearLayout>
+        <com.google.android.material.materialswitch.MaterialSwitch
+          android:id="@+id/s_a_setting_vibration"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content" />
+      </LinearLayout>
       <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

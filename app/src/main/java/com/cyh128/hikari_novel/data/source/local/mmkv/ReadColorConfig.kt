@@ -22,7 +22,7 @@ class ReadColorConfig @Inject constructor() {
         }
 
     var bgColorDay: String
-        get() = cursor.decodeString("bg_color_day", "ffffff")!!
+        get() = cursor.decodeString("bg_color_day", "EFEDEA")!!
         set(value) {
             cursor.encode("bg_color_day", value)
         }
@@ -62,5 +62,15 @@ class ReadColorConfig @Inject constructor() {
         get() = cursor.decodeBool("has_migrated_theme_mode", false)
         set(value) {
             cursor.encode("has_migrated_theme_mode", value)
+        }
+
+    /**
+     * One-shot migration flag for the day background moving off pure white onto
+     * the App's warm off-white. See `ReadColorRepository.migrateDefaultDayBackground`.
+     */
+    var hasMigratedGridBackground: Boolean
+        get() = cursor.decodeBool("has_migrated_grid_background", false)
+        set(value) {
+            cursor.encode("has_migrated_grid_background", value)
         }
 }

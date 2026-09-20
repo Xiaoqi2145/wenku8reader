@@ -79,6 +79,28 @@ class ReadColorRepository @Inject constructor(
         return converged
     }
 
+    /**
+     * Moves a stored day background that is still exactly the legacy pure-white
+     * default onto the App's warm off-white, once.
+     *
+     * The reading page now shares the browsing surfaces' grid, so it also shares
+     * their paper tone; a stored `ffffff` is the old default rather than a choice,
+     * and would otherwise leave existing users on a background the grid was not
+     * designed for. Any other value — including the "White + Black" preset, which
+     * the user picks deliberately — is left untouched. Runs at most once.
+     */
+    fun migrateDefaultDayBackground() {
+        if (readColorConfig.hasMigratedGridBackground) return
+        if (readColorConfig.bgColorDay.equals(
+                ReaderColorPresets.LEGACY_DEFAULT_DAY_BG,
+                ignoreCase = true
+            )
+        ) {
+            readColorConfig.bgColorDay = ReaderColorPresets.DEFAULT_DAY_BG
+        }
+        readColorConfig.hasMigratedGridBackground = true
+    }
+
     /** Deserialize custom color list from JSON; returns empty list on parse failure. */
     fun getCustomColors(): List<ReaderColorPreset> {
         val json = readColorConfig.customColorsJson

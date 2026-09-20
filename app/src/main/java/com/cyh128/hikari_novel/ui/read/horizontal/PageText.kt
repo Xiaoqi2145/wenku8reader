@@ -32,6 +32,9 @@ class PageText : View {
     }
 
     var mBgColor = Color.WHITE
+
+    /** Reader page background (reading colour + GalIsland grid); null = flat mBgColor. */
+    var mPageBackground: android.graphics.drawable.Drawable? = null
     var mTextArray: MutableList<PageLine>? = null
     var mSecondTextArray: MutableList<PageLine>? = null
     var mTextColor: Int = Color.BLACK
@@ -78,7 +81,7 @@ class PageText : View {
         // The footer keeps the plain metrics; letter spacing only applies to the
         // chapter body below.
         mPaint.letterSpacing = 0f
-        canvas.drawColor(mBgColor)
+        drawPageBackground(canvas, mPageBackground, mBgColor)
 
         val currentPage = if (mPageNum > mMaxPageNum) 0 else mPageNum
         val pageText = if (mDoublePageMode && mSecondPageNum > 0) {

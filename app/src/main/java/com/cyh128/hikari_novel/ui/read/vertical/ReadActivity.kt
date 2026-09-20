@@ -30,9 +30,13 @@ import com.cyh128.hikari_novel.ui.read.common.ReaderChromeController
 import com.cyh128.hikari_novel.ui.read.common.ReaderChromeGeometry
 import com.cyh128.hikari_novel.ui.read.common.ReaderChromePalette
 import com.cyh128.hikari_novel.ui.read.common.ReaderChromeTheme
+import com.cyh128.hikari_novel.ui.read.common.ReaderGridDrawable
 import com.cyh128.hikari_novel.ui.read.common.ReaderWindowInsetsCoordinator
 import com.cyh128.hikari_novel.util.ReaderStatusText
+import com.cyh128.hikari_novel.util.ReaderHaptics
 import com.cyh128.hikari_novel.util.startActivity
+import com.cyh128.hikari_novel.data.source.local.mmkv.AppConfig
+import javax.inject.Inject
 import com.drake.channel.receiveEvent
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
@@ -53,6 +57,10 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
     private val readerColorResolver by lazy { ReaderColorResolver(viewModel.readColorRepository(), this) }
     /** 用户正在拖动进度滑块时暂停外部回写，避免抖动 */
     private var progressSliderTracking = false
+
+    /** 震动反馈开关（设置页可关）；读取时机在每次手势触发时，改动即时生效 */
+    @Inject
+    lateinit var appConfig: AppConfig
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -194,6 +202,9 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
         // value into a concrete Day/Night before anything reads it.
         viewModel.readColorRepository()
             .convergeReaderThemeMode(ReaderColorResolver.isSystemDarkMode(this))
+        // One-shot: a day background still on the old pure-white default moves to
+        // the warm off-white the grid surface was designed for.
+        viewModel.readColorRepository().migrateDefaultDayBackground()
         // Chrome colours come from the reader palette, not the App theme, so a
         // white page in a dark App theme no longer sits under dark bars.
         applyReaderChrome()
@@ -331,7 +342,7 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
                 override fun onStopTrackingTouch(slider: Slider) {
                     progressSliderTracking = false
-                    slider.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+                    ReaderHaptics.tap(slider, appConfig.isVibrationEnabled)
                     scrollToPercent(slider.value.toInt())
                 }
             }
@@ -339,12 +350,12 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
         //设置底栏菜单按钮监听
         binding.barAVRead.readPreviousChapter.setOnClickListener {
-            it.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+            ReaderHaptics.tap(it, appConfig.isVibrationEnabled)
             toPreviousChapter()
         }
 
         binding.barAVRead.readNextChapter.setOnClickListener {
-            it.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+            ReaderHaptics.tap(it, appConfig.isVibrationEnabled)
             toNextChapter()
         }
 
@@ -571,9 +582,10 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
     private fun getHideBarColor(): Int = android.graphics.Color.parseColor(getHideBarColorString())
 
-    /** Chrome colours follow the reading colours, not the App theme. */
+    /** Chrome colours follow the reading colours; the menu accent follows the App theme. */
     private fun currentChromePalette(): ReaderChromePalette =
-        ReaderChromePalette.from(
+        ReaderChromeTheme.paletteFor(
+            binding.root,
             readerColorResolver.bgColorHex(),
             readerColorResolver.textColorHex()
         )
@@ -601,7 +613,10 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
         // Also update the loading view background if visible
         (supportFragmentManager.findFragmentById(R.id.fcv_a_v_read) as? com.cyh128.hikari_novel.ui.other.LoadingView)
             ?.view
-            ?.setBackgroundColor(android.graphics.Color.parseColor(readerColorResolver.bgColorHex()))
+            ?.background = ReaderGridDrawable.create(
+                binding.root,
+                readerColorResolver.bgColorHex()
+            )
         applyReaderChrome()
     }
 

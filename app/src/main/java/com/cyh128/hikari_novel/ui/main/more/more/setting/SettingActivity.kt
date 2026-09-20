@@ -36,6 +36,7 @@ class SettingActivity : BaseActivity<ActivitySettingBinding>() {
 
     private fun initView() {
         binding.sASettingAutoUpdate.isChecked = viewModel.getIsAutoUpdate()
+        binding.sASettingVibration.isChecked = viewModel.getIsVibrationEnabled()
 
         if (viewModel.getReaderOrientation() == ReaderOrientation.Vertical) binding.tvASettingReadMode.text =
             getString(R.string.vertical)
@@ -117,6 +118,10 @@ class SettingActivity : BaseActivity<ActivitySettingBinding>() {
     private fun initListener() {
         binding.sASettingAutoUpdate.setOnCheckedChangeListener { _, isChecked ->
             viewModel.setIsAutoUpdate(isChecked)
+        }
+
+        binding.sASettingVibration.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.setIsVibrationEnabled(isChecked)
         }
 
         binding.llASettingNode.setOnClickListener {

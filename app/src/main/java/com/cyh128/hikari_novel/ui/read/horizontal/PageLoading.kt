@@ -39,6 +39,9 @@ class PageLoading: View {
         }
     }
     var mBgColor = Color.WHITE
+
+    /** Reader page background (reading colour + GalIsland grid); null = flat mBgColor. */
+    var mPageBackground: android.graphics.drawable.Drawable? = null
     var mTextColor: Int = Color.BLACK
     var mTxtFontType: Typeface = Typeface.DEFAULT
     var mTextSize = 50f
@@ -62,7 +65,7 @@ class PageLoading: View {
         mPaint.color = mTextColor                             //字体颜色
         mPaint.typeface = mTxtFontType
         mPaint.textSize = mTextSize
-        canvas.drawColor(mBgColor)
+        drawPageBackground(canvas, mPageBackground, mBgColor)
 
         //将提示语句放到正中间
         val message = context.getString(R.string.chapter_loading)

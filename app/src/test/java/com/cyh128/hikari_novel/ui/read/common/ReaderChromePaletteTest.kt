@@ -15,16 +15,29 @@ import org.junit.Test
  */
 class ReaderChromePaletteTest {
 
+    /** Stand-in for the App theme's `colorPrimary`; the palette must pass it through verbatim. */
+    private val accent = 0xFFBC5E96.toInt()
+
     @Test
     fun surfaceAndPrimaryContentAreTheReadingColours() {
-        val palette = ReaderChromePalette.from("#ffffff", "000000")
+        val palette = ReaderChromePalette.from("#ffffff", "000000", accent)
         assertEquals(0xFFFFFFFF.toInt(), palette.surface)
         assertEquals(0xFF000000.toInt(), palette.onSurface)
     }
 
     @Test
+    fun accentIsCarriedThroughUntouched() {
+        // The accent does NOT follow the reading colours — it is the App theme's
+        // colorPrimary, so it must survive the bg/text maths unchanged.
+        val light = ReaderChromePalette.from("#ffffff", "000000", accent)
+        val dark = ReaderChromePalette.from("2C2F31", "ffffff", accent)
+        assertEquals(accent, light.accent)
+        assertEquals(accent, dark.accent)
+    }
+
+    @Test
     fun secondaryColoursBlendTowardsTheTextColour() {
-        val palette = ReaderChromePalette.from("ffffff", "000000")
+        val palette = ReaderChromePalette.from("ffffff", "000000", accent)
         // 0.62 towards black on white -> 0x61 grey.
         assertEquals(0xFF616161.toInt(), palette.onSurfaceVariant)
         // 0.24 towards black -> 0xC2 grey, a hairline tone.
@@ -33,7 +46,7 @@ class ReaderChromePaletteTest {
 
     @Test
     fun darkPairsProduceLightSecondaryColours() {
-        val palette = ReaderChromePalette.from("2C2F31", "ffffff")
+        val palette = ReaderChromePalette.from("2C2F31", "ffffff", accent)
         assertTrue(red(palette.onSurfaceVariant) > red(palette.surface))
         assertTrue(red(palette.onSurfaceVariant) < red(palette.onSurface))
         assertTrue(red(palette.outline) > red(palette.surface))

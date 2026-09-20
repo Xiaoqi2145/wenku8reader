@@ -19,10 +19,14 @@ import com.cyh128.hikari_novel.data.model.Event
 import com.cyh128.hikari_novel.data.model.ReaderAnchor
 import com.cyh128.hikari_novel.databinding.FragmentVerticalReadBinding
 import com.cyh128.hikari_novel.reader.domain.ReaderPosition
-import com.cyh128.hikari_novel.ui.read.common.ReaderChromePalette
+import com.cyh128.hikari_novel.ui.read.common.ReaderChromeTheme
+import com.cyh128.hikari_novel.ui.read.common.ReaderGridDrawable
 import com.cyh128.hikari_novel.util.ReaderTouchJudge
 import com.cyh128.hikari_novel.util.ReaderColorResolver
+import com.cyh128.hikari_novel.util.ReaderHaptics
 import com.cyh128.hikari_novel.util.startActivity
+import com.cyh128.hikari_novel.data.source.local.mmkv.AppConfig
+import javax.inject.Inject
 import com.drake.channel.receiveEvent
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,6 +51,10 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
     private var scrollRestorer: VerticalScrollRestorer? = null
     private var touchHandler: VerticalReaderTouchHandler? = null
     private val renderedChapterCids = mutableSetOf<String>()
+
+    /** 震动反馈开关（设置页可关）；读取时机在每次手势触发时，改动即时生效 */
+    @Inject
+    lateinit var appConfig: AppConfig
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -208,7 +216,9 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
     fun applyReaderColors(textColor: String, bgColor: String) {
         binding.tvFVRead.setTextColor(Color.parseColor(textColor))
         binding.tvFVReadEndTip.setTextColor(Color.parseColor(textColor))
-        binding.root.setBackgroundColor(Color.parseColor(bgColor))
+        // The page sits on the shared GalIsland grid over the reading colour,
+        // so the reader matches the browsing surfaces instead of being a flat fill.
+        binding.root.background = ReaderGridDrawable.create(binding.root, bgColor)
     }
 
     /** Flush the latest anchor before Activity navigation or lifecycle stop. */
@@ -274,7 +284,11 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
         if (start < 0 || end <= start) return
 
         val resolver = colorResolver()
-        val palette = ReaderChromePalette.from(resolver.bgColorHex(), resolver.textColorHex())
+        val palette = ReaderChromeTheme.paletteFor(
+            binding.root,
+            resolver.bgColorHex(),
+            resolver.textColorHex()
+        )
         val span = BackgroundColorSpan(
             ColorUtils.setAlphaComponent(palette.onSurface, HIGHLIGHT_ALPHA)
         )
@@ -412,7 +426,7 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
     }
 
     private fun toggleReaderBar() {
-        binding.root.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+        ReaderHaptics.tap(binding.root, appConfig.isVibrationEnabled)
         if (viewModel.isBarShown) {
             (requireActivity() as ReadActivity).hideBar()
         } else {

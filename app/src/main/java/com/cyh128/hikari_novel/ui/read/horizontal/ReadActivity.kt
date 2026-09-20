@@ -36,10 +36,14 @@ import com.cyh128.hikari_novel.ui.read.common.ReaderChromeController
 import com.cyh128.hikari_novel.ui.read.common.ReaderChromeGeometry
 import com.cyh128.hikari_novel.ui.read.common.ReaderChromePalette
 import com.cyh128.hikari_novel.ui.read.common.ReaderChromeTheme
+import com.cyh128.hikari_novel.ui.read.common.ReaderGridDrawable
 import com.cyh128.hikari_novel.ui.read.common.ReaderWindowInsetsCoordinator
 
 import com.cyh128.hikari_novel.util.ReaderStatusText
+import com.cyh128.hikari_novel.util.ReaderHaptics
 import com.cyh128.hikari_novel.util.startActivity
+import com.cyh128.hikari_novel.data.source.local.mmkv.AppConfig
+import javax.inject.Inject
 import com.drake.channel.receiveEvent
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
@@ -62,6 +66,10 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
     private lateinit var windowInsetsCoordinator: ReaderWindowInsetsCoordinator
     private var saveReadHistoryJob: Job? = null
     private val readerColorResolver by lazy { ReaderColorResolver(viewModel.readColorRepository(), this) }
+
+    /** 震动反馈开关（设置页可关）；读取时机在每次手势触发时，改动即时生效 */
+    @Inject
+    lateinit var appConfig: AppConfig
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -256,9 +264,16 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
         // value into a concrete Day/Night before anything reads it.
         viewModel.readColorRepository()
             .convergeReaderThemeMode(ReaderColorResolver.isSystemDarkMode(this))
+        // One-shot: a day background still on the old pure-white default moves to
+        // the warm off-white the grid surface was designed for.
+        viewModel.readColorRepository().migrateDefaultDayBackground()
         //初始化阅读器的背景颜色和字体颜色
         binding.pvAHRead.backgroundcolor = readerColorResolver.bgColorHex().toColorInt()
         binding.pvAHRead.textColor = readerColorResolver.textColorHex().toColorInt()
+        binding.pvAHRead.pageBackground = ReaderGridDrawable.create(
+            binding.root,
+            readerColorResolver.bgColorHex()
+        )
 
         setBottomBarIsEnable(false)
 
@@ -359,14 +374,19 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
     }
 
     private fun setColor() {
+        val bgColorHex = readerColorResolver.bgColorHex()
         binding.pvAHRead.textColor = readerColorResolver.textColorHex().toColorInt()
-        binding.pvAHRead.backgroundcolor = readerColorResolver.bgColorHex().toColorInt()
+        binding.pvAHRead.backgroundcolor = bgColorHex.toColorInt()
+        // The page sits on the shared GalIsland grid over the reading colour, so
+        // the reader matches the browsing surfaces instead of being a flat fill.
+        binding.pvAHRead.pageBackground = ReaderGridDrawable.create(binding.root, bgColorHex)
         applyReaderChrome()
     }
 
-    /** Chrome colours follow the reading colours, not the App theme. */
+    /** Chrome colours follow the reading colours; the menu accent follows the App theme. */
     private fun currentChromePalette(): ReaderChromePalette =
-        ReaderChromePalette.from(
+        ReaderChromeTheme.paletteFor(
+            binding.root,
             readerColorResolver.bgColorHex(),
             readerColorResolver.textColorHex()
         )
@@ -432,7 +452,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
 
         binding.pvAHRead.onCenterClick = object : IPageView.OnCenterClick {
             override fun onCenterClick() {
-                binding.root.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+                ReaderHaptics.tap(binding.root, appConfig.isVibrationEnabled)
                 if (viewModel.isBarShown) {
                     hideBar()
                 } else {
@@ -491,7 +511,7 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             object : Slider.OnSliderTouchListener {
                 override fun onStartTrackingTouch(slider: Slider) {}
                 override fun onStopTrackingTouch(slider: Slider) {
-                    slider.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+                    ReaderHaptics.tap(slider, appConfig.isVibrationEnabled)
                     binding.pvAHRead.pageNum = slider.value.toInt()
                     updateProgressPercent(slider.value.toInt(), binding.pvAHRead.maxPageNum)
                 }
@@ -558,12 +578,12 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
         }
 
         binding.barAHRead.readNextChapter.setOnClickListener {
-            it.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+            ReaderHaptics.tap(it, appConfig.isVibrationEnabled)
             toNextChapter()
         }
 
         binding.barAHRead.readPreviousChapter.setOnClickListener {
-            it.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+            ReaderHaptics.tap(it, appConfig.isVibrationEnabled)
             toPreviousChapter()
         }
 
