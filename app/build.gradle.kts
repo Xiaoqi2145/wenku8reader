@@ -1,14 +1,14 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.ksp)
     id("kotlin-parcelize")
-    id("com.google.dagger.hilt.android")
+    alias(libs.plugins.hilt)
 }
 
 android {
     namespace = "com.cyh128.hikari_novel"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.cyh128.hikari_novel"
@@ -84,84 +84,87 @@ android {
 
 dependencies {
     //android相关
-    implementation("androidx.core:core-ktx:1.16.0")
-    implementation("androidx.appcompat:appcompat:1.7.1")
-    implementation("com.google.android.material:material:1.13.0-alpha14")
-    implementation("androidx.constraintlayout:constraintlayout:2.2.1")
-    implementation("androidx.recyclerview:recyclerview:1.4.0")
-    implementation("androidx.viewpager2:viewpager2:1.1.0")
-    implementation("androidx.navigation:navigation-fragment-ktx:2.9.0")
-    implementation("androidx.navigation:navigation-ui-ktx:2.9.0")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.viewpager2)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
 
     //数据库
-    implementation("androidx.room:room-ktx:2.7.1")
-    implementation("androidx.room:room-runtime:2.7.1")
-    ksp("androidx.room:room-compiler:2.7.1")
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
 
     //图片查看
-    implementation("com.github.chrisbanes:PhotoView:2.3.0")
+    implementation(libs.photoview)
 
     //rxhttp 网络请求
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("com.github.liujingxing.rxhttp:rxhttp:3.2.4")
-    ksp("com.github.liujingxing.rxhttp:rxhttp-compiler:3.2.4")
+    implementation(libs.okhttp)
+    implementation(libs.rxhttp.core)
+    ksp(libs.rxhttp.compiler)
 
     //lifecycle
-    implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.9.1")
+    // 原依赖 lifecycle-extensions（2018 年后停更的聚合库），代码中并未使用其独有 API，
+    // 改为显式声明实际用到的组件：lifecycleScope/withStarted、viewModelScope、LiveData
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.livedata.ktx)
 
     //协程
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1")
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
 
     //html解析
-    implementation("org.jsoup:jsoup:1.19.1")
+    implementation(libs.jsoup)
 
     //加强版recyclerview
-    implementation("com.github.youlookwhat:ByRecyclerView:1.3.7")
+    implementation(libs.byrecyclerview)
 
     //fragment管理
-    implementation("com.trendyol:medusa:0.12.1")
+    implementation(libs.medusa)
 
     //持久化存储
-    //请勿修改此版本，否则app会不支持32位设备
+    //请勿修改此版本，否则app会不支持32位设备（版本号见 gradle/libs.versions.toml 中的 mmkv）
     //noinspection GradleDependency
-    implementation("com.tencent:mmkv:1.3.14")
+    implementation(libs.mmkv)
 
     //图片加载
-    implementation("com.github.bumptech.glide:glide:4.16.0")
-    implementation("com.github.bumptech.glide:okhttp3-integration:4.16.0")
+    implementation(libs.glide.core)
+    implementation(libs.glide.okhttp3.integration)
 
     //refresh layout
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    implementation(libs.androidx.swiperefreshlayout)
 
     //可展开的textview
-    implementation("com.github.MZCretin:ExpandableTextView:v1.6.1-x")
+    implementation(libs.expandabletextview)
 
     //二级recyclerview
-    implementation("com.github.pokercc:ExpandableRecyclerView:0.9.3")
+    implementation(libs.expandablerecyclerview)
 
     //崩溃拦截
-    implementation("com.github.TutorialsAndroid:crashx:v6.0.19")
+    implementation(libs.crashx)
 
     //statusBar与navigationBar透明
-    implementation("com.geyifeng.immersionbar:immersionbar:3.2.2")
+    implementation(libs.immersionbar)
 
     //hilt依赖注入
-    implementation("com.google.dagger:hilt-android:2.56")
-    ksp("com.google.dagger:hilt-android-compiler:2.56")
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
 
     //json解析
-    implementation("com.google.code.gson:gson:2.11.0")
+    implementation(libs.gson)
 
     //事件总线
-    implementation("com.github.liangjingkanji:Channel:1.1.5")
+    implementation(libs.channel)
 
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-    androidTestImplementation("androidx.room:room-testing:2.7.1")
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(libs.androidx.room.testing)
 
     //内存泄漏查看
-    debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
+    debugImplementation(libs.leakcanary.android)
 }

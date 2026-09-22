@@ -1,0 +1,126 @@
+[versions]
+agp = "8.13.2"
+kotlin = "2.1.20"
+ksp = "2.1.20-1.0.31"
+hilt = "2.56"
+
+# AndroidX 基础
+coreKtx = "1.18.0"
+appcompat = "1.8.0"
+material = "1.13.0-alpha14"
+constraintlayout = "2.2.2"
+recyclerview = "1.4.0"
+viewpager2 = "1.1.0"
+swiperefreshlayout = "1.2.0"
+navigation = "2.10.1"
+lifecycle = "2.11.0"
+# Room 2.8.5 在 KSP 1.0.31 下无法工作：room-migration 的序列化器报
+# AbstractMethodError（GeneratedSerializer.typeParametersSerializers），
+# 根因是 KSP1 进程 classpath 混入旧版 kotlinx-serialization 1.4.0。
+# 需先升级 KSP 到 2.x（见 docs/tech-stack-upgrade-plan.md 阶段 2）后再重试。
+room = "2.7.1"
+
+# 网络 / 解析
+okhttp = "4.12.0"
+rxhttp = "3.2.4"
+jsoup = "1.23.2"
+gson = "2.14.0"
+
+# 协程
+coroutines = "1.11.0"
+
+# 图片
+glide = "4.16.0"
+photoview = "2.3.0"
+
+# 第三方 UI / 工具
+byRecyclerView = "1.3.7"
+medusa = "0.12.1"
+expandableTextView = "v1.6.1-x"
+expandableRecyclerView = "0.9.3"
+crashx = "v6.0.19"
+immersionbar = "3.2.2"
+channel = "1.1.5"
+
+# 存储
+# 警告：MMKV 版本为有意锁定。升级到 2.x 会导致 app 不再支持 32 位设备，
+# 参见 app/build.gradle.kts 中原有的注释。升级前必须先核实这一点。
+mmkv = "1.3.14"
+
+# 测试
+junit = "4.13.2"
+androidxTestJunit = "1.3.0"
+espresso = "3.7.0"
+leakcanary = "2.14"
+
+[libraries]
+# AndroidX 基础
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
+androidx-viewpager2 = { group = "androidx.viewpager2", name = "viewpager2", version.ref = "viewpager2" }
+androidx-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+
+# Navigation
+androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation" }
+androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigation" }
+
+# Lifecycle
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
+
+# Room
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
+
+# 协程
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+
+# 网络
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+rxhttp-core = { group = "com.github.liujingxing.rxhttp", name = "rxhttp", version.ref = "rxhttp" }
+rxhttp-compiler = { group = "com.github.liujingxing.rxhttp", name = "rxhttp-compiler", version.ref = "rxhttp" }
+
+# 解析
+jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+
+# 图片
+glide-core = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
+glide-okhttp3-integration = { group = "com.github.bumptech.glide", name = "okhttp3-integration", version.ref = "glide" }
+photoview = { group = "com.github.chrisbanes", name = "PhotoView", version.ref = "photoview" }
+
+# 依赖注入
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+
+# 存储
+mmkv = { group = "com.tencent", name = "mmkv", version.ref = "mmkv" }
+
+# 第三方 UI / 工具（多来自 JitPack）
+byrecyclerview = { group = "com.github.youlookwhat", name = "ByRecyclerView", version.ref = "byRecyclerView" }
+medusa = { group = "com.trendyol", name = "medusa", version.ref = "medusa" }
+expandabletextview = { group = "com.github.MZCretin", name = "ExpandableTextView", version.ref = "expandableTextView" }
+expandablerecyclerview = { group = "com.github.pokercc", name = "ExpandableRecyclerView", version.ref = "expandableRecyclerView" }
+crashx = { group = "com.github.TutorialsAndroid", name = "crashx", version.ref = "crashx" }
+immersionbar = { group = "com.geyifeng.immersionbar", name = "immersionbar", version.ref = "immersionbar" }
+channel = { group = "com.github.liangjingkanji", name = "Channel", version.ref = "channel" }
+
+# 测试
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestJunit" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
+leakcanary-android = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
