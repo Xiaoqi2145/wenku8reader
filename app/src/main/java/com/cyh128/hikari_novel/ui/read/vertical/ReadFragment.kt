@@ -19,6 +19,7 @@ import com.cyh128.hikari_novel.data.model.Event
 import com.cyh128.hikari_novel.data.model.ReaderAnchor
 import com.cyh128.hikari_novel.databinding.FragmentVerticalReadBinding
 import com.cyh128.hikari_novel.reader.domain.ReaderPosition
+import com.cyh128.hikari_novel.reader.domain.ReaderInsetCompensation
 import com.cyh128.hikari_novel.ui.read.common.ReaderChromeTheme
 import com.cyh128.hikari_novel.ui.read.common.ReaderGridDrawable
 import com.cyh128.hikari_novel.util.ReaderTouchJudge
@@ -56,8 +57,49 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
     @Inject
     lateinit var appConfig: AppConfig
 
+    /**
+     * Scroll compensation owed for a pending inset change, in scroll-view pixels.
+     *
+     * Held as a single slot rather than a queue: toggling the menu twice in quick
+     * succession used to stack two `post` runnables, and the second captured a
+     * scrollY that the first had not compensated yet, which threw the text off by
+     * a toolbar height.
+     */
+    private var pendingScrollCompensation: Int? = null
+
+    /**
+     * True while scrolling to compensate an inset change.
+     *
+     * That compensation restores the *same* visual position, so letting it reach
+     * `progressReporter` would re-derive the chapter anchor from a position we are
+     * in the middle of restoring — which is what made the status line percentage
+     * flicker when the menu was toggled.
+     */
+    private var suppressScrollReport = false
+
+    /**
+     * Applies the pending compensation after layout but before the frame is drawn,
+     * so the reflow and its compensation land in the same frame.
+     *
+     * Deferring to `post` instead drew one frame with the text displaced by a
+     * toolbar height — the flicker this exists to prevent.
+     */
+    private val insetCompensator = ViewTreeObserver.OnPreDrawListener {
+        pendingScrollCompensation?.let { target ->
+            pendingScrollCompensation = null
+            suppressScrollReport = true
+            binding.nsvFVRead.scrollTo(0, target.coerceAtLeast(0))
+            suppressScrollReport = false
+        }
+        true
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Installed before the first inset pass, which may already owe a
+        // compensation.
+        binding.nsvFVRead.viewTreeObserver.addOnPreDrawListener(insetCompensator)
 
         (requireActivity() as? ReadActivity)?.applyReaderContentInsets()
 
@@ -84,6 +126,9 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
     }
 
     override fun onDestroyView() {
+        val observer = binding.nsvFVRead.viewTreeObserver
+        if (observer.isAlive) observer.removeOnPreDrawListener(insetCompensator)
+        pendingScrollCompensation = null
         progressReporter?.flush()
         progressReporter?.cancel()
         touchHandler?.cancel()
@@ -228,16 +273,27 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
 
     /**
      * Applies the measured reader chrome safe area without changing the
-     * horizontal page margins. When the reader is already scrolled, compensate
-     * for a top-inset change so the visible text anchor stays stable.
+     * horizontal page margins.
+     *
+     * Showing or hiding the menu changes the reserved top inset by a toolbar
+     * height, which reflows the text. The scroll offset is compensated so the
+     * visible anchor does not move — but the compensation is *not* applied here:
+     * `setPadding` only requests a layout, so scrolling now would be clamped
+     * against the stale content height. It is handed to [insetCompensator], which
+     * runs after layout and before the frame is drawn, so the reflow and the
+     * compensation are never visible as two separate positions.
      */
     fun setReaderContentInsets(top: Int, bottom: Int) {
         val scrollView = binding.nsvFVRead
         val oldTop = scrollView.paddingTop
-        val oldScrollY = scrollView.scrollY
         val safeTop = top.coerceAtLeast(0)
         val safeBottom = bottom.coerceAtLeast(0)
         if (oldTop == safeTop && scrollView.paddingBottom == safeBottom) return
+
+        // A compensation still waiting to be drawn is superseded, not queued: its
+        // target is the position the user currently sees, so the new one must
+        // build on it rather than on the not-yet-compensated scrollY.
+        val topDelta = safeTop - oldTop
 
         scrollView.setPadding(
             scrollView.paddingLeft,
@@ -245,12 +301,11 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
             scrollView.paddingRight,
             safeBottom
         )
-        val delta = safeTop - oldTop
-        if (oldScrollY > 0 && delta != 0) {
-            scrollView.post {
-                scrollView.scrollTo(0, (oldScrollY + delta).coerceAtLeast(0))
-            }
-        }
+        pendingScrollCompensation = ReaderInsetCompensation.target(
+            currentScrollY = scrollView.scrollY,
+            pendingTarget = pendingScrollCompensation,
+            topDelta = topDelta
+        )
     }
 
     /**
@@ -319,23 +374,30 @@ class ReadFragment : BaseFragment<FragmentVerticalReadBinding>() {
 
     @SuppressLint("ClickableViewAccessibility")
     private fun initListener() {
+        // Continuous scroll means the only gesture here is "tap toggles the
+        // chrome". The screen edges deliberately do not switch chapters any
+        // more; the bottom bar and the chapter buttons do that explicitly.
         touchHandler = VerticalReaderTouchHandler(
-            touchTarget = binding.nsvFVRead,
             interactiveChildren = listOf(
                 binding.bFVReadPreviousChapter,
                 binding.rvFVRead,
                 binding.bFVReadNextChapter
             ),
             touchJudge = ReaderTouchJudge(requireContext()),
-            onCenterTap = ::toggleReaderBar,
-            onPreviousChapter = { (requireActivity() as ReadActivity).toPreviousChapter() },
-            onNextChapter = { (requireActivity() as ReadActivity).toNextChapter() }
+            onToggleChrome = ::toggleReaderBar
         )
         binding.nsvFVRead.setOnTouchListener { _, event ->
             touchHandler?.onTouch(event) ?: false
         }
 
         binding.nsvFVRead.setOnScrollChangeListener { _, _, _, _, _ ->
+            // The inset compensation is a programmatic scroll that restores the
+            // same visual position. Re-deriving the anchor from it made the
+            // percentage flicker, and re-evaluating the auto-load threshold would
+            // let it append a chapter in the middle of a pre-draw pass. A real
+            // scroll lands here again anyway, and the logical position is
+            // unchanged, so skipping both loses nothing.
+            if (suppressScrollReport) return@setOnScrollChangeListener
             progressReporter?.report()
             maybeAutoLoadNextChapter()
         }

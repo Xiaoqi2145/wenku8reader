@@ -232,7 +232,10 @@
     <string name="menu">菜单</string>
     <string name="menu_tip">在有图片的页面点击图片正中间可以放大查看</string>
     <string name="reader_tip_title">阅读提示</string>
-    <string name="reader_tip_body">点击屏幕左侧三分之一翻上一章，右侧三分之一翻下一章，中央呼出阅读菜单；在图片页面点击图片中央可以查看原图。</string>
+    <!-- 翻页（横排）：左右三分之一翻的是「页」，不是章。 -->
+    <string name="reader_tip_body">点击屏幕左侧三分之一翻上一页，右侧三分之一翻下一页，中央呼出阅读菜单；左右滑动也可以翻页。在图片页面点击图片中央可以查看原图。</string>
+    <!-- 滚动（竖排）：连续滚动没有「页」可翻，点击只切换菜单。 -->
+    <string name="reader_tip_body_vertical">点击屏幕任意位置呼出或收起阅读菜单，上下滑动滚动正文；切换章节请用底栏的上一章 / 下一章。在图片上点击可以查看原图。</string>
     <string name="reader_tip_dismiss">知道了</string>
 
     <string name="go_to_download">前往下载</string>
@@ -402,7 +405,7 @@
     <string name="search_need_query">请输入关键词</string>
     <string name="search_hits_in_chapter">%1$d 处</string>
     <!-- Reader feedback (P0-2 / P0-3 / P1-2) -->
-    <string name="reader_status_progress">章节 %1$s · 全书 %2$d%%</string>
+    <string name="reader_status_progress">%1$d%%</string>
     <string name="color_preset_applied">已应用：%1$s</string>
     <string name="color_preset_label">预设 %1$d</string>
     <string name="color_format_invalid">颜色格式不正确，请输入 6 位十六进制色值</string>

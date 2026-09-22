@@ -209,7 +209,10 @@
     <string name="menu">選單</string>
     <string name="menu_tip">在有圖片的頁面點擊圖片正中間可以放大查看</string>
     <string name="reader_tip_title">閱讀提示</string>
-    <string name="reader_tip_body">點擊螢幕中央呼出閱讀選單；在圖片頁面點擊圖片中央可以查看原圖。</string>
+    <!-- 翻頁（橫排）：左右三分之一翻的是「頁」，不是章。 -->
+    <string name="reader_tip_body">點擊螢幕左側三分之一翻上一頁，右側三分之一翻下一頁，中央呼出閱讀選單；左右滑動也可以翻頁。在圖片頁面點擊圖片中央可以查看原圖。</string>
+    <!-- 捲動（豎排）：連續捲動沒有「頁」可翻，點擊只切換選單。 -->
+    <string name="reader_tip_body_vertical">點擊螢幕任意位置呼出或收起閱讀選單，上下滑動捲動正文；切換章節請用底欄的上一章 / 下一章。在圖片上點擊可以查看原圖。</string>
     <string name="reader_tip_dismiss">知道了</string>
 
     <string name="go_to_download">前往下載</string>

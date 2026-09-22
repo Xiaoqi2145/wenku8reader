@@ -424,6 +424,13 @@ Koodo 是桌面/多格式阅读器（PDF/EPUB/TXT/CBR + AI 商业化），以下
 
 补了 3 组策略测试，其中一组做**交叉一致性**校验：遍历多种宽度与 x 比例，断言 `tapAction` 与 `shouldToggleReaderBar` 永不矛盾。
 
+> **已被推翻（2026-09-21）**：三分区在实测体验里被判为"把翻页手势混进了滚动模式"——左右三分之一点击直接换章，
+> 而手势分类只看净位移，滚动中点一下想停住惯性就可能跳章并带走阅读位置。
+> 现已取消三分区：**全屏点击统一呼出/收起菜单**，换章只走显式控件（底栏按钮、正文首尾章节按钮、目录）。
+> `VerticalTapArea` / `tapArea` / `tapAction` 一并删除，策略只剩 `shouldToggleReaderBar(isTap, startedOnInteractiveChild)`。
+> 引导层也按模式拆成两份（横排左右三分之一翻**页**，竖排点击只切菜单）。核查与处置全过程见
+> `docs/reader-gesture-mode-audit.md`。本节保留为第三轮的历史记录。
+
 ### 8.6 死代码清理
 
 删除 `SelectColorActivity` / `SelectColorViewModel` / `activity_select_color.xml`，以及 `values` 与 `values-zh-rTW` 里的 `select_color_day`、`select_color_night`、`format_mismatch`，还有 `main`/`debug` 两个 manifest 里的 activity 条目。

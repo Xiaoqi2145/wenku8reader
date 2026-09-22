@@ -11,7 +11,7 @@
     android:layout_height="match_parent" />
   <include
     android:id="@+id/i_a_v_read_guide"
-    layout="@layout/view_horizontal_read_guide"
+    layout="@layout/view_vertical_read_guide"
     android:layout_width="match_parent"
     android:layout_height="match_parent" />
   <!-- 与主视觉二级页同一工具栏样式（Secondary.Toolbar = Toolbar + elevation 0dp）；

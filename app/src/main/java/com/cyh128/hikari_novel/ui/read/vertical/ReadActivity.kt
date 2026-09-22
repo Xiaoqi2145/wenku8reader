@@ -319,15 +319,14 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
 
         // ProgressReporter owns throttling and anchor persistence. The Activity
         // only mirrors the display value and no longer schedules a second write.
-        // P1-2: Unified progress semantics: slider = loaded-content scroll ratio,
-        // status line = chapter x/y + full-book %.
+        // P1-2: the bottom bar keeps "chapter x/y" next to the slider; the status
+        // line's bottom-right corner shows only the percentage. That percentage is
+        // the *current chapter's* progress (the reporter derives it from the
+        // chapter-local anchor/geometry), never the whole book.
         viewModel.progressText.observe(this) {
-            val fullBookPercent = parsePercent(it).toInt()
-            binding.statusAVRead.readStatusProgress.text = getString(
-                R.string.reader_status_progress,
-                viewModel.chapterProgressText(),
-                fullBookPercent
-            )
+            val chapterPercent = parsePercent(it).toInt()
+            binding.statusAVRead.readStatusProgress.text =
+                getString(R.string.reader_status_progress, chapterPercent)
             if (!progressSliderTracking) {
                 binding.barAVRead.readProgressSlider.value = parsePercent(it)
             }
@@ -562,7 +561,8 @@ class ReadActivity : BaseActivity<ActivityVerticalReadBinding>() {
                 }
             )
             .commit()
-        binding.statusAVRead.readStatusProgress.text = "0%"
+        binding.statusAVRead.readStatusProgress.text =
+            getString(R.string.reader_status_progress, 0)
         viewModel.progressText.value = "0%"
     }
 

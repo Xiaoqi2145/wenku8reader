@@ -57,50 +57,44 @@ class VerticalReaderCoreTest {
         assertNull(calculator.target(ReaderAnchor("missing", 0, 0, 0)))
     }
 
+    /**
+     * The three-zone split (left third = previous chapter, right third = next)
+     * is gone. It mixed paging semantics into the scrolling reader, and because
+     * the tap classifier only looks at the net displacement, a tap meant to
+     * stop a fling could jump a chapter and take the persisted position with
+     * it. The policy now takes no horizontal input at all — which is what this
+     * test pins down: position must not be able to influence the decision.
+     */
     @Test
-    fun touchPolicyKeepsEdgesAndCenterDeterministic() {
-        assertEquals(VerticalTapArea.Previous, VerticalTouchPolicy.tapArea(0f, 300))
-        assertEquals(VerticalTapArea.Center, VerticalTouchPolicy.tapArea(100f, 300))
-        assertEquals(VerticalTapArea.Center, VerticalTouchPolicy.tapArea(200f, 300))
-        assertEquals(VerticalTapArea.Next, VerticalTouchPolicy.tapArea(299f, 300))
-        assertEquals(true, VerticalTouchPolicy.shouldToggleReaderBar(150f, 300, true, false))
-        assertEquals(false, VerticalTouchPolicy.shouldToggleReaderBar(150f, 300, false, false))
-        assertEquals(false, VerticalTouchPolicy.shouldToggleReaderBar(150f, 300, true, true))
-    }
-
-    @Test
-    fun tapActionSplitsTheScreenIntoThreeZones() {
-        // P2-5: left third = previous chapter, right third = next, centre = chrome.
-        assertEquals(VerticalTapArea.Previous, VerticalTouchPolicy.tapAction(0f, 300, true, false))
-        assertEquals(VerticalTapArea.Center, VerticalTouchPolicy.tapAction(150f, 300, true, false))
-        assertEquals(VerticalTapArea.Next, VerticalTouchPolicy.tapAction(299f, 300, true, false))
-    }
-
-    @Test
-    fun tapActionIgnoresSwipesAndInteractiveChildren() {
-        assertNull(VerticalTouchPolicy.tapAction(0f, 300, isTap = false, startedOnInteractiveChild = false))
-        assertNull(VerticalTouchPolicy.tapAction(0f, 300, isTap = true, startedOnInteractiveChild = true))
-        // A zero-width target must not throw or claim an edge zone.
+    fun tapTogglesChromeOnlyWhenItIsATapNoInteractiveChildOwns() {
         assertEquals(
-            VerticalTapArea.Center,
-            VerticalTouchPolicy.tapAction(0f, 0, isTap = true, startedOnInteractiveChild = false)
+            true,
+            VerticalTouchPolicy.shouldToggleReaderBar(
+                isTap = true,
+                startedOnInteractiveChild = false
+            )
         )
-    }
-
-    @Test
-    fun tapActionStaysConsistentWithShouldToggleReaderBar() {
-        val widths = listOf(0, 1, 300, 1080)
-        val xs = listOf(0f, 0.2f, 0.5f, 0.8f, 1f)
-        for (width in widths) {
-            for (ratio in xs) {
-                val x = width * ratio
-                val action = VerticalTouchPolicy.tapAction(x, width, true, false)
-                assertEquals(
-                    action == VerticalTapArea.Center,
-                    VerticalTouchPolicy.shouldToggleReaderBar(x, width, true, false)
-                )
-            }
-        }
+        assertEquals(
+            false,
+            VerticalTouchPolicy.shouldToggleReaderBar(
+                isTap = false,
+                startedOnInteractiveChild = false
+            )
+        )
+        assertEquals(
+            false,
+            VerticalTouchPolicy.shouldToggleReaderBar(
+                isTap = true,
+                startedOnInteractiveChild = true
+            )
+        )
+        assertEquals(
+            false,
+            VerticalTouchPolicy.shouldToggleReaderBar(
+                isTap = false,
+                startedOnInteractiveChild = true
+            )
+        )
     }
 
     private fun ref(cid: String, index: Int) = ChapterRef(

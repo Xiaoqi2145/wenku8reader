@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  竖排（滚动）首启引导。
+  与 view_horizontal_read_guide.xml 结构相同、文案不同：两种模式的手势语义不一样
+  （横排左右三分之一翻页，竖排点击只切换菜单），所以不能共用一份文案。
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="true"
+    android:focusable="true">
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/gi_page_inset"
+        android:clickable="true"
+        android:focusable="true"
+        app:cardBackgroundColor="?attr/giSurfaceReaderChrome"
+        app:cardCornerRadius="@dimen/gi_radius_card"
+        app:cardElevation="0dp"
+        app:strokeColor="?attr/colorOutlineVariant"
+        app:strokeWidth="@dimen/gi_stroke">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/gi_space_xl">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/reader_tip_title"
+                style="@style/TextAppearance.GalIsland.SheetTitle" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/gi_space_sm"
+                android:text="@string/reader_tip_body_vertical"
+                style="@style/TextAppearance.GalIsland.Body" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginTop="@dimen/gi_space_lg"
+                android:text="@string/reader_tip_dismiss"
+                android:textColor="?attr/colorPrimary"
+                android:textStyle="bold"
+                style="@style/TextAppearance.GalIsland.Button" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</FrameLayout>

@@ -892,12 +892,19 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
         binding.pvAHRead.pageNum = ((percent / 100f) * maxPageNum).toInt().coerceIn(1, maxPageNum)
     }
 
-    /** P1-2: Unified progress: chapter x/y + full book %. */
-    private fun updateProgressPercent(pageNum: Int, maxPageNum: Int) {        val percent = if (maxPageNum > 0) (pageNum * 100 / maxPageNum).coerceIn(0, 100) else 0
+    /**
+     * P1-2: the bottom bar keeps "chapter x/y" next to the slider; the status
+     * line's bottom-right corner shows only the percentage.
+     *
+     * That percentage is the *current chapter's* progress — [percent] is derived
+     * from [pageNum] over the chapter's own page count, not the whole book.
+     */
+    private fun updateProgressPercent(pageNum: Int, maxPageNum: Int) {
+        val percent = if (maxPageNum > 0) (pageNum * 100 / maxPageNum).coerceIn(0, 100) else 0
         val chapterText = viewModel.chapterProgressText()
         binding.barAHRead.readChapterProgress.text = chapterText
         binding.statusAHRead.readStatusProgress.text =
-            getString(R.string.reader_status_progress, chapterText, percent)
+            getString(R.string.reader_status_progress, percent)
     }
 
     /** 常显状态行：时间与电量，在分钟边界刷新。 */
