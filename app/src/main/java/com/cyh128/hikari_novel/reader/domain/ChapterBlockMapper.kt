@@ -48,6 +48,7 @@ typealias ChapterOffset = MappedChapterOffset
  */
 class ChapterBlockMapper {
     private val mutableBlocks = mutableListOf<ChapterBlock>()
+    private val blockByCid = mutableMapOf<String, ChapterBlock>()
     private val contentByCid = mutableMapOf<String, String>()
     private val newlineOffsetsByCid = mutableMapOf<String, IntArray>()
 
@@ -64,8 +65,16 @@ class ChapterBlockMapper {
     /** Return the original chapter content for UI adapters that persist a mapped anchor. */
     fun content(cid: String): String? = contentByCid[cid]
 
+    /**
+     * O(1) block lookup that avoids copying [blocks].
+     *
+     * Scroll sampling calls this on every frame, so it must not allocate.
+     */
+    fun blockFor(cid: String): ChapterBlock? = blockByCid[cid]
+
     fun clear() {
         mutableBlocks.clear()
+        blockByCid.clear()
         contentByCid.clear()
         newlineOffsetsByCid.clear()
     }
@@ -90,6 +99,7 @@ class ChapterBlockMapper {
             contentLength = content.length
         )
         mutableBlocks += block
+        blockByCid[ref.cid] = block
         contentByCid[ref.cid] = content
         newlineOffsetsByCid[ref.cid] = content.mapIndexedNotNull { index, char ->
             index.takeIf { char == '\n' }
@@ -129,13 +139,13 @@ class ChapterBlockMapper {
 
     /** Map a persisted anchor back to the current rendered-text offset. */
     fun globalOffset(anchor: ReaderAnchor): Int? {
-        val block = mutableBlocks.firstOrNull { it.ref.cid == anchor.cid } ?: return null
+        val block = blockByCid[anchor.cid] ?: return null
         return block.startOffset + anchor.charOffset.coerceIn(0, block.contentLength)
     }
 
     /** Return the current anchor after clamping a persisted anchor to content. */
     fun clamp(anchor: ReaderAnchor): ReaderAnchor? {
-        val block = mutableBlocks.firstOrNull { it.ref.cid == anchor.cid } ?: return null
+        val block = blockByCid[anchor.cid] ?: return null
         val content = contentByCid[block.ref.cid] ?: return null
         val offset = anchor.charOffset.coerceIn(0, content.length)
         return anchor.copy(

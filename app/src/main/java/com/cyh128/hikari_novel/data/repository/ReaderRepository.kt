@@ -26,6 +26,9 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -308,30 +311,52 @@ class ReaderRepository @Inject constructor(
     suspend fun loadChapterContent(ref: ChapterRef): String? =
         chapterLoader.load(ref).getOrNull()?.first?.content
 
+    /**
+     * Download a chapter's images, bounded-concurrently.
+     *
+     * Images used to be fetched strictly one after another, so a chapter with
+     * many illustrations paid the full round-trip latency of every URL in
+     * sequence. Downloads are now issued concurrently but capped, so a large
+     * illustration set cannot open an unbounded number of sockets at once.
+     * Results keep the original order so chapter image indices stay stable.
+     */
     private suspend fun downloadImages(chapter: CachedChapter): List<String> =
         withContext(Dispatchers.IO) {
             if (chapter.images.isEmpty()) return@withContext emptyList()
             val directory = File(context.filesDir, "chapters/${chapter.ref.aid}/${chapter.ref.cid}")
                 .apply { mkdirs() }
 
-            chapter.images.mapIndexed { index, url ->
-                if (url.startsWith(directory.absolutePath)) return@mapIndexed url
+            // One dispatcher thread per concurrent image, capped to avoid
+            // saturating the shared OkHttp connection pool.
+            val imageDispatcher = Dispatchers.IO.limitedParallelism(MAX_CONCURRENT_IMAGE_DOWNLOADS)
+            coroutineScope {
+                chapter.images.mapIndexed { index, url ->
+                    async(imageDispatcher) {
+                        if (url.startsWith(directory.absolutePath)) return@async url
 
-                val target = File(directory, "image_$index")
-                val temporary = File(directory, "image_$index.tmp")
-                try {
-                    temporary.writeBytes(network.downloadBytes(url))
-                    if (target.exists()) target.delete()
-                    check(temporary.renameTo(target)) { "Unable to finalize image download" }
-                    target.absolutePath
-                } catch (error: Throwable) {
-                    temporary.delete()
-                    throw error
-                }
+                        val target = File(directory, "image_$index")
+                        val temporary = File(directory, "image_$index.tmp")
+                        try {
+                            temporary.writeBytes(network.downloadBytes(url))
+                            if (target.exists()) target.delete()
+                            check(temporary.renameTo(target)) { "Unable to finalize image download" }
+                            target.absolutePath
+                        } catch (error: Throwable) {
+                            temporary.delete()
+                            throw error
+                        }
+                    }
+                }.awaitAll()
             }
         }
 
     private companion object {
+        /**
+         * Cap concurrent image downloads. High enough to hide per-URL latency,
+         * low enough to stay within the shared OkHttp pool's default limit.
+         */
+        const val MAX_CONCURRENT_IMAGE_DOWNLOADS = 4
+
         const val DOWNLOAD_QUEUED = "QUEUED"
         const val DOWNLOAD_RUNNING = "RUNNING"
         const val DOWNLOAD_PAUSED = "PAUSED"

@@ -16,7 +16,20 @@ import okhttp3.Request
 
 @Singleton
 class Network @Inject constructor() {
-    private val downloadClient = OkHttpClient()
+    /**
+     * Shared client for image downloads.
+     *
+     * A dedicated client keeps download I/O off the RxHttp client's pool, but
+     * it must be built once and reused so connections are pooled and idle
+     * threads are reclaimed instead of leaking one client per download.
+     */
+    private val downloadClient: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .connectionPool(okhttp3.ConnectionPool(4, 30, java.util.concurrent.TimeUnit.SECONDS))
+            .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
+    }
 
     suspend fun downloadBytes(url: String): ByteArray = withContext(Dispatchers.IO) {
         val request = Request.Builder().url(url).header("User-Agent", "Mozilla/5.0").build()

@@ -71,7 +71,11 @@ class VerticalReaderController(
         nextChapterRequested = false
     }
 
-    fun block(cid: String): ChapterBlock? = blocks.firstOrNull { it.ref.cid == cid }
+    /**
+     * O(1) block lookup. The previous implementation copied the whole block
+     * list on every call, which happened on the scroll/progress-sampling path.
+     */
+    fun block(cid: String): ChapterBlock? = blockMapper.blockFor(cid)
 
     fun content(cid: String): String? = blockMapper.content(cid)
 
