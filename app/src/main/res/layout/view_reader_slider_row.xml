@@ -1,51 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  阅读器设置面板复用的滑杆行：label + 可编辑数值 + Slider + 范围提示。
-  用法：在父布局中 include 并用 layout 属性设置 id、文字、范围、步长。
-  详见 docs/reader-koodo-alignment.md P0-4。
+  阅读器设置面板复用的滑杆行：标题 + 可编辑数值 + min/max 范围 + Slider。
+  对齐 Koodo Reader `readerSettings/sliderList` 的四件套（docs/reader-koodo-alignment.md P0-4、
+  docs/reader-settings-round4-plan.md R4-3）：
+    · 上排：label（左）与可输入数值框（右）
+    · 下排：minLabel + Slider + maxLabel
+  用法：在父布局中 include，再调用 ReaderSliderRowBinder.bind() 绑定。
+  行内不写字面尺寸，全部走 gi_* token。
 -->
 <LinearLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
-  android:gravity="center_vertical"
-  android:minHeight="@dimen/gi_secondary_row_height"
-  android:orientation="horizontal"
+  android:orientation="vertical"
   android:paddingLeft="@dimen/gi_space_lg"
   android:paddingTop="@dimen/gi_space_sm"
   android:paddingRight="@dimen/gi_space_lg"
   android:paddingBottom="@dimen/gi_space_sm">
-  <TextView
-    android:id="@+id/slider_row_label"
-    android:layout_width="0dp"
+  <LinearLayout
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_weight="3"
-    style="@style/TextAppearance.GalIsland.ConfigLabel" />
-  <com.google.android.material.textfield.TextInputLayout
-    android:id="@+id/slider_row_value_til"
-    android:layout_width="0dp"
-    android:layout_height="wrap_content"
-    android:layout_weight="1"
-    app:boxBackgroundMode="outline"
-    app:boxStrokeWidth="0dp">
-    <com.google.android.material.textfield.TextInputEditText
-      android:id="@+id/slider_row_value"
-      android:layout_width="match_parent"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/gi_control_height"
+    android:orientation="horizontal">
+    <TextView
+      android:id="@+id/slider_row_label"
+      android:layout_width="0dp"
       android:layout_height="wrap_content"
-      android:gravity="center"
-      android:inputType="numberDecimal"
-      android:maxLength="6"
-      android:textSize="@dimen/gi_text_slider_value"
-      android:maxLines="1" />
-  </com.google.android.material.textfield.TextInputLayout>
-  <com.google.android.material.slider.Slider
-    android:id="@+id/slider_row_slider"
-    android:layout_width="0dp"
+      android:layout_weight="1"
+      style="@style/TextAppearance.GalIsland.ConfigLabel" />
+    <com.google.android.material.textfield.TextInputLayout
+      android:id="@+id/slider_row_value_til"
+      android:layout_width="@dimen/gi_slider_value_width"
+      android:layout_height="wrap_content"
+      app:boxBackgroundMode="outline"
+      app:boxStrokeWidth="0dp">
+      <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/slider_row_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:imeOptions="actionDone"
+        android:inputType="numberDecimal"
+        android:maxLength="6"
+        android:maxLines="1"
+        android:textSize="@dimen/gi_text_slider_value" />
+    </com.google.android.material.textfield.TextInputLayout>
+  </LinearLayout>
+  <LinearLayout
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_weight="4"
-    android:stepSize="1"
-    android:valueFrom="1"
-    android:valueTo="50"
-    android:value="1" />
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+    <TextView
+      android:id="@+id/slider_row_min"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      style="@style/TextAppearance.GalIsland.StatusText" />
+    <com.google.android.material.slider.Slider
+      android:id="@+id/slider_row_slider"
+      style="@style/Widget.GalIsland.Slider"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:stepSize="1"
+      android:value="1"
+      android:valueFrom="1"
+      android:valueTo="50" />
+    <TextView
+      android:id="@+id/slider_row_max"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      style="@style/TextAppearance.GalIsland.StatusText" />
+  </LinearLayout>
 </LinearLayout>

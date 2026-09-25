@@ -40,18 +40,43 @@ class ReadColorConfig @Inject constructor() {
             cursor.encode("reader_theme_mode", value.name)
         }
 
-    /** Preset color name ("Preset 1", "Preset 2", etc.) or empty if custom. */
-    var presetColorName: String
-        get() = cursor.decodeString("preset_color_name", "") ?: ""
+    /**
+     * Saved custom background colours as a JSON array of hex strings.
+     *
+     * Supersedes the pre-axis `custom_colors_json`, which stored text+background
+     * *combinations*; [ReadColorRepository.migrateLegacyCustomColors] splits that
+     * list onto the two axes once.
+     */
+    var customBgColorsJson: String
+        get() = cursor.decodeString("custom_bg_colors_json", "[]") ?: "[]"
         set(value) {
-            cursor.encode("preset_color_name", value)
+            cursor.encode("custom_bg_colors_json", value)
         }
 
-    /** Custom saved colors as JSON array of {textColor, bgColor}. */
+    /** Saved custom text colours as a JSON array of hex strings. */
+    var customTextColorsJson: String
+        get() = cursor.decodeString("custom_text_colors_json", "[]") ?: "[]"
+        set(value) {
+            cursor.encode("custom_text_colors_json", value)
+        }
+
+    /**
+     * Legacy combined custom colours (JSON array of `{textColor, bgColor}`).
+     *
+     * Kept so the one-shot split can read it, and so a rollback to the previous
+     * build still finds its data. No new code writes it.
+     */
     var customColorsJson: String
         get() = cursor.decodeString("custom_colors_json", "[]") ?: "[]"
         set(value) {
             cursor.encode("custom_colors_json", value)
+        }
+
+    /** One-shot flag for [ReadColorRepository.migrateLegacyCustomColors]. */
+    var hasMigratedCustomColorAxes: Boolean
+        get() = cursor.decodeBool("has_migrated_custom_color_axes", false)
+        set(value) {
+            cursor.encode("has_migrated_custom_color_axes", value)
         }
 
     /**

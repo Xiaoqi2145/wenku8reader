@@ -406,13 +406,17 @@
     <string name="search_hits_in_chapter">%1$d 处</string>
     <!-- Reader feedback (P0-2 / P0-3 / P1-2) -->
     <string name="reader_status_progress">%1$d%%</string>
-    <string name="color_preset_applied">已应用：%1$s</string>
-    <string name="color_preset_label">预设 %1$d</string>
     <string name="color_format_invalid">颜色格式不正确，请输入 6 位十六进制色值</string>
-    <string name="custom_color_saved">已保存自定义配色</string>
-    <string name="custom_color_name">自定义 %1$s</string>
-    <string name="custom_color_save_failed">保存失败：已达上限或配色已存在</string>
+    <string name="custom_color_saved">已保存自定义颜色</string>
+    <string name="custom_color_save_failed">保存失败：已达上限或颜色已存在</string>
     <string name="color_restored">已恢复默认配色</string>
+    <!-- Colour axes (R4-1 / R4-2) -->
+    <string name="reader_color_add_custom">添加自定义颜色</string>
+    <string name="reader_color_removed">已删除自定义颜色</string>
+    <string name="reader_color_hex_hint_dark">000000</string>
+    <string name="reader_color_hex_hint_light">ffffff</string>
+    <string name="reader_color_saved_bg">已保存为自定义背景色</string>
+    <string name="reader_color_saved_text">已保存为自定义文字色</string>
     <string name="bookmark_added">已添加书签</string>
     <string name="bookmark_removed">已删除书签</string>
     <string name="jump_to_page">跳转到页</string>

@@ -14,7 +14,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.OnBackPressedCallback
 import androidx.core.graphics.toColorInt
 import com.cyh128.hikari_novel.util.ReaderColorResolver
-import com.cyh128.hikari_novel.util.ReaderColorSwatch
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -25,8 +24,7 @@ import com.cyh128.hikari_novel.base.BaseActivity
 import com.cyh128.hikari_novel.data.model.Event
 import com.cyh128.hikari_novel.data.model.HorizontalRead
 import com.cyh128.hikari_novel.data.model.ReadParcel
-import com.cyh128.hikari_novel.data.model.ReaderColorPreset
-import com.cyh128.hikari_novel.data.model.ReaderColorPresets
+import com.cyh128.hikari_novel.data.model.ReaderColorSwatches
 import com.cyh128.hikari_novel.data.source.local.database.read_history.horizontal_read_history.HorizontalReadHistoryEntity
 import com.cyh128.hikari_novel.databinding.ActivityHorizontalReadBinding
 import com.cyh128.hikari_novel.databinding.ViewHorizontalReadConfigBinding
@@ -37,6 +35,7 @@ import com.cyh128.hikari_novel.ui.read.common.ReaderChromeGeometry
 import com.cyh128.hikari_novel.ui.read.common.ReaderChromePalette
 import com.cyh128.hikari_novel.ui.read.common.ReaderChromeTheme
 import com.cyh128.hikari_novel.ui.read.common.ReaderGridDrawable
+import com.cyh128.hikari_novel.ui.read.common.ReaderSliderRowBinder
 import com.cyh128.hikari_novel.ui.read.common.ReaderWindowInsetsCoordinator
 
 import com.cyh128.hikari_novel.util.ReaderStatusText
@@ -46,7 +45,7 @@ import com.cyh128.hikari_novel.data.source.local.mmkv.AppConfig
 import javax.inject.Inject
 import com.drake.channel.receiveEvent
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.button.MaterialButton
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.slider.Slider
 import com.google.android.material.snackbar.Snackbar
@@ -267,6 +266,8 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
         // One-shot: a day background still on the old pure-white default moves to
         // the warm off-white the grid surface was designed for.
         viewModel.readColorRepository().migrateDefaultDayBackground()
+        // One-shot: the pre-axis custom colour list splits onto the two axes.
+        viewModel.readColorRepository().migrateLegacyCustomColors()
         //初始化阅读器的背景颜色和字体颜色
         binding.pvAHRead.backgroundcolor = readerColorResolver.bgColorHex().toColorInt()
         binding.pvAHRead.textColor = readerColorResolver.textColorHex().toColorInt()
@@ -315,27 +316,45 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
             dismissWithAnimation = true
         }
 
-        // P0-4: Slider rows with value display and real-time preview
-        setupSliderRow(bottomViewBinding.sliderFontSize, getString(R.string.font_size), 30f, 100f, 1f, viewModel.getFontSize()) {
+        // R4-3: one shared slider row binder for both panels, with min/max labels.
+        ReaderSliderRowBinder.bind(
+            bottomViewBinding.sliderFontSize,
+            getString(R.string.font_size), 30f, 100f, 1f, viewModel.getFontSize()
+        ) {
             binding.pvAHRead.textSize = it
             viewModel.setFontSize(it)
         }
-        setupSliderRow(bottomViewBinding.sliderBottomTextSize, getString(R.string.progress_text_size), 1f, 100f, 1f, viewModel.getBottomFontSize()) {
+        ReaderSliderRowBinder.bind(
+            bottomViewBinding.sliderBottomTextSize,
+            getString(R.string.progress_text_size), 1f, 100f, 1f, viewModel.getBottomFontSize()
+        ) {
             binding.pvAHRead.bottomTextSize = it
             viewModel.setBottomFontSize(it)
         }
-        setupSliderRow(bottomViewBinding.sliderLineSpacing, getString(R.string.line_spacing), 1f, 5f, 0.1f, viewModel.getLineSpacing()) {
+        ReaderSliderRowBinder.bind(
+            bottomViewBinding.sliderLineSpacing,
+            getString(R.string.line_spacing), 1f, 5f, 0.1f, viewModel.getLineSpacing()
+        ) {
             binding.pvAHRead.rowSpace = it
             viewModel.setLineSpacing(it)
         }
-        setupSliderRow(bottomViewBinding.sliderParagraphSpacing, getString(R.string.paragraph_spacing), 0f, 4f, 0.1f, viewModel.getParagraphSpacing()) {
+        ReaderSliderRowBinder.bind(
+            bottomViewBinding.sliderParagraphSpacing,
+            getString(R.string.paragraph_spacing), 0f, 4f, 0.1f, viewModel.getParagraphSpacing()
+        ) {
             binding.pvAHRead.paragraphSpacing = it
             viewModel.setParagraphSpacing(it)
         }
-        setupSliderRow(bottomViewBinding.sliderLetterSpacing, getString(R.string.letter_spacing), 0f, 20f, 1f, viewModel.getLetterSpacing()) {
+        ReaderSliderRowBinder.bind(
+            bottomViewBinding.sliderLetterSpacing,
+            getString(R.string.letter_spacing), 0f, 20f, 1f, viewModel.getLetterSpacing()
+        ) {
             binding.pvAHRead.letterSpacing = it
             viewModel.setLetterSpacing(it)
         }
+
+        // R4-1 / R4-2: the two colour axes.
+        setupColorAxes()
         bottomViewBinding.sVHReadConfigKeyDownSwitchChapter.isChecked = viewModel.getKeyDownSwitchChapter()
         // P1-1: Set animation mode toggle group
         when (viewModel.getSwitchAnimationMode()) {
@@ -524,21 +543,11 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
 
 
 
-        // P0-2: Preset colour buttons
-        setupPresetButtons(
-            listOf(
-                bottomViewBinding.bPresetColor1,
-                bottomViewBinding.bPresetColor2,
-                bottomViewBinding.bPresetColor3,
-                bottomViewBinding.bPresetColor4
-            )
-        )
+        // R4-1: Save the typed pair onto its own axis.
+        bottomViewBinding.iColorSection.bSaveCustomColor.setOnClickListener { saveCustomColor(isBackground = true) }
 
-        // P0-2: Save custom color
-        bottomViewBinding.bVHReadConfigSaveCustomColor.setOnClickListener { saveCustomColor() }
-
-        // P0-2: Restore defaults
-        bottomViewBinding.bVHReadConfigRestoreDefaults.setOnClickListener { restoreColorDefaults() }
+        // R4-1: Restore both colour pairs to the factory defaults.
+        bottomViewBinding.iColorSection.bRestoreDefaults.setOnClickListener { restoreColorDefaults() }
 
         // P1-3: Bookmark toggle. The icon mirrors whether the visible chapter is bookmarked.
         binding.barAHRead.readBookmark.setOnClickListener {
@@ -746,97 +755,116 @@ class ReadActivity : BaseActivity<ActivityHorizontalReadBinding>() {
     private fun getHideBarColor(): Int = getHideBarColorString().toColorInt()
 
     /**
-     * Configure a reusable slider row with label, value display, range, and real-time preview.
+     * R4-1 / R4-2: wires the background and text colour axes.
+     *
+     * Each axis is independent — picking a background only changes the
+     * background — except for Koodo's two linkage rules, which
+     * [ReaderColorSwatches.linkedTextColorFor] owns.
      */
-    private fun setupSliderRow(
-        binding: com.cyh128.hikari_novel.databinding.ViewReaderSliderRowBinding,
-        label: String,
-        valueFrom: Float,
-        valueTo: Float,
-        stepSize: Float,
-        initialValue: Float,
-        onValueChange: (Float) -> Unit
-    ) {
-        binding.sliderRowLabel.text = label
-        binding.sliderRowSlider.valueFrom = valueFrom
-        binding.sliderRowSlider.valueTo = valueTo
-        binding.sliderRowSlider.stepSize = stepSize
-        binding.sliderRowSlider.value = initialValue
-        binding.sliderRowValue.setText(initialValue.toString())
-        binding.sliderRowSlider.addOnChangeListener { _, value, _ ->
-            onValueChange(value)
-            binding.sliderRowValue.setText(value.toString())
-        }
-        binding.sliderRowValue.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) {
-                val newValue = binding.sliderRowValue.text.toString().toFloatOrNull()
-                if (newValue != null) {
-                    val clamped = newValue.coerceIn(valueFrom, valueTo)
-                    binding.sliderRowSlider.value = clamped
-                    onValueChange(clamped)
-                    binding.sliderRowValue.setText(clamped.toString())
-                } else {
-                    binding.sliderRowValue.setText(binding.sliderRowSlider.value.toString())
-                }
+    private fun setupColorAxes() {
+        bottomViewBinding.iColorSection.swatchRowBg.onColorPicked = { hex -> pickColor(hex, isBackground = true) }
+        bottomViewBinding.iColorSection.swatchRowText.onColorPicked = { hex -> pickColor(hex, isBackground = false) }
+        bottomViewBinding.iColorSection.swatchRowBg.onColorRemoved = { hex -> removeCustomColor(hex, isBackground = true) }
+        bottomViewBinding.iColorSection.swatchRowText.onColorRemoved = { hex -> removeCustomColor(hex, isBackground = false) }
+        // "Add" saves whatever the hex box currently holds onto that axis; the
+        // box is the only free-form colour input, so reusing it avoids a second
+        // dialog for the same job.
+        bottomViewBinding.iColorSection.swatchRowBg.onAddRequested = { saveCustomColor(isBackground = true) }
+        bottomViewBinding.iColorSection.swatchRowText.onAddRequested = { saveCustomColor(isBackground = false) }
+        refreshColorAxes()
+    }
+
+    /** Applies one axis pick, then re-renders and re-marks the rows. */
+    private fun pickColor(hex: String, isBackground: Boolean) {
+        val repository = viewModel.readColorRepository()
+        if (isBackground) {
+            repository.setCurrentBgColor(hex)
+            // Keep the pair readable: a dark background forces white text, and
+            // white text on a white background turns black.
+            ReaderColorSwatches.linkedTextColorFor(hex, repository.currentTextColor())?.let {
+                repository.setCurrentTextColor(it)
             }
+        } else {
+            repository.setCurrentTextColor(hex)
+        }
+        setColor()
+        updateColorInputs()
+        refreshColorAxes()
+    }
+
+    private fun removeCustomColor(hex: String, isBackground: Boolean) {
+        val repository = viewModel.readColorRepository()
+        if (isBackground) repository.removeCustomBgColor(hex) else repository.removeCustomTextColor(hex)
+        Snackbar.make(binding.root, R.string.reader_color_removed, Snackbar.LENGTH_SHORT).show()
+        refreshColorAxes()
+    }
+
+    /** Re-reads both axes from storage and re-renders the swatch rows. */
+    private fun refreshColorAxes() {
+        val repository = viewModel.readColorRepository()
+        val ring = readerColorResolver.textColorHex().toColorInt()
+        val accent = MaterialColors.getColor(binding.root, androidx.appcompat.R.attr.colorPrimary)
+
+        bottomViewBinding.iColorSection.swatchRowBg.apply {
+            setPalette(ring, accent)
+            submit(
+                ReaderColorSwatches.axis(ReaderColorSwatches.BACKGROUNDS, repository.getCustomBgColors()),
+                repository.currentBgColor()
+            )
+        }
+        bottomViewBinding.iColorSection.swatchRowText.apply {
+            setPalette(ring, accent)
+            submit(
+                ReaderColorSwatches.axis(ReaderColorSwatches.TEXTS, repository.getCustomTextColors()),
+                repository.currentTextColor()
+            )
         }
     }
 
     /**
-     * P0-2: Wire the four colour presets.
+     * R4-1: saves the hex boxes as custom colours.
      *
-     * The swatch mirrors Koodo's colour blocks, so the presets are identifiable
-     * without tapping each one; the label and content description carry the
-     * index and the preset name for accessibility.
+     * [isBackground] null means "both axes" — that is what the panel's Save
+     * button does, since the two boxes are edited side by side. The per-axis
+     * "add" affordances pass an explicit axis instead.
+     *
+     * Both boxes are validated together so a half-typed value cannot be saved
+     * by accident.
      */
-    private fun setupPresetButtons(buttons: List<MaterialButton>) {
-        buttons.forEachIndexed { index, button ->
-            val preset = ReaderColorPresets.PRESETS.getOrNull(index) ?: return@forEachIndexed
-            button.text = getString(R.string.color_preset_label, index + 1)
-            button.icon = ReaderColorSwatch.create(this, preset.bgColor, preset.textColor)
-            button.contentDescription = preset.name
-            button.setOnClickListener { applyPreset(index) }
-        }
-    }
-
-    /** P0-2: Apply a preset color by index. */
-    private fun applyPreset(index: Int) {
-        val preset = ReaderColorPresets.PRESETS.getOrNull(index) ?: return
-        viewModel.readColorRepository().applyPreset(preset)
-        setColor()
-        Snackbar.make(binding.root, getString(R.string.color_preset_applied, preset.name), Snackbar.LENGTH_SHORT).show()
-    }
-
-    /** P0-2: Save current hex colors as a custom preset. */
-    private fun saveCustomColor() {
-        val textColor = bottomViewBinding.editTextColor.text.toString().trim()
-        val bgColor = bottomViewBinding.editBgColor.text.toString().trim()
+    private fun saveCustomColor(isBackground: Boolean? = null) {
+        val textColor = bottomViewBinding.iColorSection.editTextColor.text.toString().trim()
+        val bgColor = bottomViewBinding.iColorSection.editBgColor.text.toString().trim()
         if (!HEX_PATTERN.matches(textColor) || !HEX_PATTERN.matches(bgColor)) {
             Snackbar.make(binding.root, R.string.color_format_invalid, Snackbar.LENGTH_SHORT).show()
             return
         }
-        val preset = ReaderColorPreset(
-            name = getString(
-                R.string.custom_color_name,
-                java.text.SimpleDateFormat("MM-dd HH:mm", java.util.Locale.getDefault())
-                    .format(java.util.Date())
-            ),
-            textColor = textColor,
-            bgColor = bgColor
-        )
-        val result = viewModel.readColorRepository().addCustomColor(preset)
-        Snackbar.make(
-            binding.root,
-            if (result) R.string.custom_color_saved else R.string.custom_color_save_failed,
-            Snackbar.LENGTH_SHORT
-        ).show()
+        val repository = viewModel.readColorRepository()
+        val savedBg = isBackground != false && repository.addCustomBgColor(bgColor)
+        val savedText = isBackground != true && repository.addCustomTextColor(textColor)
+        val saved = savedBg || savedText
+        val message = when {
+            !saved -> R.string.custom_color_save_failed
+            isBackground == true -> R.string.reader_color_saved_bg
+            isBackground == false -> R.string.reader_color_saved_text
+            else -> R.string.custom_color_saved
+        }
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+        refreshColorAxes()
     }
 
-    /** P0-2: Restore default colors. */
+    /** R4-1: Restore both colour pairs to the factory defaults. */
     private fun restoreColorDefaults() {
         viewModel.readColorRepository().restoreDefaults()
         setColor()
+        updateColorInputs()
+        refreshColorAxes()
         Snackbar.make(binding.root, R.string.color_restored, Snackbar.LENGTH_SHORT).show()
+    }
+
+    /** Update the hex input fields with current colors. */
+    private fun updateColorInputs() {
+        bottomViewBinding.iColorSection.editTextColor.setText(readerColorResolver.textColorHex().removePrefix("#"))
+        bottomViewBinding.iColorSection.editBgColor.setText(readerColorResolver.bgColorHex().removePrefix("#"))
     }
 
     /** P1-2: Ask for a page number and jump to it, clamped to the chapter range. */

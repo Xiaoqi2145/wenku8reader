@@ -37,7 +37,6 @@
   <dimen name="gi_stroke">1dp</dimen>
   <!-- ===================== 小说卡片 ===================== -->
   <dimen name="gi_card_margin">6dp</dimen>
-  <dimen name="gi_card_padding">12dp</dimen>
   <dimen name="gi_cover_width">112dp</dimen>
   <!-- 小说封面 4:5（112 x 140）。规范第 2 节：小说封面比例 4:5。 -->
   <dimen name="gi_cover_height">140dp</dimen>
@@ -79,7 +78,6 @@
   <dimen name="gi_nav_indicator_height">32dp</dimen>
   <!-- Reader HUD height is semantic; system navigation is handled by the window policy. -->
   <dimen name="gi_reader_status_line_height">28dp</dimen>
-  <dimen name="gi_status_bar_height">@dimen/gi_reader_status_line_height</dimen>
   <dimen name="gi_reader_content_bottom_inset">36dp</dimen>
   <!-- 宽屏下阅读底栏内容的最大宽度；背景仍全宽，内容居中。 -->
   <dimen name="gi_reader_dock_max_width">840dp</dimen>
@@ -94,10 +92,16 @@
   <dimen name="gi_text_list_title">15sp</dimen>
   <dimen name="gi_text_sheet_title">18sp</dimen>
   <dimen name="gi_text_empty_title">16sp</dimen>
-  <dimen name="gi_text_card_title_emphasis">14sp</dimen>
   <dimen name="gi_text_config">14sp</dimen>
   <!-- 阅读设置滑杆行里的可编辑数值框：等宽数字、居中，独立于 ConfigLabel 的 14sp。 -->
   <dimen name="gi_text_slider_value">13sp</dimen>
+  <!-- 滑杆数值框宽度：固定宽度，避免不同位数把 label 挤成不同长度。 -->
+  <dimen name="gi_slider_value_width">72dp</dimen>
+  <!-- 阅读配色色块（ReaderColorSwatchView）。ring 为选中描边的额外半径，
+       badge 为自定义色右上角 ✕ 的直径。 -->
+  <dimen name="gi_color_swatch_size">36dp</dimen>
+  <dimen name="gi_color_swatch_ring">2dp</dimen>
+  <dimen name="gi_color_swatch_badge_size">14dp</dimen>
   <dimen name="gi_text_heading">22sp</dimen>
   <dimen name="gi_text_body_default">14sp</dimen>
   <dimen name="gi_text_reader_end">20sp</dimen>

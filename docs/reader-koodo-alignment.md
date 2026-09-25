@@ -445,3 +445,69 @@ Koodo 是桌面/多格式阅读器（PDF/EPUB/TXT/CBR + AI 商业化），以下
 - `:app:testDebugUnitTest` ✅（新增 `BookSearchMatcherTest` 8 例；`VerticalReaderCoreTest` 增 3 例）
 - `build/check_galisland_py.py` → 0 failure；`build/verify_res.py` → 0 XML 错误 / 0 悬空引用
 - **仍未实测**：无设备。搜索的两阶段交互、书签跳转落点、三分区手感都属静态审查结论。
+
+---
+
+## 九、第四轮：设置面板对齐 Koodo 的配色双轴与滑杆四件套
+
+计划全文见 [`reader-settings-round4-plan.md`](./reader-settings-round4-plan.md)。本轮只改**设置面板本身**，不碰渲染链路（P0-3 排版六项、P1-1 翻页动画已在第三轮完成）。
+
+### 9.1 配色改为两条独立的轴
+
+Koodo 的 `themeList` 把配色拆成 **Background color** 与 **Text color** 两条轴，各自是「预设 + 自定义 + Clear」。第三轮我们做的是四条 **bg+text 组合**预设，语义不同：选一个预设会把背景和文字一起换掉。
+
+本轮改为双轴：
+
+| | 轴内容 | 来源 |
+| --- | --- | --- |
+| 背景颜色 | 白 / 深灰 / 米黄 / 浅绿 | Koodo `backgroundList` 原值 |
+| 文字颜色 | 黑 / 白 / 棕 / 深绿 | Koodo `textList` 原值 |
+
+- 两条轴**互相独立**，只有 Koodo 的两条联动规则保留：深灰底 → 强制白字；白底 + 当前白字 → 转黑字。规则抽成纯函数 `ReaderColorSwatches.linkedTextColorFor`，有 5 例测试。
+- 我们比 Koodo 多一层「日/夜两套」。**这一层保留**：第三轮已把阅读页收敛为两态（`convergeReaderThemeMode`），若改成 Koodo 的单值模型，切日夜就会丢另一套配色。轴上的点选写入**当前模式**那一套。
+- `ReaderThemeMode` 用 `Night` 判定；`System` 是已被折叠的遗留值，按日间处理。
+
+### 9.2 自定义色从死数据变成可用色块
+
+第三轮的 `addCustomColor` / `getCustomColors` / `removeCustomColor` **有实现、有单测、没有任何 UI 读取** —— 保存进去的配色是死数据。本轮补上：
+
+- 新控件 `ReaderColorSwatchView`（自绘圆点：填充 + 描边 + 选中主色环 + 自定义色右上角 ✕ + 按压变暗）。
+- 新容器 `ReaderColorSwatchRow`（一条轴的色块行 + 末尾「＋」）。**用代码构造**而非 XML 列表：色块数量随用户保存数变化，静态 XML 会把上限写死。
+- 存储从「组合列表」`custom_colors_json`（`{textColor, bgColor}`）迁移为两条 hex 列表 `custom_bg_colors_json` / `custom_text_colors_json`。迁移 `migrateLegacyCustomColors` 一次性执行，幂等；**旧键保留不删**，回滚到上一版本仍能找到数据。
+
+### 9.3 滑杆四件套 + 消除重复
+
+`view_reader_slider_row.xml` 由「label + 数值 + Slider 一行」改为两行式，补上 Koodo 的 **min/max 范围标签**：
+
+```text
+┌ 段间距                    [ 1.5 ] ┐
+│ 0 ───────────●────────────── 4   │
+└──────────────────────────────────┘
+```
+
+绑定逻辑原本在**两个 Activity 里逐字重复了两份**，现抽成 `ReaderSliderRowBinder`（一份）。新增两条 Koodo 有而我们缺的行为：
+
+- 数值框 **Enter（IME_ACTION_DONE）也提交**，此前只有失焦提交。
+- 外部来源的值先 `snapToStep` 再赋给 Slider —— Material 的 `Slider` 对不在步长网格上的值会抛异常（旧版本写入的、或步长变更后的存量值）。
+
+格式化与 clamp 抽成纯逻辑 `ReaderSliderValue`（19 例测试）。写测试时发现并修正了一个自己的错误假设：`snapToStep(1.05f, 1f, 0.1f)` 因浮点表示并不会落在中点上，测试改为用 0.3 步长断言「以 valueFrom 为原点」这一真正的不变式。
+
+### 9.4 面板可滚动（前置项）
+
+两个 config 布局的项数已超一屏，小屏上底部按钮会被挤出屏幕且**无法滚动**。根部包一层 `NestedScrollView`，`BottomSheetDragHandleView` 留在滚动区外（否则拖动内容会误触关闭）。
+
+### 9.5 清理
+
+- 删 `ReadColorConfig.presetColorName` 及仓库读写（全项目只有定义与写入、**零读取点**，是双轴化后的遗留）。
+- 删 `util/ReaderColorSwatch.kt`（旧预设按钮的 drawable 工厂，被新控件取代）。
+- 删 3 个 dead token：`gi_card_padding`、`gi_status_bar_height`、`gi_text_card_title_emphasis`（`verify_res.py` 的死 token 检查现为 0）。
+- `fragment_guide.xml` 的 `cv_a_select_color_recommend_day` → `cv_a_guide_recommend`（与已删配色页撞名，Kotlin 侧零引用）。这是第三轮 8.6 留下的遗留项。
+- `values-zh-rTW/strings.xml` **补上第三轮以来缺失的全部 70+ 条字符串**（P0-2/P0-3/P1-1/P1-2/P1-3/P1-4 与本轮新增）。注意 `download`/`pause`/`night_mode`/`display_settings` 等 9 条已在 `galisland_strings.xml` 定义，**不能重复**（会触发资源合并报错），已在文件中留注释说明。
+
+### 9.6 验证
+
+- `:app:compileDebugKotlin` ✅ / `:app:assembleDebug` ✅
+- `:app:testDebugUnitTest` ✅ **152 tests / 0 failures**（27 个测试类；本轮新增 `ReaderColorSwatchesTest` 17 例、`ReaderSliderValueTest` 19 例）
+- `build/check_galisland_py.py` → 0 failure；`build/verify_res.py` → 0 XML 错误 / 0 悬空引用 / **0 dead token**
+- **仍未实测**：无设备。色块行在窄屏的横向滚动行为、✕ 角标的触控精度、双行滑杆的面板高度都属静态审查结论。
+

@@ -340,4 +340,76 @@
     <string name="catalog_chapter_count">共 %1$d 章</string>
     <string name="catalog_current_position">第%1$d卷 · 第%2$d章</string>
     <string name="chapter_number">第%1$d章</string>
+    <!-- 閱讀配色與排版（P0-2 / P0-3 / R4-1）
+         注意：download / pause / night_mode / display_settings / behavior_settings /
+         advanced_settings / read_status_* 已在 galisland_strings.xml 定義，勿在此重复。 -->
+    <string name="github">Github</string>
+    <string name="color_settings">閱讀配色</string>
+    <string name="text_color">文字顏色</string>
+    <string name="bg_color">背景顏色</string>
+    <string name="save_custom_color">儲存自訂</string>
+    <string name="restore_defaults">還原預設</string>
+    <string name="paragraph_spacing">段間距</string>
+    <string name="letter_spacing">字間距</string>
+    <string name="text_alignment">對齊方式</string>
+    <string name="alignment_left">靠左對齊</string>
+    <string name="alignment_justify">兩端對齊</string>
+    <string name="alignment_right">靠右對齊</string>
+    <string name="first_line_indent">首行縮排</string>
+    <string name="indent_none">無</string>
+    <string name="indent_two_chars">兩字元</string>
+    <!-- 翻頁動畫（P1-1） -->
+    <string name="animation_mode">翻頁動畫</string>
+    <string name="animation_none">無</string>
+    <string name="animation_sliding">滑動</string>
+    <string name="animation_mimical">翻書</string>
+    <!-- 進度（P1-2） -->
+    <string name="chapter_progress">%1$d/%2$d</string>
+    <string name="page_progress">%1$d/%2$d</string>
+    <string name="full_book_progress">全書 %1$d%%</string>
+    <!-- 書籤（P1-3） -->
+    <string name="bookmark">書籤</string>
+    <string name="add_bookmark">新增書籤</string>
+    <string name="remove_bookmark">刪除書籤</string>
+    <string name="bookmark_empty">暫無書籤</string>
+    <!-- 全書搜尋（P1-4） -->
+    <string name="search_in_book">全書搜尋</string>
+    <string name="search_hint">輸入關鍵字</string>
+    <string name="search_results_count">共 %1$d 條結果</string>
+    <string name="search_no_results">未找到結果</string>
+    <string name="search_loading">搜尋中...</string>
+    <string name="bookmark_count">共 %1$d 條</string>
+    <string name="bookmark_deleted">已刪除書籤</string>
+    <string name="search_online_remaining">連網搜尋剩餘章節</string>
+    <string name="search_status_scanning">搜尋中… %1$d/%2$d</string>
+    <string name="search_status_online">連網搜尋中… %1$d/%2$d</string>
+    <string name="search_status_partial">已掃描 %1$d/%2$d 章 · 共 %3$d 條</string>
+    <string name="search_status_complete">已掃描全部 %1$d 章 · 共 %2$d 條</string>
+    <string name="search_need_query">請輸入關鍵字</string>
+    <string name="search_hits_in_chapter">%1$d 處</string>
+    <!-- 閱讀回饋（P0-2 / P0-3 / P1-2 / R4-1） -->
+    <string name="reader_status_progress">%1$d%%</string>
+    <string name="color_format_invalid">顏色格式不正確，請輸入 6 位十六進位色值</string>
+    <string name="custom_color_saved">已儲存自訂顏色</string>
+    <string name="custom_color_save_failed">儲存失敗：已達上限或顏色已存在</string>
+    <string name="color_restored">已還原預設配色</string>
+    <string name="reader_color_add_custom">新增自訂顏色</string>
+    <string name="reader_color_removed">已刪除自訂顏色</string>
+    <string name="reader_color_hex_hint_dark">000000</string>
+    <string name="reader_color_hex_hint_light">ffffff</string>
+    <string name="reader_color_saved_bg">已儲存為自訂背景色</string>
+    <string name="reader_color_saved_text">已儲存為自訂文字色</string>
+    <string name="bookmark_added">已新增書籤</string>
+    <string name="bookmark_removed">已刪除書籤</string>
+    <string name="jump_to_page">跳轉到頁</string>
+    <string name="jump_to_page_range">跳轉到頁（1-%1$d）</string>
+    <!-- 閱讀器內嵌狀態文字 -->
+    <string name="image_load_failed">載入圖片失敗</string>
+    <string name="image_loading">載入插圖中</string>
+    <string name="chapter_loading">載入章節中</string>
+    <string name="illustration_failed">插圖#%1$d 載入失敗</string>
+    <string name="illustration_label">插圖#%1$d</string>
+    <string name="load_failed">載入失敗</string>
+    <string name="page_number_hint">頁碼</string>
+    <string name="jump">跳轉</string>
 </resources>
