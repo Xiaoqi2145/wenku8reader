@@ -104,10 +104,14 @@
 
 `onTouchEvent` 第一句是 `if (handleReaderTouchEvent(event)) return true`，而 `handleReaderTouchEvent`（`244-274`）在 **所有分支**都 `return true`（`247`、`249`、`273`）。因此 `153-235` 的整块旧逻辑、`66` 的 `minMove`、`111-114` 的四个手势字段**全部为死代码**。其中 `224-235` 正是"纵向滑动也翻页"的滚动式手势。
 
+> **已处理（2026-09-29）**：整块已删除，`handleReaderTouchEvent` 改为 `Unit` 返回、`onTouchEvent` 直接调用它。`minMove` 与四个手势字段一并移除，`kotlin.math.abs` 导入随之失效也删掉。
+
 ### P2-2 `PageImage` 同样有一整块不可达旧手势
 **位置**：`ui/read/horizontal/PageImage.kt:108-109`、`111-187`、`195-221`（`220` 恒 `return true`）、字段 `89-92`
 
 与 P2-1 同构：旧块用的是 3/5、2/5 分区 + 5px 点击阈值，新块用的是三分区 + `ReaderTouchJudge`。两套阈值同时存在，只是旧的那套不会跑。
+
+> **已处理（2026-09-29）**：同上，旧块与字段已删除。顺带修掉一个由此暴露的问题：点按右半页原本只会打开左半页的图，现已按命中的半页打开对应插图。
 
 ### P2-3 `PageView` 的 `currentView is PageImage` 分支不可达
 **位置**：`ui/read/horizontal/PageView.kt:245-248`

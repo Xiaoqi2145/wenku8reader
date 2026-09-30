@@ -8,19 +8,18 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import androidx.appcompat.widget.AppCompatImageView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.target.Target
+import com.bumptech.glide.request.transition.Transition
 import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.util.ReaderTapArea
 import com.cyh128.hikari_novel.util.ReaderTouchJudge
-import kotlin.math.abs
 
 /*
  * Copyright 2018 ya-b
@@ -68,13 +67,24 @@ class PageImage : AppCompatImageView {
 
     var mTitle: String? = null
     var mPageNum: Int = 0
+    var mSecondPageNum: Int = 0
     var mMaxPageNum: Int = 0
+
+    /**
+     * Tablet double-page mode: this page shows two illustrations side by side,
+     * one per half of the viewport, instead of stretching one across the whole
+     * page. [mSecondImageurl] is null on the last illustration of an odd-length
+     * section, which leaves the right half empty.
+     */
+    var mDoublePageMode = false
+    var mSecondImageurl: String? = null
 
     private val readerContentBottomInset by lazy {
         resources.getDimension(com.cyh128.hikari_novel.R.dimen.gi_reader_content_bottom_inset)
     }
 
     var imageRect: RectF? = null
+    var secondImageRect: RectF? = null
     var mImageurl: String? = null
     lateinit var mImageClick: (String) -> Unit
     lateinit var mOnNextPage: () -> Unit
@@ -86,13 +96,24 @@ class PageImage : AppCompatImageView {
     private var touchStartY = 0f
     private var ignoreCurrentGesture = false
 
-    private var isMoved = false                       //手势判断
-    private var isTouching = false                    //手势判断
-    private var moveStart = FloatArray(2)        //手势判断
-    private var moveEnd = FloatArray(2)          //手势判断
-
     private var imageBitmap: Bitmap? = null
+    private var secondImageBitmap: Bitmap? = null
     private var isLoadFailed = false
+    private var isSecondLoadFailed = false
+
+    /** The URL each cached bitmap came from, so a re-bind reloads a new page. */
+    private var loadedUrl: String? = null
+    private var loadedSecondUrl: String? = null
+
+    /**
+     * Retires an in-flight load when the page moves on.
+     *
+     * The two halves are tracked separately because they are loaded
+     * independently; one counter would make the second request invalidate the
+     * first one's result.
+     */
+    private var firstRequestGeneration = 0
+    private var secondRequestGeneration = 0
 
     constructor(context: Context) : super(context)
 
@@ -106,85 +127,10 @@ class PageImage : AppCompatImageView {
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (handleReaderTouchEvent(event)) return true
-
-        imageRect = getBitmapRectF(imageBitmap)
-
-        val x = event.x
-        val y = event.y
-
-        when (event.action) {
-            MotionEvent.ACTION_DOWN -> {
-                moveStart = floatArrayOf(event.x, event.y)
-                isTouching = true
-                isMoved = false
-            }
-
-            MotionEvent.ACTION_MOVE -> {
-                moveEnd = floatArrayOf(event.x, event.y)
-                isMoved = true
-            }
-
-            MotionEvent.ACTION_UP -> {
-                moveEnd = floatArrayOf(event.x, event.y)
-                isTouching = false
-            }
-        }
-
-        if (!isTouching && (!isMoved || (isMoved && abs(moveStart[0] - moveEnd[0]) < 5f && abs(moveStart[1] - moveEnd[1]) < 5f))) { //点击事件
-            when {
-                moveStart[0] > width * 3 / 5 -> {
-                    mOnNextPage()
-                }
-
-                moveStart[0] < width * 2 / 5 -> {
-                    mOnPreviousPage()
-                }
-
-                moveStart[1] > height * 2 / 5 && moveStart[1] < height * 3 / 5 -> {
-                    if (!isTouching && imageRect?.contains(x, y) == true) {
-                        mImageurl?.let {
-                            mImageClick(it)
-                        }
-                        isTouching = false
-                        return true
-                    } else if (!isTouching && imageBitmap == null) { //当图片未加载出来时
-                        mImageurl?.let {
-                            mImageClick(it)
-                        }
-                        isTouching = false
-                        return true
-                    } else if (!isTouching) {
-                        //处理点击在bitmap范围外的事件
-                        mOnCenterClick?.onCenterClick()
-                        return true
-                    }
-                    isTouching = false
-                }
-
-                moveStart[0] > width * 2 / 5 && moveStart[0] < width * 3 / 5 -> {
-                    if (!isTouching && imageRect?.contains(x, y) == true) {
-                        mImageurl?.let {
-                            mImageClick(it)
-                        }
-                        isTouching = false
-                        return true
-                    } else if (!isTouching && imageBitmap == null) { //当图片未加载出来时
-                        mImageurl?.let {
-                            mImageClick(it)
-                        }
-                        isTouching = false
-                        return true
-                    } else if (!isTouching) {
-                        //处理点击在bitmap范围外的事件
-                        mOnCenterClick?.onCenterClick()
-                        return true
-                    }
-                    isTouching = false
-                }
-            }
-        }
-        return super.onTouchEvent(event)
+        // All gestures are handled here; the reader-wide tap/swipe policy lives in
+        // PageView, which forwards to this view only while an image page is up.
+        handleReaderTouchEvent(event)
+        return true
     }
 
     override fun performClick(): Boolean {
@@ -192,8 +138,13 @@ class PageImage : AppCompatImageView {
         return true
     }
 
-    private fun handleReaderTouchEvent(event: MotionEvent): Boolean {
-        imageRect = getBitmapRectF(imageBitmap)
+    private fun handleReaderTouchEvent(event: MotionEvent) {
+        imageRect = getBitmapRectF(imageBitmap, 0f, pageWidth())
+        secondImageRect = if (mDoublePageMode) {
+            getBitmapRectF(secondImageBitmap, pageWidth(), pageWidth())
+        } else {
+            null
+        }
 
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
@@ -217,8 +168,10 @@ class PageImage : AppCompatImageView {
                 ignoreCurrentGesture = false
             }
         }
-        return true
     }
+
+    /** The width one page occupies: half the view in double-page mode. */
+    private fun pageWidth(): Float = if (mDoublePageMode) width / 2f else width.toFloat()
 
     private fun handleGesture(deltaX: Float, deltaY: Float) {
         if (touchJudge.isTap(deltaX, deltaY)) {
@@ -234,10 +187,17 @@ class PageImage : AppCompatImageView {
     }
 
     private fun handleCenterTap() {
-        if (imageRect?.contains(touchStartX, touchStartY) == true || imageBitmap == null) {
-            mImageurl?.let { mImageClick(it) }
-        } else {
-            mOnCenterClick?.onCenterClick()
+        val onSecondHalf = secondImageRect?.contains(touchStartX, touchStartY) == true
+        when {
+            // Each half opens its own illustration, so a spread's right-hand
+            // image is not shadowed by the left one.
+            onSecondHalf -> mSecondImageurl?.let { mImageClick(it) }
+            imageRect?.contains(touchStartX, touchStartY) == true ->
+                mImageurl?.let { mImageClick(it) }
+            // Nothing drawn yet: the tap means "open this page's illustration".
+            imageBitmap == null && secondImageBitmap == null ->
+                mImageurl?.let { mImageClick(it) }
+            else -> mOnCenterClick?.onCenterClick()
         }
     }
 
@@ -248,12 +208,47 @@ class PageImage : AppCompatImageView {
         drawPageBackground(canvas, mPageBackground, mBgColor)
 
         //底部右下角绘制：章节相关信息    格式为:   第 XXX 章节 YYY章节名  ：  n / 该章节总共页数
-        val pageText = "${if (mPageNum > mMaxPageNum) 0 else mPageNum}/$mMaxPageNum"
+        val pageText = if (mDoublePageMode && mSecondPageNum > 0) {
+            "${if (mPageNum > mMaxPageNum) 0 else mPageNum}-$mSecondPageNum/$mMaxPageNum"
+        } else {
+            "${if (mPageNum > mMaxPageNum) 0 else mPageNum}/$mMaxPageNum"
+        }
         drawFooter(canvas, pageText)
 
-        if (imageBitmap == null) {
+        val pageWidth = if (mDoublePageMode) width / 2f else width.toFloat()
+        drawImage(canvas, imageBitmap, isLoadFailed, 0f, pageWidth)
+        // An odd-length illustration section ends with an empty right half; that
+        // is a blank page, not a failed load, so no message is drawn there.
+        if (mDoublePageMode && mSecondImageurl != null) {
+            drawImage(canvas, secondImageBitmap, isSecondLoadFailed, pageWidth, pageWidth)
+        }
+        // The hit rects follow whatever was actually drawn.
+        imageRect = getBitmapRectF(imageBitmap, 0f, pageWidth)
+        secondImageRect = if (mDoublePageMode && mSecondImageurl != null) {
+            getBitmapRectF(secondImageBitmap, pageWidth, pageWidth)
+        } else {
+            null
+        }
+    }
+
+    /**
+     * Paints one illustration, or its loading/failed message, into the
+     * [pageLeft]..[pageLeft]+[pageWidth] half of the view.
+     *
+     * The bitmap is drawn with a matrix instead of [super.onDraw] because the
+     * image view spans the whole viewport while each half is its own page.
+     */
+    private fun drawImage(
+        canvas: Canvas,
+        bitmap: Bitmap?,
+        failed: Boolean,
+        pageLeft: Float,
+        pageWidth: Float
+    ) {
+        val rect = getBitmapRectF(bitmap, pageLeft, pageWidth)
+        if (rect == null) {
             val message = context.getString(
-                if (isLoadFailed) R.string.image_load_failed else R.string.image_loading
+                if (failed) R.string.image_load_failed else R.string.image_loading
             )
             val fontMetrics = mPaint.fontMetrics
             val textHeight = fontMetrics.top - fontMetrics.bottom
@@ -261,13 +256,13 @@ class PageImage : AppCompatImageView {
             // centred using the footer metrics and drifts off centre.
             mPaint.textSize = mTextSize
             val textWidth = mPaint.measureText(message)
-            val pivotX = (width - textWidth) / 2
+            val pivotX = pageLeft + (pageWidth - textWidth) / 2
             val pivotY = (height - textHeight) / 2
             canvas.drawText(message, pivotX, pivotY, mPaint)
-            imageRect = null
+            mPaint.textSize = getFooterTextSize()
+            return
         }
-
-        super.onDraw(canvas)
+        canvas.drawBitmap(bitmap!!, null, rect, mPaint)
     }
 
     private fun drawFooter(canvas: Canvas, pageText: String) {
@@ -300,62 +295,142 @@ class PageImage : AppCompatImageView {
 
     @SuppressLint("CheckResult")
     fun updateImage() {
-        if (imageBitmap != null) return
+        // Each half gets its own request id: a load that finishes after the page
+        // has moved on must not install its bitmap over the new page's
+        // illustration. The two halves are independent, so the ids are separate.
+        val firstRequest = ++firstRequestGeneration
+        val firstUrl = mImageurl
+        loadImage(
+            url = firstUrl,
+            alreadyLoaded = loadedUrl == firstUrl && imageBitmap != null,
+            onReady = { bitmap ->
+                if (firstRequest != firstRequestGeneration || mImageurl != firstUrl) {
+                    return@loadImage
+                }
+                loadedUrl = firstUrl
+                imageBitmap = bitmap
+                isLoadFailed = false
+                invalidate()
+            },
+            onFailed = {
+                if (firstRequest != firstRequestGeneration || mImageurl != firstUrl) {
+                    return@loadImage
+                }
+                loadedUrl = firstUrl
+                imageBitmap = null
+                isLoadFailed = true
+                invalidate()
+            }
+        )
 
-        isLoadFailed = false
-        imageBitmap = null
+        // The right-hand illustration only exists in double-page mode; in
+        // single-page mode a stale bitmap from a previous spread must not linger.
+        if (mDoublePageMode && mSecondImageurl != null) {
+            val secondRequest = ++secondRequestGeneration
+            val secondUrl = mSecondImageurl
+            loadImage(
+                url = secondUrl,
+                alreadyLoaded = loadedSecondUrl == secondUrl && secondImageBitmap != null,
+                onReady = { bitmap ->
+                    if (secondRequest != secondRequestGeneration || mSecondImageurl != secondUrl) {
+                        return@loadImage
+                    }
+                    loadedSecondUrl = secondUrl
+                    secondImageBitmap = bitmap
+                    isSecondLoadFailed = false
+                    invalidate()
+                },
+                onFailed = {
+                    if (secondRequest != secondRequestGeneration || mSecondImageurl != secondUrl) {
+                        return@loadImage
+                    }
+                    loadedSecondUrl = secondUrl
+                    secondImageBitmap = null
+                    isSecondLoadFailed = true
+                    invalidate()
+                }
+            )
+        } else {
+            // Bumping the generation retires any in-flight right-half load.
+            secondRequestGeneration++
+            secondImageBitmap = null
+            loadedSecondUrl = null
+            isSecondLoadFailed = false
+        }
+    }
+
+    /**
+     * Loads one illustration.
+     *
+     * The target is view-independent on purpose: loading two illustrations
+     * through `.into(this)` would make Glide cancel the first request when the
+     * second one starts, because both would claim the same view target. It also
+     * means the drawable Glide decodes is never installed on the view — [onDraw]
+     * paints the halves itself.
+     *
+     * Each decode is bounded to one page's box, so a double-page spread does not
+     * decode two full-viewport bitmaps.
+     */
+    private fun loadImage(
+        url: String?,
+        alreadyLoaded: Boolean,
+        onReady: (Bitmap) -> Unit,
+        onFailed: () -> Unit
+    ) {
+        // A page with no URL is empty, never "still loading": it must clear any
+        // bitmap left over from the previous spread.
+        if (url.isNullOrBlank()) {
+            onFailed()
+            return
+        }
+        if (alreadyLoaded) return
+
+        // Glide rejects a 0x0 target, and this can run before the first layout.
+        // SIZE_ORIGINAL is the documented "no override" value.
+        val targetWidth = pageWidth().toInt().takeIf { it > 0 } ?: Target.SIZE_ORIGINAL
+        val targetHeight = height.takeIf { it > 0 } ?: Target.SIZE_ORIGINAL
 
         Glide.with(this)
             .asBitmap()
-            .load(mImageurl)
+            .load(url)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
-            .addListener(object : RequestListener<Bitmap> {
-                override fun onLoadFailed(
-                    e: GlideException?,
-                    model: Any?,
-                    target: Target<Bitmap>,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    isLoadFailed = true
-                    imageBitmap = null
-                    invalidate()
-                    return true
-                }
+            .into(object : CustomTarget<Bitmap>(targetWidth, targetHeight) {
+                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) =
+                    onReady(resource)
 
-                override fun onResourceReady(
-                    resource: Bitmap,
-                    model: Any,
-                    target: Target<Bitmap>?,
-                    dataSource: DataSource,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    imageBitmap = resource
-                    return false
-                }
+                override fun onLoadCleared(placeholder: Drawable?) = Unit
+
+                override fun onLoadFailed(errorDrawable: Drawable?) = onFailed()
             })
-            .into(this)
     }
 
-    private fun getBitmapRectF(bitmap: Bitmap?): RectF? {
+    /**
+     * Where one illustration lands inside the half of the view that [pageLeft]
+     * and [pageWidth] describe.
+     *
+     * The scale type is resolved against that half, not the whole view, so two
+     * side-by-side illustrations are fitted independently.
+     */
+    private fun getBitmapRectF(bitmap: Bitmap?, pageLeft: Float, pageWidth: Float): RectF? {
         if (bitmap == null) return null
 
-        val viewWidth = width.toFloat()
+        val viewWidth = pageWidth
         val viewHeight = height.toFloat()
 
         val bitmapWidth = bitmap.width.toFloat()
         val bitmapHeight = bitmap.height.toFloat()
+
+        // FIT_XY is the one mode that scales the two axes independently, so it
+        // cannot share the single-scale path below.
+        if (scaleType == ScaleType.FIT_XY) {
+            return RectF(pageLeft, 0f, pageLeft + viewWidth, viewHeight)
+        }
 
         val scale: Float
         val dx: Float
         val dy: Float
 
         when (scaleType) {
-            ScaleType.FIT_XY -> {
-                scale = 1f
-                dx = 0f
-                dy = 0f
-            }
-
             ScaleType.CENTER_CROP -> {
                 if (bitmapWidth * viewHeight > viewWidth * bitmapHeight) {
                     scale = viewHeight / bitmapHeight
@@ -412,7 +487,12 @@ class PageImage : AppCompatImageView {
             }
         }
 
-        return RectF(dx, dy, dx + bitmapWidth * scale, dy + bitmapHeight * scale)
+        return RectF(
+            pageLeft + dx,
+            dy,
+            pageLeft + dx + bitmapWidth * scale,
+            dy + bitmapHeight * scale
+        )
     }
 
     //左边距
@@ -421,18 +501,8 @@ class PageImage : AppCompatImageView {
         return (width - count * mTextSize) / 2
     }
 
-    //上边距
-    private fun getMarginTop(): Float {
-        val count = getTextHeight() / (mTextSize * mRowSpace).toInt()   //一列字数
-        return ((height - mBottomTextSize) - count * mTextSize * mRowSpace) / 2 + mTextSize
-    }
-
     //正文区域宽度
     private fun getTextWidth(): Int = (width * 0.96f).toInt()
-
-    //正文区域高度
-    private fun getTextHeight(): Int =
-        ((height - mBottomTextSize - readerContentBottomInset).coerceAtLeast(mTextSize * mRowSpace) * 0.96f).toInt()
 
     private fun getFooterTextSize(): Float = mBottomTextSize.coerceAtMost(mTextSize * 0.55f)
 

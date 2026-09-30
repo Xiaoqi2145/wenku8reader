@@ -14,7 +14,6 @@ import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.data.model.HorizontalRead
 import com.cyh128.hikari_novel.util.ReaderTapArea
 import com.cyh128.hikari_novel.util.ReaderTouchJudge
-import kotlin.math.abs
 import kotlin.reflect.KProperty
 
 /*
@@ -63,7 +62,6 @@ class PageView: ViewFlipper, IPageView {
 
     var maxPageNum = 0                        //最大页数
     var pageFlag = 0                          //0刚进入view，1表示目录跳转，2表示下一页，3表示上一页
-    private val minMove = 80F                //翻页最小滑动距离
 
     var textArray = mutableListOf<MutableList<PageLine>>()
     var imageArray = listOf<String>()
@@ -108,10 +106,8 @@ class PageView: ViewFlipper, IPageView {
     private var contentTopInset = 0
     private var contentBottomInset = 0
 
-    private var isMoved = false                       //手势判断
-    private var isTouching = false                    //手势判断
-    private var moveStart = FloatArray(2)        //手势判断
-    private var moveEnd = FloatArray(2)          //手势判断
+    /** Set while a re-pagination is queued, so repeats coalesce into one pass. */
+    private var pendingRepaginate = false
 
     override var onNextChapter: IPageView.OnNextChapter? = null          //下一章
     override var onPreviousChapter: IPageView.OnPreviousChapter? = null  //上一章
@@ -144,95 +140,28 @@ class PageView: ViewFlipper, IPageView {
         contentTopInset = safeTop
         contentBottomInset = safeBottom
         setPadding(paddingLeft, safeTop, paddingRight, safeBottom)
+        // The pages are laid out inside this padding, so a new inset changes how
+        // much text fits. Without re-splitting here, showing the chrome left the
+        // old, taller pages in place and the first lines were drawn off the top.
+        repaginateSoon()
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        // Split-screen resize changes the viewport without changing the content,
+        // so the chapter has to be re-cut for the new page size. (Rotation
+        // recreates the activity, which re-sets the content and paginates there.)
+        if (oldw > 0 && oldh > 0 && (w != oldw || h != oldh)) repaginateSoon()
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (handleReaderTouchEvent(event)) return true
-
-        when (event.action) {
-            MotionEvent.ACTION_DOWN -> {
-                moveStart = floatArrayOf(event.x, event.y)
-                isTouching = true
-                isMoved = false
-            }
-
-            MotionEvent.ACTION_MOVE -> {
-                moveEnd = floatArrayOf(event.x, event.y)
-                isMoved = true
-            }
-
-            MotionEvent.ACTION_UP -> {
-                moveEnd = floatArrayOf(event.x, event.y)
-                isTouching = false
-            }
-        }
-        if (!isTouching && (!isMoved || (isMoved && abs(moveStart[0] - moveEnd[0]) < 5f && abs(
-                moveStart[1] - moveEnd[1]
-            ) < 5f))
-        ) { //点击事件
-            when {
-                moveStart[0] > width * 3 / 5 -> {
-                    if (currentView is PageImage || currentView is PageLoading) {
-                        currentView.dispatchTouchEvent(event)
-                        return super.onTouchEvent(event)
-                    }
-                    pageToNext()
-                }
-
-                moveStart[0] < width * 2 / 5 -> {
-                    if (currentView is PageImage || currentView is PageLoading) {
-                        currentView.dispatchTouchEvent(event)
-                        return super.onTouchEvent(event)
-                    }
-                    pageToPrevious()
-                }
-
-                moveStart[1] > height * 2 / 5 && moveStart[1] < height * 3 / 5 -> {
-                    if (currentView is PageImage) {
-                        currentView.dispatchTouchEvent(event)
-                        return super.onTouchEvent(event)
-                    }
-                    inAnimation = null
-                    outAnimation = null
-                    onCenterClick?.onCenterClick()
-                    pageFlag = 1
-                }
-
-                moveStart[0] > width * 2 / 5 && moveStart[0] < width * 3 / 5 -> {
-                    if (currentView is PageImage) {
-                        currentView.dispatchTouchEvent(event)
-                        return super.onTouchEvent(event)
-                    }
-                    inAnimation = null
-                    outAnimation = null
-                    onCenterClick?.onCenterClick()
-                    pageFlag = 1
-                }
-            }
-        } else if (!isTouching && isMoved && abs(moveStart[0] - moveEnd[0]) > minMove && abs(
-                moveStart[1] - moveEnd[1]
-            ) < minMove
-        ) { //滑动左右翻页
-            when {
-                moveStart[0] > moveEnd[0] -> {
-                    pageToNext()
-                }
-
-                else -> pageToPrevious()
-            }
-        } else if (!isTouching && isMoved && abs(moveStart[1] - moveEnd[1]) > minMove * height / width && abs(
-                moveStart[0] - moveEnd[0]
-            ) > minMove
-        ) {  //需要进一步判断翻页方向
-            if (!(abs(moveStart[1] - moveEnd[1]) / abs(moveStart[0] - moveEnd[0]) > height / width)) {
-                if (moveStart[0] > moveEnd[0]) {
-                    pageToNext()
-                } else {
-                    pageToPrevious()
-                }
-            }
-        }
+        // Gestures are handled in one place only: [handleReaderTouchEvent]
+        // forwards image pages to their own view and classifies the rest with
+        // ReaderTouchJudge. The previous second tap/swipe implementation below it
+        // was unreachable and has been removed (see
+        // docs/reader-gesture-mode-audit.md P2-1).
+        handleReaderTouchEvent(event)
         return true
     }
 
@@ -241,12 +170,12 @@ class PageView: ViewFlipper, IPageView {
         return true
     }
 
-    private fun handleReaderTouchEvent(event: MotionEvent): Boolean {
+    private fun handleReaderTouchEvent(event: MotionEvent) {
         if (currentView is PageImage) {
             currentView.dispatchTouchEvent(event)
-            return true
+            return
         }
-        if (currentView is PageLoading) return true
+        if (currentView is PageLoading) return
 
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
@@ -270,7 +199,6 @@ class PageView: ViewFlipper, IPageView {
                 ignoreCurrentGesture = false
             }
         }
-        return true
     }
 
     private fun handleGesture(deltaX: Float, deltaY: Float) {
@@ -296,28 +224,28 @@ class PageView: ViewFlipper, IPageView {
             resources.configuration.screenWidthDp >= 600 &&
             width > height
 
+    /** The spread the reader is on: [pageNum] plus its right-hand page, if any. */
+    private fun currentSpread(): HorizontalPageGeometry.Spread =
+        HorizontalPageGeometry.spreadAt(
+            page = pageNum,
+            textPageCount = textArray.size,
+            totalPages = maxPageNum,
+            doublePage = isDoublePageActive()
+        )
+
     private fun getForwardPageStep(): Int =
-        if (isDoublePageActive() && pageNum < textArray.size) 2 else 1
+        HorizontalPageGeometry.forwardStep(
+            page = pageNum,
+            textPageCount = textArray.size,
+            totalPages = maxPageNum,
+            doublePage = isDoublePageActive()
+        )
 
-    private fun getPreviousPageStart(): Int {
-        if (!isDoublePageActive()) return pageNum - 1
-
-        if (pageNum > textArray.size) {
-            return if (pageNum == textArray.size + 1 && textArray.isNotEmpty()) {
-                getLastTextSpreadStart()
-            } else {
-                pageNum - 1
-            }
-        }
-
-        return pageNum - 2
-    }
-
-    private fun getLastTextSpreadStart(): Int =
-        if (textArray.size % 2 == 0) textArray.size - 1 else textArray.size
+    private fun getPreviousPageStart(): Int =
+        HorizontalPageGeometry.previousStart(pageNum, textArray.size, isDoublePageActive())
 
     private fun normalizeDoublePageStart(page: Int): Int =
-        if (isDoublePageActive() && page in 2..textArray.size && page % 2 == 0) page - 1 else page
+        HorizontalPageGeometry.spreadStartContaining(page, textArray.size, isDoublePageActive())
 
     fun pageToNext() {
         applyPageAnimation(true)
@@ -404,11 +332,10 @@ class PageView: ViewFlipper, IPageView {
                     if (pageNum > textArray.size) pageNum = textArray.size
                     if (pageNum == 0) pageNum = 1
                     mTextArray = textArray[pageNum - 1]
-                    val secondPageNum = if (isDoublePageActive() && pageNum < textArray.size) {
-                        pageNum + 1
-                    } else {
-                        0
-                    }
+                    // A text page only ever pairs with the next text page, so an
+                    // odd-length text section ends with a half-empty spread
+                    // instead of pairing its last page with the first image.
+                    val secondPageNum = currentSpread().second ?: 0
                     mSecondTextArray = if (secondPageNum > 0) {
                         textArray[secondPageNum - 1]
                     } else {
@@ -431,14 +358,26 @@ class PageView: ViewFlipper, IPageView {
             displayedChild = pageTextAnother
         } else if (textArray.size < pageNum && pageNum <= maxPageNum) {
             val pageImageAnother = pageNum - textArray.size + 1
-            val imageUrl = imageArray[pageNum - textArray.size - 1].trim()
+            val imageIndex = pageNum - textArray.size - 1
+            val imageUrl = imageArray[imageIndex].trim()
+            // One illustration page renders its own image plus, in double-page
+            // mode, the next one; both halves are fitted independently.
+            val secondPageNum = currentSpread().second ?: 0
+            val secondImageUrl = if (secondPageNum > 0) {
+                imageArray.getOrNull(secondPageNum - textArray.size - 1)?.trim()
+            } else {
+                null
+            }
             (getChildAt(pageImageAnother) as PageImage).apply {
                 mBgColor = backgroundcolor
                 mPageBackground = pageBackground
                 mImageurl = imageUrl
+                mDoublePageMode = isDoublePageActive()
+                mSecondImageurl = secondImageUrl
                 mRowSpace = rowSpace
                 mTextSize = textSize
                 mPageNum = pageNum
+                mSecondPageNum = secondPageNum
                 mMaxPageNum = maxPageNum
                 mTextColor = textColor
                 mTitle = title
@@ -457,48 +396,44 @@ class PageView: ViewFlipper, IPageView {
     private fun initPage() {
         if (this.currentView is PageLoading) {
             this.removeAllViews()
-            PageText(context).apply {
-                mBgColor = backgroundcolor
-                mPageBackground = pageBackground
-                mTextSize = textSize
-                mBottomTextSize = bottomTextSize
-                mRowSpace = rowSpace
-                mPageNum = 0
-                mMaxPageNum = 0
-                mTextColor = textColor
-                mTxtFontType = txtFontType
-                this@PageView.addView(this)
-            }
-            PageText(context).apply {
-                mBgColor = backgroundcolor
-                mPageBackground = pageBackground
-                mTextSize = textSize
-                mBottomTextSize = bottomTextSize
-                mRowSpace = rowSpace
-                mPageNum = 0
-                mMaxPageNum = 0
-                mTextColor = textColor
-                mTxtFontType = txtFontType
-                this@PageView.addView(this)
+            repeat(TEXT_PAGE_CHILDREN) {
+                addView(newTextPage())
             }
         }
 
-        if (imageArray.isNotEmpty() && this.size == 2) {
-            for (i in imageArray) {
-                PageImage(context).apply {
-                    mBgColor = backgroundcolor
-                    mPageBackground = pageBackground
-                    mTextSize = textSize
-                    mBottomTextSize = bottomTextSize
-                    mRowSpace = rowSpace
-                    mPageNum = 0
-                    mMaxPageNum = 0
-                    mTextColor = textColor
-                    mTxtFontType = txtFontType
-                    this@PageView.addView(this)
-                }
+        // One image child per illustration. This has to *top up* rather than run
+        // once: a later chapter can carry more illustrations than the first one
+        // that had any, and displayView would otherwise index a missing child.
+        if (this.size >= TEXT_PAGE_CHILDREN) {
+            val missing = imageArray.size - (this.size - TEXT_PAGE_CHILDREN)
+            repeat(missing.coerceAtLeast(0)) {
+                addView(newImagePage())
             }
         }
+    }
+
+    private fun newTextPage() = PageText(context).apply {
+        mBgColor = backgroundcolor
+        mPageBackground = pageBackground
+        mTextSize = textSize
+        mBottomTextSize = bottomTextSize
+        mRowSpace = rowSpace
+        mPageNum = 0
+        mMaxPageNum = 0
+        mTextColor = textColor
+        mTxtFontType = txtFontType
+    }
+
+    private fun newImagePage() = PageImage(context).apply {
+        mBgColor = backgroundcolor
+        mPageBackground = pageBackground
+        mTextSize = textSize
+        mBottomTextSize = bottomTextSize
+        mRowSpace = rowSpace
+        mPageNum = 0
+        mMaxPageNum = 0
+        mTextColor = textColor
+        mTxtFontType = txtFontType
     }
 
     //正文区域宽度
@@ -511,8 +446,69 @@ class PageView: ViewFlipper, IPageView {
     private fun getTextHeight(): Int = (getContentHeight() * 0.94f).toInt()
 
     private fun getContentHeight(): Float =
-        (height - readerContentBottomInset - getFooterReservedHeight())
-            .coerceAtLeast(textSize * rowSpace)
+        HorizontalPageGeometry.contentHeight(
+            viewportHeight = height,
+            // The page child is laid out inside this padding, so the paginator
+            // has to budget for the same box the renderer draws into.
+            paddingTop = paddingTop,
+            paddingBottom = paddingBottom,
+            bottomInset = readerContentBottomInset,
+            footerReserve = getFooterReservedHeight(),
+            minimum = textSize * rowSpace
+        )
+
+    /**
+     * The reading position as a 0..1 fraction of the chapter.
+     *
+     * Re-pagination must restore a *fraction*, never the raw page number: the
+     * same page number points at different text once the pages are re-cut.
+     */
+    private fun currentFraction(): Float {
+        if (maxPageNum <= 0 || pageNum <= 0) return 0f
+        return (pageNum.toFloat() / maxPageNum).coerceIn(0f, 1f)
+    }
+
+    /**
+     * Re-paginates once the view is no longer being laid out.
+     *
+     * [setContentInsets] and [onSizeChanged] can both fire inside a layout pass,
+     * where re-splitting and reassigning `pageNum` would mutate the page children
+     * mid-traversal. Posting keeps that work on the next frame instead.
+     */
+    private fun repaginateSoon() {
+        if (pendingRepaginate) return
+        pendingRepaginate = true
+        post {
+            pendingRepaginate = false
+            repaginate(currentFraction())
+        }
+    }
+
+    /**
+     * Re-cuts the chapter for the current geometry and keeps the reader on the
+     * same text.
+     *
+     * @param fraction the reading position to restore, 0..1.
+     */
+    private fun repaginate(fraction: Float) {
+        if (width < 1 || height < 1) return
+        // Before the chapter arrives there is nothing to cut, and running the
+        // paginator would replace the loading page with an empty text page.
+        if (content.content.isEmpty()) return
+        textArray = splitContent(content.content)
+        imageArray = content.imageList
+        maxPageNum = if (content.content.length <= title.length + 1) {
+            0
+        } else {
+            textArray.size + imageArray.size
+        }
+        // Writing pageNum runs the property setter, which notifies onPageChange
+        // and repaints. When the position happens to land on the same page
+        // number there is no notification, so the repaint is done here instead —
+        // the page's *content* changed even though its number did not.
+        val restored = HorizontalPageGeometry.pageForFraction(fraction, maxPageNum)
+        if (restored != pageNum) pageNum = restored else displayView()
+    }
 
     private fun getFooterTextSize(): Float = bottomTextSize.coerceAtMost(textSize * 0.55f)
 
@@ -607,6 +603,11 @@ class PageView: ViewFlipper, IPageView {
     private fun emFromPx(px: Float, sizePx: Float): Float =
         if (sizePx <= 0f) 0f else px / sizePx
 
+    private companion object {
+        /** The two text page children every chapter needs, one per spread half. */
+        const val TEXT_PAGE_CHILDREN = 2
+    }
+
     private fun preprocessContent(content: String): List<String> {
         val lines = content.lines() //按行分割内容
         val processedLines = mutableListOf<String>()
@@ -643,21 +644,9 @@ class PageView: ViewFlipper, IPageView {
                 "rowSpace", "textSize", "bottomTextSize", "doublePageEnabled",
                 "paragraphSpacing", "letterSpacing", "firstLineIndent" -> {
                     if (width < 1) return
-                    val scale = if (maxPageNum > 0 && pageNum > 0) {
-                        maxPageNum.toFloat() / pageNum
-                    } else {
-                        1f
-                    }
-                    textArray = splitContent(content.content)
-                    imageArray = content.imageList
-                    maxPageNum = if (content.content.length <= title.length + 1
-                        || content.content.isEmpty()
-                    ) 0 else textArray.size + imageArray.size
-                    pageNum = if (maxPageNum == 0) {
-                        0
-                    } else {
-                        (maxPageNum / scale).toInt().coerceIn(1, maxPageNum)
-                    }
+                    // Capture the position before the re-cut; the page count
+                    // changes with the typography.
+                    repaginate(currentFraction())
                 }
 
                 "content" -> {
