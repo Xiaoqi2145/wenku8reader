@@ -10,7 +10,7 @@ import com.cyh128.hikari_novel.util.ReaderSliderValue
  *
  * Both reader panels used to carry their own copy of this logic, which is how
  * the horizontal and vertical panels drifted apart. There is one implementation
- * now. See docs/reader-settings-round4-plan.md R4-3.
+ * now. See docs/plan/reader-settings-round4-plan.md R4-3.
  *
  * Behaviour follows Koodo Reader's `sliderList`:
  * - dragging applies live, so the page previews the change;

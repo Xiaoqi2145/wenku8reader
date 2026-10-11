@@ -20,7 +20,7 @@ import com.cyh128.hikari_novel.R
  * The badge is drawn rather than inflated from an icon: it is two strokes, and
  * keeping it here means the touch target and the drawing can never disagree.
  *
- * See docs/reader-settings-round4-plan.md R4-2.
+ * See docs/plan/reader-settings-round4-plan.md R4-2.
  */
 class ReaderColorSwatchView @JvmOverloads constructor(
     context: Context,

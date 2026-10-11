@@ -16,7 +16,7 @@ import com.cyh128.hikari_novel.data.model.ReaderColorSwatches
  * The row is built in code rather than XML because the number of swatches
  * depends on how many colours the user has saved; a static XML list would cap
  * that at whatever was written at build time. See
- * docs/reader-settings-round4-plan.md R4-2.
+ * docs/plan/reader-settings-round4-plan.md R4-2.
  */
 class ReaderColorSwatchRow @JvmOverloads constructor(
     context: Context,

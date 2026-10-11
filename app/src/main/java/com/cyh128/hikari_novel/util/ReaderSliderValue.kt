@@ -5,7 +5,7 @@ package com.cyh128.hikari_novel.util
  *
  * Kept free of Android types so the rounding rules — which decide what the user
  * sees next to a slider and what a typed value is clamped to — are unit
- * testable. See docs/reader-settings-round4-plan.md R4-3.
+ * testable. See docs/plan/reader-settings-round4-plan.md R4-3.
  */
 object ReaderSliderValue {
 

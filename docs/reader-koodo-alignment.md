@@ -2,7 +2,7 @@
 
 参考源：`E:\Project\Codex\Project\SoraReader\reference\koodo-reader`（本地源码，`src/pages/reader`、`src/containers/panels`、`src/components/readerSettings`、`src/constants`）。
 
-本文只做**阅读界面风格与阅读设置**两个维度的对齐分析，不重复 [`reader-ui-optimization-plan.md`](./reader-ui-optimization-plan.md) 已落地内容（批次 A、B1、B3、B4、B5、C、D1、D3、D4）。
+本文只做**阅读界面风格与阅读设置**两个维度的对齐分析，不重复 [`reader-ui-optimization-plan.md`](./plan/reader-ui-optimization-plan.md) 已落地内容（批次 A、B1、B3、B4、B5、C、D1、D3、D4）。
 
 ---
 
@@ -450,7 +450,7 @@ Koodo 是桌面/多格式阅读器（PDF/EPUB/TXT/CBR + AI 商业化），以下
 
 ## 九、第四轮：设置面板对齐 Koodo 的配色双轴与滑杆四件套
 
-计划全文见 [`reader-settings-round4-plan.md`](./reader-settings-round4-plan.md)。本轮只改**设置面板本身**，不碰渲染链路（P0-3 排版六项、P1-1 翻页动画已在第三轮完成）。
+计划全文见 [`reader-settings-round4-plan.md`](./plan/reader-settings-round4-plan.md)。本轮只改**设置面板本身**，不碰渲染链路（P0-3 排版六项、P1-1 翻页动画已在第三轮完成）。
 
 ### 9.1 配色改为两条独立的轴
 

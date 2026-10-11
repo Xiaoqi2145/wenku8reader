@@ -5,7 +5,7 @@ package com.cyh128.hikari_novel.data.model
  *
  * The presets themselves and the axis helpers live in [ReaderColorSwatches];
  * this object only holds the values "Restore defaults" writes and the one-shot
- * migration constants. See docs/reader-settings-round4-plan.md R4-1.
+ * migration constants. See docs/plan/reader-settings-round4-plan.md R4-1.
  */
 object ReaderColorPresets {
     /**

@@ -17,7 +17,7 @@ import javax.inject.Singleton
  * has exactly two states (see [convergeReaderThemeMode]), so a single-value
  * model like Koodo's would lose the other state's colours on every toggle.
  * Axis edits therefore write to whichever pair [ReaderThemeMode] currently
- * selects. See docs/reader-settings-round4-plan.md R4-1.
+ * selects. See docs/plan/reader-settings-round4-plan.md R4-1.
  */
 @Singleton
 class ReadColorRepository @Inject constructor(

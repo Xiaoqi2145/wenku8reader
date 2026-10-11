@@ -1,6 +1,6 @@
 # 阅读器 P2 收尾计划
 
-承接 [`reader-koodo-alignment.md`](./reader-koodo-alignment.md)。该文档第一~三节是对齐分析，第六~八节是已落地进度；本文只覆盖**尚未落地**的部分，给出落点、设计取舍、风险与建议顺序。
+承接 [`reader-koodo-alignment.md`](../reader-koodo-alignment.md)。该文档第一~三节是对齐分析，第六~八节是已落地进度；本文只覆盖**尚未落地**的部分，给出落点、设计取舍、风险与建议顺序。
 
 ---
 

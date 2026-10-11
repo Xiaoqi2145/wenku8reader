@@ -7,7 +7,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Covers the reader colour axes. See docs/reader-settings-round4-plan.md R4-1.
+ * Covers the reader colour axes. See docs/plan/reader-settings-round4-plan.md R4-1.
  */
 class ReaderColorSwatchesTest {
 

@@ -1,6 +1,6 @@
 # 阅读器行为基线
 
-本基线对应 plan.md 阶段一，目标是在阅读核心重构前固定当前可观察行为。基线只依赖 JVM 测试，不启动 Android UI。
+本基线对应 [`reader-core-refactor-plan.md`](./plan/reader-core-refactor-plan.md) 阶段一，目标是在阅读核心重构前固定当前可观察行为。基线只依赖 JVM 测试，不启动 Android UI。
 
 ## 固定 fixture
 

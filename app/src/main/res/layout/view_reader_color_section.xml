@@ -3,7 +3,7 @@
   阅读设置面板共用的「阅读配色」分组（横排 / 竖排 include 同一份）。
 
   对齐 Koodo Reader `readerSettings/themeList` 的双轴结构
-  （docs/reader-koodo-alignment.md P0-2、docs/reader-settings-round4-plan.md R4-1）：
+  （docs/reader-koodo-alignment.md P0-2、docs/plan/reader-settings-round4-plan.md R4-1）：
     · 背景颜色：预设 4 色 + 自定义色（可删）+ 添加
     · 文字颜色：预设 4 色 + 自定义色（可删）+ 添加
   两条轴互相独立；只有「深灰底→白字」「白底+白字→黑字」两条联动规则。

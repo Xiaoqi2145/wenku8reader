@@ -30,7 +30,7 @@
 
 2026-09-13 本轮结果：新增 reader chrome 几何与 WindowInsets 协调器、手机网格列数策略测试；bottom dock 已统一状态 HUD/底栏层级，修复跨坐标系隐藏位移；目录按当前窗口 bounds 计算。完整 Gradle 日志位于 `build/galisland-validation.log`，Lint 报告位于 `app/build/reports/lint-results-debug.html`。
 
-2026-09-13 第二轮（方案见 `docs/reader-chrome-grid-unification-plan.md`）：
+2026-09-13 第二轮（方案见 `docs/plan/reader-chrome-grid-unification-plan.md`）：
 
 - 修复平板底栏浮空：状态行移出 `read_bottom_dock` 独立常显；dock 只承载菜单并独占背景，隐藏时整体平移出屏幕底缘，不再残留浮空带；删除 dock 与内层 bar 的重复背景。
 - 修复菜单底色异常占用：阅读页迁移 edge-to-edge，dock/状态行用 inset padding 延伸表面至手势区；菜单呼出时状态行淡出互斥。

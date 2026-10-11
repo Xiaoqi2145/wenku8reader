@@ -20,7 +20,7 @@ data class ReaderColorSwatch(
  * from two linkage rules that keep a readable pair (see [linkedTextColorFor]).
  *
  * Everything here is pure: no Android types, no storage. See
- * docs/reader-settings-round4-plan.md R4-1.
+ * docs/plan/reader-settings-round4-plan.md R4-1.
  */
 object ReaderColorSwatches {
 

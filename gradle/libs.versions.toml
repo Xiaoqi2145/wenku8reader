@@ -17,7 +17,7 @@ lifecycle = "2.11.0"
 # Room 2.8.5 在 KSP 1.0.31 下无法工作：room-migration 的序列化器报
 # AbstractMethodError（GeneratedSerializer.typeParametersSerializers），
 # 根因是 KSP1 进程 classpath 混入旧版 kotlinx-serialization 1.4.0。
-# 需先升级 KSP 到 2.x（见 docs/tech-stack-upgrade-plan.md 阶段 2）后再重试。
+# 需先升级 KSP 到 2.x（见 docs/plan/tech-stack-upgrade-plan.md 阶段 2）后再重试。
 room = "2.7.1"
 
 # 网络 / 解析

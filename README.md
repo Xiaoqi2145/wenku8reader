@@ -21,7 +21,7 @@
 
 ## 阅读器核心重构状态（fork 维护进度）
 
-本 fork 按 [plan.md](./plan.md) 推进阅读核心渐进式重构。各阶段在**源码层面**的落地情况：
+本 fork 按 [阅读核心重构计划](./docs/plan/reader-core-refactor-plan.md) 推进阅读核心渐进式重构。各阶段在**源码层面**的落地情况：
 
 | 阶段 | 内容 | 当前状态 |
 | --- | --- | --- |
@@ -42,9 +42,9 @@
 
 ### 本 fork 已完成的改动
 
-- **阅读器阶段五：收敛横向与竖向 ViewModel**。横竖两个 `ReadViewModel` 现在共用 `ReaderSessionCoordinator`（[ReaderSessionCoordinator.kt](./app/src/main/java/com/cyh128/hikari_novel/reader/domain/ReaderSessionCoordinator.kt)）：章节导航、加载代次（generation，用于丢弃快速跳章时的旧响应）、预取、锚点存取等公共逻辑收敛为一份实现；横向分页状态、竖向滚动状态、手势与渲染策略仍各自保留。对应 [plan.md 阶段五](./plan.md) 的验收标准。
+- **阅读器阶段五：收敛横向与竖向 ViewModel**。横竖两个 `ReadViewModel` 现在共用 `ReaderSessionCoordinator`（[ReaderSessionCoordinator.kt](./app/src/main/java/com/cyh128/hikari_novel/reader/domain/ReaderSessionCoordinator.kt)）：章节导航、加载代次（generation，用于丢弃快速跳章时的旧响应）、预取、锚点存取等公共逻辑收敛为一份实现；横向分页状态、竖向滚动状态、手势与渲染策略仍各自保留。对应 [重构计划阶段五](./docs/plan/reader-core-refactor-plan.md) 的验收标准。
 
-  - **与 plan.md 原建议的偏离（有意改良）**：plan 建议构造参数为 `(repository, navigator, progressStore)`，实际实现改为单一的 `ReaderSessionDataSource` 边界接口。该接口暴露 storage-neutral 的 `ReaderProgressSnapshot`，使 coordinator 不依赖 Room / Android 类，从而可在纯 JVM 下测试。
+  - **与重构计划原建议的偏离（有意改良）**：计划建议构造参数为 `(repository, navigator, progressStore)`，实际实现改为单一的 `ReaderSessionDataSource` 边界接口。该接口暴露 storage-neutral 的 `ReaderProgressSnapshot`，使 coordinator 不依赖 Room / Android 类，从而可在纯 JVM 下测试。
   - `ReaderSessionModule` 未标注 `@Singleton`，因此每个注入点获得独立实例，符合"每个 ViewModel 一个会话"的设计意图。
 
 ### 尚未处理的已知问题（上游遗留，本 fork 暂未修复）

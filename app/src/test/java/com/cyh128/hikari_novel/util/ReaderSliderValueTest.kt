@@ -6,7 +6,7 @@ import org.junit.Test
 
 /**
  * Covers slider row formatting and clamping.
- * See docs/reader-settings-round4-plan.md R4-3.
+ * See docs/plan/reader-settings-round4-plan.md R4-3.
  */
 class ReaderSliderValueTest {
 

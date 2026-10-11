@@ -2,7 +2,7 @@
 
 参考源：`E:\Projects\refer\koodo-reader`（本地源码，`src/containers/panels/settingPanel`、`src/components/readerSettings`、`src/constants/{dropdownList,themeList,settingList}.tsx`）。
 
-承接 [`reader-koodo-alignment.md`](./reader-koodo-alignment.md)（第一~三轮）与 [`reader-p2-polish-plan.md`](./reader-p2-polish-plan.md)（P2 盘点）。
+承接 [`reader-koodo-alignment.md`](../reader-koodo-alignment.md)（第一~三轮）与 [`reader-p2-polish-plan.md`](./reader-p2-polish-plan.md)（P2 盘点）。
 本文只做一件事：**把阅读设置面板本身做到与 Koodo 的 `SettingPanel` 同构**，即「配色分区 + 滑杆四件套 + 自定义色可复用可删除」。
 渲染层的 P0-3 排版六项、P1-1 翻页动画、P1-2 进度语义已在第三轮完成，本轮不碰渲染链路。
 
