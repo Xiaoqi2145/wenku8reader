@@ -194,6 +194,7 @@
         \n使用本軟件的時候，請自行調整梯子的分流規則，確保使用軟件時的ip屬地為中國大陸！！！
     </string>
     <string name="switch_node">切換節點</string>
+    <string name="node_may_be_unreachable">%s（可能無法使用）</string>
     <string name="login_help">登入遇到問題？查看幫助</string>
     <string name="using_help">使用幫助</string>
     <string name="guide_1">歡迎使用Hikari Novel</string>

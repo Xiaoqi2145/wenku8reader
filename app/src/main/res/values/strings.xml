@@ -217,6 +217,7 @@
         本软件是第三方软件，非官方软件！！！
     </string>
     <string name="switch_node">切换节点</string>
+    <string name="node_may_be_unreachable">%s（可能不可用）</string>
     <string name="login_help">登录遇到问题？查看帮助</string>
     <string name="using_help">使用帮助</string>
     <string name="guide_1">欢迎使用Hikari Novel</string>

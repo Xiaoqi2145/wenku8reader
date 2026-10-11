@@ -8,6 +8,7 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.cyh128.hikari_novel.data.repository.AppRepository
 import com.cyh128.hikari_novel.data.repository.Wenku8Repository
 import com.cyh128.hikari_novel.data.repository.ReaderRepository
+import com.cyh128.hikari_novel.data.source.remote.Wenku8Headers
 import com.cyh128.hikari_novel.ui.other.CrashActivity
 import com.cyh128.hikari_novel.util.LanguageHelper
 import com.cyh128.hikari_novel.util.ThemeHelper
@@ -60,8 +61,14 @@ class HikariApp : Application() {
         ThemeHelper.setDarkMode(appRepository.getDarkMode())
         LanguageHelper.setCurrentLanguage(appRepository.getLanguage())
 
+        // One-shot: installs whose node host was forced onto the Cloudflare-blocked
+        // host are moved onto the one that answers. Must run before any request,
+        // because every request builds its URL from this value.
+        wenku8Repository.migrateForcedNodeHost()
+
         application = this
         val client: OkHttpClient = OkHttpClient.Builder()
+            .addInterceptor(UserAgentInterceptor())
             .addInterceptor(CookieInterceptor())
             .cookieJar(CookieStore()) //保存cookie
             .hostnameVerifier { _: String?, _: SSLSession? -> true }
@@ -86,6 +93,31 @@ class HikariApp : Application() {
         CrashConfig.Builder.create()
             .errorActivity(CrashActivity::class.java)
             .apply()
+    }
+
+    /**
+     * Gives every request the official app's identity unless the caller set one.
+     *
+     * The wenku8 web host answers a Cloudflare challenge to anything that is not
+     * the official app's Dalvik User-Agent (see [Wenku8Headers]). Requests built
+     * by `Network` set it explicitly, but images — the login checkcode, covers —
+     * go through Glide, which reuses this client and would otherwise send OkHttp's
+     * default UA. The checkcode is the one that matters: without this the login
+     * page's image is a 403 HTML page, so the form can never be filled in.
+     *
+     * A request that already carries its own User-Agent is left alone, so this
+     * only fills in the default rather than overriding a deliberate choice.
+     */
+    private class UserAgentInterceptor : Interceptor {
+        override fun intercept(chain: Interceptor.Chain): Response {
+            val request = chain.request()
+            if (request.header("User-Agent") != null) return chain.proceed(request)
+            return chain.proceed(
+                request.newBuilder()
+                    .header("User-Agent", Wenku8Headers.USER_AGENT)
+                    .build()
+            )
+        }
     }
 
     inner class CookieInterceptor: Interceptor {

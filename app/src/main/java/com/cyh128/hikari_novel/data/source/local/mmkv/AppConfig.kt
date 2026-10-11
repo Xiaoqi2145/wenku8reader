@@ -56,11 +56,32 @@ class AppConfig @Inject constructor() {
             cursor.encode("reader_orientation", value)
         }
 
-    //www.wenku8.net或www.wenku8.cc
+    /**
+     * Which wenku8 web host to talk to: `www.wenku8.net` or `www.wenku8.cc`.
+     *
+     * Defaults to `.net`. `.cc` is answered with a Cloudflare challenge that the
+     * app cannot pass (see [com.cyh128.hikari_novel.data.source.remote.Wenku8Headers]),
+     * so a fresh install has to land on a host that serves requests.
+     */
     var node: String
-        get() = cursor.decodeString("node", "www.wenku8.cc")!!
+        get() = cursor.decodeString("node", "www.wenku8.net")!!
         set(value) {
             cursor.encode("node", value)
+        }
+
+    /**
+     * Whether the one-shot node repair has run.
+     *
+     * Older builds forced `www.wenku8.net` back to `www.wenku8.cc` on every read
+     * and *persisted* that substitution, so an install that had ever used `.net`
+     * has `.cc` in storage — the host that now answers 403. The repair runs once
+     * at startup (see `Wenku8Repository.migrateForcedNodeHost`) and is recorded
+     * here so a user who deliberately switches back to `.cc` keeps that choice.
+     */
+    var hasMigratedNodeHost: Boolean
+        get() = cursor.decodeBool("has_migrated_node_host", false)
+        set(value) {
+            cursor.encode("has_migrated_node_host", value)
         }
 
     var language: Int

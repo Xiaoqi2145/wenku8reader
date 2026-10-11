@@ -676,12 +676,34 @@ class Wenku8Repository @Inject constructor(
         appConfig.node = node
     }
 
-    //获取网页版wenku8节点
-    fun getWenku8Node(): String {
-        if (appConfig.node == "www.wenku8.net") {
-            appConfig.node = "www.wenku8.cc"
-        }
-        return appConfig.node
+    /**
+     * The wenku8 web host the app is configured to use.
+     *
+     * This used to rewrite `www.wenku8.net` back to `www.wenku8.cc` on every
+     * read, which made the `.net` option in the settings panel impossible to
+     * keep: the user's choice was silently undone on the next request. `.cc` is
+     * now answered with a Cloudflare challenge that no OkHttp client can pass
+     * (see [ReaderNodeHost]), so forcing the rewrite made the app unusable rather
+     * than merely ignoring a preference. The rewrite is gone; the settings choice
+     * is honoured.
+     */
+    fun getWenku8Node(): String = appConfig.node
+
+    /**
+     * Moves a stored `.cc` host onto `.net`, once.
+     *
+     * The removed rewrite (see [getWenku8Node]) did not only ignore the user's
+     * choice, it *persisted* the substitution: every install that had ever used
+     * `.net` now has `.cc` in storage, and a fresh install of the old build
+     * defaulted to `.cc` as well. Changing the default therefore fixes nobody who
+     * already has the app. This runs at most once, so a user who deliberately
+     * switches back to `.cc` keeps that choice.
+     */
+    fun migrateForcedNodeHost() {
+        if (appConfig.hasMigratedNodeHost) return
+        val migrated = ReaderNodeHost.migrate(appConfig.node)
+        if (migrated != appConfig.node) appConfig.node = migrated
+        appConfig.hasMigratedNodeHost = true
     }
 
     //在wenku8.com上签到

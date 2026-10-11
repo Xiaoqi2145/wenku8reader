@@ -12,6 +12,7 @@ import com.cyh128.hikari_novel.data.model.DefaultTab
 import com.cyh128.hikari_novel.data.model.Language
 import com.cyh128.hikari_novel.data.model.ListViewType
 import com.cyh128.hikari_novel.data.model.ReaderOrientation
+import com.cyh128.hikari_novel.data.repository.ReaderNodeHost
 import com.cyh128.hikari_novel.databinding.ActivitySettingBinding
 import com.cyh128.hikari_novel.util.LanguageHelper
 import com.cyh128.hikari_novel.util.ThemeHelper
@@ -42,9 +43,13 @@ class SettingActivity : BaseActivity<ActivitySettingBinding>() {
             getString(R.string.vertical)
         else binding.tvASettingReadMode.text = getString(R.string.horizontal)
 
-        if (viewModel.getWenku8Node() == "www.wenku8.cc") binding.tvASettingNode.text =
-            "www.wenku8.cc"
-        else binding.tvASettingNode.text = "www.wenku8.net"
+        // `.cc` is still offered, because a network that can reach it may use it,
+        // but it is labelled as possibly unreachable rather than presented as an
+        // equal choice that silently fails.
+        val node = viewModel.getWenku8Node()
+        binding.tvASettingNode.text =
+            if (node == ReaderNodeHost.WORKING) node
+            else getString(R.string.node_may_be_unreachable, node)
 
         if (viewModel.getListViewType() == ListViewType.Linear) binding.tvASettingListViewType.setText(R.string.single_column)
         else binding.tvASettingListViewType.setText(R.string.grid)
@@ -130,21 +135,25 @@ class SettingActivity : BaseActivity<ActivitySettingBinding>() {
                 .setIcon(R.drawable.ic_network_node)
                 .setNegativeButton(R.string.cancel, null)
                 .setSingleChoiceItems(
-                    arrayOf("www.wenku8.cc", "www.wenku8.net"),
+                    arrayOf(
+                        ReaderNodeHost.WORKING,
+                        getString(R.string.node_may_be_unreachable, ReaderNodeHost.BLOCKED)
+                    ),
                     run {
-                        if (viewModel.getWenku8Node() == "www.wenku8.cc") return@run 0
+                        if (viewModel.getWenku8Node() == ReaderNodeHost.WORKING) return@run 0
                         else return@run 1
                     }
                 ) { dialog: DialogInterface, which: Int ->
                     when (which) {
                         0 -> {
-                            viewModel.setWenku8Node("www.wenku8.cc")
-                            binding.tvASettingNode.text = "www.wenku8.cc"
+                            viewModel.setWenku8Node(ReaderNodeHost.WORKING)
+                            binding.tvASettingNode.text = ReaderNodeHost.WORKING
                         }
 
                         1 -> {
-                            viewModel.setWenku8Node("www.wenku8.net")
-                            binding.tvASettingNode.text = "www.wenku8.net"
+                            viewModel.setWenku8Node(ReaderNodeHost.BLOCKED)
+                            binding.tvASettingNode.text =
+                                getString(R.string.node_may_be_unreachable, ReaderNodeHost.BLOCKED)
                         }
                     }
                     dialog.dismiss()

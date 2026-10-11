@@ -32,7 +32,12 @@ class Network @Inject constructor() {
     }
 
     suspend fun downloadBytes(url: String): ByteArray = withContext(Dispatchers.IO) {
-        val request = Request.Builder().url(url).header("User-Agent", "Mozilla/5.0").build()
+        // Illustration URLs live on the image CDN, which does not gate on UA, but
+        // sending the app's own identity keeps every outbound request consistent
+        // and avoids standing out from the rest of the client.
+        val request = Request.Builder().url(url)
+            .header("User-Agent", Wenku8Headers.USER_AGENT)
+            .build()
         downloadClient.newCall(request).execute().use { response ->
             if (!response.isSuccessful) error("HTTP ${response.code}")
             response.body?.bytes() ?: error("Empty response body")
@@ -51,13 +56,15 @@ class Network @Inject constructor() {
             .add("checkcode", checkcode)
             .add("usecookie", usecookie)
             .add("action", "login")
-            .addHeader("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.70 Safari/537.36")
+            .addHeader("User-Agent", Wenku8Headers.USER_AGENT)
+            .addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+            .addHeader("Referer", url)
             .toAwait<ResponseBody>()
             .toAwaitOkResponse()
 
     fun post(url: String, cookie: String, pairs: List<KeyValuePair>): CallAwait<OkResponse<ResponseBody?>> {
         val rxHttpFormParam = RxHttp.postForm(url)
-            .addHeader("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.70 Safari/537.36")
+            .addHeader("User-Agent", Wenku8Headers.USER_AGENT)
             .addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
             .addHeader("Accept-Language", "zh-CN,zh;q=0.9")
         if (cookie.isNotBlank()) rxHttpFormParam.addHeader("Cookie", cookie)
@@ -67,7 +74,7 @@ class Network @Inject constructor() {
 
     fun get(url: String, cookie: String): CallAwait<OkResponse<ResponseBody?>> {
         val rxHttp = RxHttp.get(url)
-            .addHeader("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.70 Safari/537.36")
+            .addHeader("User-Agent", Wenku8Headers.USER_AGENT)
             .addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
             .addHeader("Accept-Language", "zh-CN,zh;q=0.9")
         if (cookie.isNotBlank()) rxHttp.addHeader("Cookie", cookie)
@@ -76,7 +83,7 @@ class Network @Inject constructor() {
 
     fun getWithoutCookie(url: String): CallAwait<OkResponse<ResponseBody?>> =
         RxHttp.get(url)
-            .addHeader("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.70 Safari/537.36")
+            .addHeader("User-Agent", Wenku8Headers.USER_AGENT)
             .addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
             .addHeader("Accept-Language", "zh-CN,zh;q=0.9")
             .toAwait<ResponseBody>()
@@ -84,7 +91,7 @@ class Network @Inject constructor() {
 
     fun getReaderPage(url: String, referer: String): CallAwait<OkResponse<ResponseBody?>> =
         RxHttp.get(url)
-            .addHeader("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.70 Safari/537.36")
+            .addHeader("User-Agent", Wenku8Headers.USER_AGENT)
             .addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
             .addHeader("Accept-Language", "zh-CN,zh;q=0.9")
             .addHeader("Referer", referer)
@@ -95,7 +102,7 @@ class Network @Inject constructor() {
         //val request = "action=book&do=text&aid=2906&cid=117212&t=0"
         return RxHttp
             .postForm("http://app.wenku8.com/api.php")
-            .addHeader("User-Agent","Dalvik/2.1.0 (Linux; U; Android 15; 23114RD76B Build/AQ3A.240912.001)")
+            .addHeader("User-Agent", Wenku8Headers.USER_AGENT)
             .add("appver", "1.21")
             .add("request", Base64Helper.encodeBase64(request))
             .add("timestamp", "${System.currentTimeMillis() / 1000}")
