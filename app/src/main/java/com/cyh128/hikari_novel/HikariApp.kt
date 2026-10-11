@@ -68,7 +68,7 @@ class HikariApp : Application() {
 
         application = this
         val client: OkHttpClient = OkHttpClient.Builder()
-            .addInterceptor(UserAgentInterceptor())
+            .addInterceptor(Wenku8WebHeadersInterceptor())
             .addInterceptor(CookieInterceptor())
             .cookieJar(CookieStore()) //保存cookie
             .hostnameVerifier { _: String?, _: SSLSession? -> true }
@@ -96,28 +96,44 @@ class HikariApp : Application() {
     }
 
     /**
-     * Gives every request the official app's identity unless the caller set one.
+     * Makes requests to the wenku8 web host look like the official app's.
      *
-     * The wenku8 web host answers a Cloudflare challenge to anything that is not
-     * the official app's Dalvik User-Agent (see [Wenku8Headers]). Requests built
-     * by `Network` set it explicitly, but images — the login checkcode, covers —
-     * go through Glide, which reuses this client and would otherwise send OkHttp's
-     * default UA. The checkcode is the one that matters: without this the login
-     * page's image is a 403 HTML page, so the form can never be filled in.
+     * Two things have to match, and both were measured on device against
+     * `https://www.wenku8.net/checkcode.php` using the app's own Dalvik
+     * User-Agent:
      *
-     * A request that already carries its own User-Agent is left alone, so this
-     * only fills in the default rather than overriding a deliberate choice.
+     *  - `User-Agent`: the site serves the official app's Dalvik identity and
+     *    answers Cloudflare's challenge to everything else (Chrome, WebView,
+     *    `curl`).
+     *  - `Accept-Encoding`: Cloudflare answers `403` to any request carrying
+     *    `Accept-Encoding: gzip`, and OkHttp adds exactly that header on its own
+     *    for every request. Dropping it to `identity` returns `200`; putting
+     *    `gzip` back returns `403`, repeatably. This is why `curl` (which sends
+     *    no such header) reached the site while the app did not, on the same
+     *    device, host and User-Agent.
+     *
+     * The encoding rule is scoped to the two wenku8 web hosts. The image CDN and
+     * the app API are not gated this way, so they keep whatever encoding they
+     * negotiate. The User-Agent fallback applies to every request, because the
+     * login checkcode is fetched by Glide through this same client and would
+     * otherwise go out with OkHttp's default identity.
      */
-    private class UserAgentInterceptor : Interceptor {
+    private class Wenku8WebHeadersInterceptor : Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
             val request = chain.request()
-            if (request.header("User-Agent") != null) return chain.proceed(request)
-            return chain.proceed(
-                request.newBuilder()
-                    .header("User-Agent", Wenku8Headers.USER_AGENT)
-                    .build()
-            )
+            val builder = request.newBuilder()
+
+            if (request.header("User-Agent") == null) {
+                builder.header("User-Agent", Wenku8Headers.USER_AGENT)
+            }
+            if (isWenku8WebHost(request.url.host)) {
+                builder.header("Accept-Encoding", Wenku8Headers.ACCEPT_ENCODING)
+            }
+            return chain.proceed(builder.build())
         }
+
+        private fun isWenku8WebHost(host: String): Boolean =
+            host == "www.wenku8.net" || host == "www.wenku8.cc"
     }
 
     inner class CookieInterceptor: Interceptor {

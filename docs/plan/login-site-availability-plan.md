@@ -5,14 +5,22 @@
 
 ## 一、结论
 
-登录失败的根因不是密码、验证码或代理，而是**请求被 Cloudflare 挡在站点之外**：
+登录失败的根因不是密码、验证码或代理，而是**请求被 Cloudflare 挡在站点之外**。
+真机复测后确认有**两个独立成因**，必须同时修正：
 
 1. `www.wenku8.cc` 对所有客户端返回 Cloudflare 质询（`403` + `Cf-Mitigated: challenge`），OkHttp 无法通过。
 2. `www.wenku8.net` 会**按 User-Agent 区别对待**：官方 App 的 `Dalvik/...` UA 放行，浏览器 UA 一律 `403`。
-3. 当前分支把默认节点指向了被全量拦截的 `.cc`，并且 `getWenku8Node()` 每次读取都把 `.net` 改写回 `.cc`。
-4. 即使修正节点，`Network.kt` 仍在用 Chrome 桌面 UA 发请求，照样被拦。
+3. `www.wenku8.net` 还会**按 `Accept-Encoding` 区别对待**：带 `gzip` 一律 `403`，`identity` 或缺失才放行。
+   而 **OkHttp 默认给每个请求自动加 `Accept-Encoding: gzip`**，所以 App 必然被拦。
+4. 当前分支把默认节点指向了被全量拦截的 `.cc`，并且 `getWenku8Node()` 每次读取都把 `.net` 改写回 `.cc`。
+5. 即使修正节点，`Network.kt` 仍在用 Chrome 桌面 UA 发请求，照样被拦。
 
-也就是说：**节点选错 + UA 用错**，两个问题叠加，任一存在都会让登录必然失败。
+也就是说：**节点选错 + UA 用错 + 编码协商用错**，三个问题叠加，任一存在都会让登录必然失败。
+
+> [!IMPORTANT]
+> 早期只在主机上用 `curl` 验证，得出"UA 是唯一根因"的结论是**不完整**的：`curl` 默认不发
+> `Accept-Encoding`，所以它一直能通；App 走 OkHttp 自动加 gzip，所以一直 403。这个差异
+> 只有在真机上对比才暴露出来。详见 2.6。
 
 ## 二、实测证据
 
@@ -63,6 +71,28 @@
   由前端 WebView 兜底。
 - 书架的写入类操作（加书架等）走 WebView 注入 Cookie 执行，不依赖 OkHttp 过 CF。
 
+### 2.6 `Accept-Encoding` 对照（真机，小米 13 / Android 13，同一 UA、HTTP/1.1）
+
+这一组是复测时新增的，也是最初被漏掉的根因。设备上 `curl` 用 Dalvik UA 能拿 200，
+而 App 的 OkHttp 用同一个 Dalvik UA 却 403 —— 差异只能在请求头或 TLS 指纹上。
+逐个头排除后：
+
+| 附加请求头 | `checkcode.php` |
+| --- | --- |
+| （无） | **200** |
+| `Accept-Encoding: gzip` | **403** |
+| `Accept-Encoding: identity` | **200** |
+| `Connection: Keep-Alive` | 200 |
+| `Accept: */*` | 200 |
+
+OkHttp 默认自动添加 `Accept-Encoding: gzip`（并透明解压），这正是 App 与 `curl` 的差别。
+把该头改为 `identity` 后，App 内验证码立即正常显示，登录 POST 也返回了真实业务响应
+（`该用户不存在`，而非 Cloudflare 拦截页）。
+
+修复落在 `HikariApp.kt` 的 `Wenku8WebHeadersInterceptor`：对 `www.wenku8.net` /
+`www.wenku8.cc` 两个主机把 `Accept-Encoding` 固定为 `identity`；其余主机（图片 CDN、
+`app.wenku8.com`）不受影响。
+
 ## 三、当前代码的具体问题点
 
 当前分支为 `test/no-bili-source`（HEAD `b082b39`）。注意：`main` 分支（`261b387`）已包含
@@ -74,8 +104,9 @@
 | 2 | `Wenku8Repository.kt:680` | `getWenku8Node()` 把 `.net` 改写回 `.cc`，用户选择被静默覆盖 |
 | 3 | `Network.kt:48/59/69/78/86` | `login` / `post` / `get` / `getWithoutCookie` / `getReaderPage` 全部使用 Chrome 桌面 UA |
 | 4 | `LoginActivity.kt:222` | 验证码经 Glide 加载，走默认 UA，必然 403 |
-| 5 | `HikariApp.kt:64` | Glide/RxHttp 共用的 client 未设默认 UA，且 `hostnameVerifier` 全局放行 |
-| 6 | `SplashViewModel.isNotLoggedIn()` | 只看本地 cookie 是否过期，不看服务端是否可达，节点被封时错误地直接判为"未登录" |
+| 5 | `HikariApp.kt:64` | Glide/RxHttp 共用的 client 未设默认 UA；OkHttp 自动加 `Accept-Encoding: gzip`，两个原因都导致 403 |
+| 6 | `HikariApp.kt:74` | `hostnameVerifier` 全局放行（独立的安全问题，不在本方案范围） |
+| 7 | `SplashViewModel.isNotLoggedIn()` | 只看本地 cookie 是否过期，不看服务端是否可达，节点被封时错误地直接判为"未登录" |
 
 仓库中已有一个 WIP stash（`stash@{0}`，标题含 `cloudflare login probe`），其中包含
 `CloudflareChallenge`（质询识别）、`ReaderNodeHost`（节点迁移/回退）和
