@@ -1,7 +1,11 @@
 # 登录站点可用性修复方案
 
-本文针对"当前登录站点的问题"给出结论与修复方案。结论来自本机实测（2026-10-11，Windows，直连，无代理），
+本文针对"当前登录站点的问题"给出结论与修复方案。结论来自本机实测（2026-10-11 与 2026-10-12，Windows，直连，无代理），
 参考实现为同为文库8三方客户端的 [niuhuan/wild](https://github.com/niuhuan/wild)（Flutter + Rust）。
+
+> **2026-10-12 更新：登录已能进入，但详情页与书架仍失败，根因是另外两条 WAF 规则。**
+> 见文末「八、后续排查」——`charset` 查询参数会被边缘 WAF 直接拦截，`reader.php` 还要求带 Referer。
+> 两条规则均已修复（`Wenku8WebUrls` + `Wenku8WebHeadersInterceptor`）。
 
 ## 一、结论
 
@@ -179,3 +183,72 @@ OkHttp 默认自动添加 `Accept-Encoding: gzip`（并透明解压），这正�
 - 本方案不替代 `stash@{0}` 中的阅读器设置（round5）改动，二者可分别处理；
   只复用其中的 `CloudflareChallenge`、`ReaderNodeHost` 及其测试。
 - `README.md` 中"上游遗留问题"表里的 TLS / 明文流量条目与本方案无关，保持原状。
+
+## 八、后续排查：详情与书架仍然失败（2026-10-12）
+
+UA 与 `Accept-Encoding` 修复后，登录能进、推荐能出，但详情页与书架仍报网络错误。
+继续实测，发现**另外两条独立的边缘 WAF 规则**，且都只影响部分端点——这解释了
+"首页正常、详情/书架失败"的割裂现象。
+
+### 8.1 查询串里的小写字面量 `charset` 会被直接拦截
+
+Cloudflare 对查询串中包含小写子串 `charset` 的请求返回 `403`（"Attention Required!" 页）：
+
+| 查询串 | 结果 |
+| --- | --- |
+| `?classid=0` | 302 |
+| `?classid=0&foo=bar` | 302 |
+| `?classid=0&charset=gbk` | **403** |
+| `?classid=0&CHARSET=gbk` | 302 |
+| `?classid=0&charset2=x` | **403** |
+| `?classid=0&xcharset=x` | **403** |
+| `?classid=0&ch%61rset=gbk` | 302 |
+
+匹配是**大小写敏感的原始子串匹配**，不是参数名匹配（`charset2`、`xcharset` 也命中）。
+把参数名的一个字母百分号编码（`charset` → `ch%61rset`）后，原始串不再包含 `charset`，
+而服务端仍能正确解码并按 GBK/BIG5 输出。
+
+这正好解释了症状：`articleinfo.php?...&charset=gbk` 与 `bookcase.php?classid=0&charset=gbk`
+被 WAF 拦，而首页的 `index.php?charset=gbk` 恰好不在拦截范围内。
+
+实测矩阵（均带 Referer）：
+
+| 端点 | 字面量 `charset` | 编码 `%61` |
+| --- | --- | --- |
+| `index.php` | 302 | 302 |
+| `articleinfo.php` | 200 | 200 |
+| `reader.php` | 200 | 200 |
+| `bookcase.php` | **403** | 302 |
+| `toplist.php` | 302 | 302 |
+| `tags.php` | 302 | 302 |
+| `reviews.php` | 200 | 200 |
+| `search.php` | **403** | 302 |
+| `articlelist.php` | 302 | 302 |
+| `uservote.php` | 302 | 302 |
+| `addbookcase.php` | 302 | 302 |
+| `userpage.php` | 302 | 302 |
+| `userdetail.php` | 302 | 302 |
+
+### 8.2 `reader.php` 缺少 Referer 会被质询
+
+章节目录 `modules/article/reader.php` 在**没有 Referer** 时返回 Cloudflare 质询
+（`Cf-Mitigated: challenge`），带任意同站 Referer 则返回真实页面，3/3 稳定。
+其余端点带不带 Referer 都正常，因此统一补一个同站根 Referer 即可。
+
+### 8.3 修复落点
+
+- 新增 `Wenku8WebUrls`：`hideCharsetParamName()`（把查询串里的 `charset=` 改名为 `ch%61rset=`）
+  与 `refererFor()`（同站根 Referer）。纯函数，附 10 个单测。
+- `HikariApp.Wenku8WebHeadersInterceptor` 在已有的 UA / `Accept-Encoding` 规则上，
+  对两个 web 节点追加这两条；仅在有查询串时改写 URL，避免产生尾随 `?`。
+- `Wenku8Repository.getChapter()` 原先把 `reader.php?aid=X` 拼成 `...?aid=X?charset=gbk`（双 `?`），
+  已改为 `&` 追加。
+
+### 8.4 排查中排除的项
+
+- **插图域名 `pic.777743.xyz`**：实测 `200 image/jpeg`，且该域名是**站点自己在正文里返回的**，
+  不是 app 重写（`Wenku8Parser.replaceDomain` 的默认值只是恰好相同）。无需改动。
+- **跳转链**：未登录时各端点 302 到 `login.php?jumpurl=...charset=...`，跳转目标 200 正常；
+  `charset` 出现在 `jumpurl` 的**值**里不触发 WAF。
+- **`.cc` 节点**：与 `.net` 规则一致（早期测到的 `.cc` 全 403 是因为当时用了浏览器 UA）。
+- **图片 CDN 与 app API**：`img.wenku8.com`、`app.wenku8.com` 均正常，不受以上规则影响。

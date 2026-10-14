@@ -8,7 +8,12 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.cyh128.hikari_novel.data.repository.AppRepository
 import com.cyh128.hikari_novel.data.repository.Wenku8Repository
 import com.cyh128.hikari_novel.data.repository.ReaderRepository
+import com.cyh128.hikari_novel.data.source.remote.Wenku8CookieJar
+import com.cyh128.hikari_novel.data.source.remote.Wenku8CallLogger
 import com.cyh128.hikari_novel.data.source.remote.Wenku8Headers
+import com.cyh128.hikari_novel.data.source.remote.Wenku8RetryInterceptor
+import com.cyh128.hikari_novel.data.source.remote.Wenku8Timeouts
+import com.cyh128.hikari_novel.data.source.remote.Wenku8WebUrls
 import com.cyh128.hikari_novel.ui.other.CrashActivity
 import com.cyh128.hikari_novel.util.LanguageHelper
 import com.cyh128.hikari_novel.util.ThemeHelper
@@ -30,6 +35,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.net.ssl.SSLSession
 
@@ -47,6 +53,9 @@ class HikariApp : Application() {
 
     @Inject
     lateinit var readerRepository: ReaderRepository
+
+    @Inject
+    lateinit var wenku8CookieJar: Wenku8CookieJar
 
     companion object {
         lateinit var application: Application
@@ -67,10 +76,17 @@ class HikariApp : Application() {
         wenku8Repository.migrateForcedNodeHost()
 
         application = this
+        val cookieStore = CookieStore()
+        wenku8CookieJar.attach(cookieStore)
         val client: OkHttpClient = OkHttpClient.Builder()
+            .connectTimeout(Wenku8Timeouts.CONNECT_SECONDS, TimeUnit.SECONDS)
+            .readTimeout(Wenku8Timeouts.READ_SECONDS, TimeUnit.SECONDS)
+            .writeTimeout(Wenku8Timeouts.WRITE_SECONDS, TimeUnit.SECONDS)
             .addInterceptor(Wenku8WebHeadersInterceptor())
+            .addInterceptor(Wenku8RetryInterceptor())
             .addInterceptor(CookieInterceptor())
-            .cookieJar(CookieStore()) //保存cookie
+            .eventListener(Wenku8CallLogger())
+            .cookieJar(cookieStore) //保存cookie
             .hostnameVerifier { _: String?, _: SSLSession? -> true }
 //            .protocols(Collections.singletonList(Protocol.HTTP_1_1))
             .build()
@@ -96,11 +112,11 @@ class HikariApp : Application() {
     }
 
     /**
-     * Makes requests to the wenku8 web host look like the official app's.
+     * Makes requests to the wenku8 web host look like the official app's, and
+     * applies the URL fixes that host needs.
      *
-     * Two things have to match, and both were measured on device against
-     * `https://www.wenku8.net/checkcode.php` using the app's own Dalvik
-     * User-Agent:
+     * Four things have to match, all measured against `https://www.wenku8.net`
+     * with the app's own Dalvik User-Agent:
      *
      *  - `User-Agent`: the site serves the official app's Dalvik identity and
      *    answers Cloudflare's challenge to everything else (Chrome, WebView,
@@ -111,12 +127,18 @@ class HikariApp : Application() {
      *    `gzip` back returns `403`, repeatably. This is why `curl` (which sends
      *    no such header) reached the site while the app did not, on the same
      *    device, host and User-Agent.
+     *  - The literal `charset` query parameter is itself blocked: the detail page
+     *    and bookshelf requests carried `&charset=gbk` and came back as the WAF
+     *    page, which is why those screens reported a network error while the home
+     *    page worked. See [Wenku8WebUrls.hideCharsetParamName].
+     *  - `reader.php` needs a same-host `Referer` or it is challenged; one is
+     *    filled in as a default. See [Wenku8WebUrls.refererFor].
      *
-     * The encoding rule is scoped to the two wenku8 web hosts. The image CDN and
-     * the app API are not gated this way, so they keep whatever encoding they
-     * negotiate. The User-Agent fallback applies to every request, because the
-     * login checkcode is fetched by Glide through this same client and would
-     * otherwise go out with OkHttp's default identity.
+     * The encoding, charset and Referer rules are scoped to the two wenku8 web
+     * hosts. The image CDN and the app API are not gated this way, so they keep
+     * whatever encoding they negotiate. The User-Agent fallback applies to every
+     * request, because the login checkcode is fetched by Glide through this same
+     * client and would otherwise go out with OkHttp's default identity.
      */
     private class Wenku8WebHeadersInterceptor : Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
@@ -126,14 +148,23 @@ class HikariApp : Application() {
             if (request.header("User-Agent") == null) {
                 builder.header("User-Agent", Wenku8Headers.USER_AGENT)
             }
-            if (isWenku8WebHost(request.url.host)) {
+            if (Wenku8Headers.isWebHost(request.url.host)) {
                 builder.header("Accept-Encoding", Wenku8Headers.ACCEPT_ENCODING)
+                if (request.header("Referer") == null) {
+                    builder.header("Referer", Wenku8WebUrls.refererFor(request.url.host))
+                }
+                // Only touch the URL when there is a query to rewrite: setting an
+                // empty encoded query would append a bare trailing `?`.
+                val query = request.url.encodedQuery
+                if (query != null) {
+                    val fixed = request.url.newBuilder()
+                        .encodedQuery(Wenku8WebUrls.hideCharsetParamName(query))
+                        .build()
+                    builder.url(fixed)
+                }
             }
             return chain.proceed(builder.build())
         }
-
-        private fun isWenku8WebHost(host: String): Boolean =
-            host == "www.wenku8.net" || host == "www.wenku8.cc"
     }
 
     inner class CookieInterceptor: Interceptor {

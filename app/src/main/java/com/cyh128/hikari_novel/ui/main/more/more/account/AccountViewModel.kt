@@ -7,6 +7,7 @@ import com.cyh128.hikari_novel.data.model.SignedInException
 import com.cyh128.hikari_novel.data.model.TempSignInException
 import com.cyh128.hikari_novel.data.model.UserInfo
 import com.cyh128.hikari_novel.data.repository.Wenku8Repository
+import com.cyh128.hikari_novel.data.source.remote.Wenku8CookieJar
 import com.drake.channel.sendEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AccountViewModel @Inject constructor(
-    private val wenku8Repository: Wenku8Repository
+    private val wenku8Repository: Wenku8Repository,
+    private val wenku8CookieJar: Wenku8CookieJar
 ) : ViewModel() {
     lateinit var userInfo: UserInfo
 
@@ -34,6 +36,9 @@ class AccountViewModel @Inject constructor(
 
     //退出账号，即清空用户名和密码
     fun clearLoginInfo() {
+        // The MMKV copy and the OkHttp cookie jar are separate stores; clearing
+        // only the former leaves the previous session on disk.
+        wenku8CookieJar.clear()
         wenku8Repository.username = null
         wenku8Repository.password = null
         wenku8Repository.expDate = null

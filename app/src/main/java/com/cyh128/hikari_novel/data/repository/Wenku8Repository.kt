@@ -193,12 +193,17 @@ class Wenku8Repository @Inject constructor(
         val charset: String?
         when (Locale.getDefault()) {
             Locale.TRADITIONAL_CHINESE -> {
-                requestUrl = "${url}?charset=big5"
+                // `url` already carries a query (`reader.php?aid=...`), so the
+                // charset has to be appended with `&`. Using `?` produced
+                // `reader.php?aid=1?charset=big5`, which the site parses as a
+                // single `aid` value of `1?charset=big5` and then answers with
+                // the wrong page rather than a clean error.
+                requestUrl = "$url&charset=big5"
                 charset = "BIG5-HKSCS"
             }
 
             else -> {
-                requestUrl = "${url}?charset=gbk"
+                requestUrl = "$url&charset=gbk"
                 charset = "GBK"
             }
         }

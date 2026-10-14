@@ -52,4 +52,13 @@ object Wenku8Headers {
      * uncompressed response instead of letting OkHttp negotiate gzip by default.
      */
     const val ACCEPT_ENCODING = "identity"
+
+    /**
+     * True for the two web hosts that Cloudflare gates.
+     *
+     * Shared so the header, retry and timeout rules all agree on which hosts
+     * they apply to instead of each re-declaring the same string pair.
+     */
+    fun isWebHost(host: String): Boolean =
+        host == "www.wenku8.net" || host == "www.wenku8.cc"
 }
