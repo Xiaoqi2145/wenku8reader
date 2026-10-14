@@ -23,10 +23,12 @@ class MainViewModel @Inject constructor(
             appRepository.checkUpdate()
                 .onSuccess {
                     if (it) sendEvent(Event.HaveAvailableUpdateEvent,"event_main_activity")
-                    else sendEvent(Event.NoAvailableUpdateEvent,"event_main_activity")
-                }.onFailure {
-                    sendEvent(Event.NetworkErrorEvent(it.message),"event_main_activity")
                 }
+                // A failed *automatic* check is not worth interrupting the user
+                // for: they did not ask for it, and a blocked or offline GitHub
+                // API would greet every launch with a non-cancelable error
+                // dialog. The manual check on the About screen still reports
+                // failures, because there the user is waiting for an answer.
         }
     }
 }

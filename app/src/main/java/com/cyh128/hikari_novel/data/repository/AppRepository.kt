@@ -11,7 +11,10 @@ import com.cyh128.hikari_novel.data.model.ListViewType
 import com.cyh128.hikari_novel.data.model.ReaderOrientation
 import com.cyh128.hikari_novel.data.source.local.mmkv.AppConfig
 import com.cyh128.hikari_novel.data.source.remote.Network
+import com.cyh128.hikari_novel.util.enumValue
+import com.cyh128.hikari_novel.util.VersionTag
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import rxhttp.awaitResult
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -62,56 +65,81 @@ class AppRepository @Inject constructor(
     }
 
     //获取阅读器阅读方式
-    fun getReaderOrientation() = enumValues<ReaderOrientation>()[appConfig.readerOrientation]
+    fun getReaderOrientation() = enumValue(
+        ReaderOrientation.entries,
+        appConfig.readerOrientation,
+        ReaderOrientation.Horizontal
+    )
 
     //设置阅读器阅读方式
     fun setReaderOrientation(readerOrientation: ReaderOrientation) {
         appConfig.readerOrientation = readerOrientation.ordinal
     }
 
-    fun getLanguage() = enumValues<Language>()[appConfig.language]
+    fun getLanguage() = enumValue(Language.entries, appConfig.language, Language.FOLLOW_SYSTEM)
 
     fun setLanguage(language: Language) {
         appConfig.language = language.ordinal
     }
 
-    fun getDefaultTab() = enumValues<DefaultTab>()[appConfig.defaultTab]
+    fun getDefaultTab() = enumValue(DefaultTab.entries, appConfig.defaultTab, DefaultTab.Home)
 
     fun setDefaultTab(defaultTab: DefaultTab) {
         appConfig.defaultTab = defaultTab.ordinal
     }
 
-    fun getAppTheme() = enumValues<AppTheme>()[appConfig.appTheme]
+    fun getAppTheme() = enumValue(AppTheme.entries, appConfig.appTheme, AppTheme.GalIsland)
 
     fun setAppTheme(appTheme: AppTheme) {
         appConfig.appTheme = appTheme.ordinal
     }
 
-    fun getDarkMode() = enumValues<DarkMode>()[appConfig.darkMode]
+    fun getDarkMode() = enumValue(DarkMode.entries, appConfig.darkMode, DarkMode.System)
 
     fun setDarkMode(darkMode: DarkMode) {
         appConfig.darkMode = darkMode.ordinal
     }
 
-    fun getListViewType() = enumValues<ListViewType>()[appConfig.listViewType]
+    fun getListViewType() = enumValue(ListViewType.entries, appConfig.listViewType, ListViewType.Grid)
 
     fun setListViewType(listViewType: ListViewType) {
         appConfig.listViewType = listViewType.ordinal
     }
 
-    //检查更新
+    /**
+     * Whether a newer release is published.
+     *
+     * Two things had to change here. The endpoint was the *upstream* repository,
+     * which stopped shipping after archiving, so every fork user was compared
+     * against a build they could not install. And the comparison was string
+     * equality, which a tag like `bye` — the upstream "stopped maintaining"
+     * notice — can never satisfy, so the dialog appeared on every launch.
+     *
+     * Only well-formed numeric tags count now: `bye`, a `v` prefix and any
+     * prerelease suffix are ignored, and the current version is parsed into
+     * numbers instead of compared as text. A malformed or older tag therefore
+     * reports "no update" rather than nagging forever.
+     */
     suspend fun checkUpdate(): Result<Boolean> {
-        network.getWithoutCookie("https://api.github.com/repos/15dd/wenku8reader/releases/latest")
-            .awaitResult {
-                it.body()?.let { data ->
-                    val result = Gson().fromJson(data.string(), Map::class.java)
-                    return if (result["tag_name"] == getVersion()) Result.success(false)
-                    else Result.success(true)
-                }
-                return Result.success(false)
-            }.onFailure {
-                return Result.failure(NetworkErrorException(it.message))
+        network.getWithoutCookie(
+            "https://api.github.com/repos/Xiaoqi2145/wenku8reader/releases?per_page=20"
+        ).awaitResult { response ->
+            response.body()?.let { data ->
+                val releases: List<Map<String, Any?>> = Gson().fromJson(
+                    data.string(),
+                    object : TypeToken<List<Map<String, Any?>>>() {}.type
+                )
+                val tags = releases
+                    .asSequence()
+                    .filter { it["draft"] != true }
+                    .map { it["tag_name"] as? String }
+                    .toList()
+                return Result.success(VersionTag.anyNewerThan(getVersion(), tags))
             }
+            return Result.success(false)
+        }.onFailure {
+            return Result.failure(NetworkErrorException(it.message))
+        }
         throw RuntimeException()
     }
 

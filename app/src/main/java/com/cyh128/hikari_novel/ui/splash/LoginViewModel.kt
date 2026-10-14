@@ -6,21 +6,21 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cyh128.hikari_novel.data.model.Event
-import com.cyh128.hikari_novel.data.repository.BookshelfRepository
+import com.cyh128.hikari_novel.data.repository.BookshelfSyncer
 import com.cyh128.hikari_novel.data.repository.Wenku8Repository
-import com.cyh128.hikari_novel.data.source.local.database.bookshelf.BookshelfEntity
+import com.cyh128.hikari_novel.data.di.ApplicationScope
 import com.drake.channel.sendEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val wenku8Repository: Wenku8Repository,
-    private val bookshelfRepository: BookshelfRepository
+    private val bookshelfSyncer: BookshelfSyncer,
+    @ApplicationScope private val applicationScope: CoroutineScope
 ) : ViewModel() {
     private val _isUsernameCorrect = MutableLiveData<Boolean>()
     val isUsernameCorrect: LiveData<Boolean> = _isUsernameCorrect
@@ -36,7 +36,7 @@ class LoginViewModel @Inject constructor(
             wenku8Repository.login(username, password, checkcode, usecookie)
                 .onSuccess { success ->
                     if (success.isCorrect() && success.isLoginSuccessful) { //当密码正确时并且网页提示登录成功时
-                        getAllBookshelf()
+                        syncBookshelfThenEnterApp()
                     } else if (!success.isCorrect()) { //当密码错误时
                         if (!success.isUsernameCorrect && !success.isPasswordCorrect) {
                             sendEvent(Event.LogInFailureEvent, "event_login_activity")
@@ -59,38 +59,23 @@ class LoginViewModel @Inject constructor(
         wenku8Repository.password = password
     }
 
-    private fun getAllBookshelf() {
-        viewModelScope.launch {
-            bookshelfRepository.deleteAll()
-
-            val list = (0..5).map { classId ->
-                async<Boolean> {
-                    val result = wenku8Repository.getBookshelf(classId)
-                    result.onSuccess { success ->
-                        bookshelfRepository.upsertAll(
-                            success.list.map { info ->
-                                BookshelfEntity(
-                                    aid = info.aid,
-                                    bid = info.bid,
-                                    detailUrl = info.detailUrl,
-                                    title = info.title,
-                                    img = info.img,
-                                    classId = classId
-                                )
-                            }
-                        )
-                        if (classId == 5) {
-                            bookshelfRepository.setMaxCollection(success.maxNum)
-                        }
-                    }.onFailure { failure ->
-                        Log.w("LoginViewModel", "Bookshelf sync failed for class $classId", failure)
-                    }
-                    result.isSuccess
-                }
+    /**
+     * Establishes the session, then hands the first shelf sync to a scope that
+     * survives this screen.
+     *
+     * `LoginActivity` clears the task as soon as it navigates to `MainActivity`,
+     * which cancels `viewModelScope`. Running the sync there meant the six
+     * requests could be killed mid-flight on a slow network, and it also held up
+     * the transition for as long as the slowest shelf took. The user now reaches
+     * the app as soon as the login response is parsed; the shelves appear once
+     * the sync commits, which is a single database write.
+     */
+    private fun syncBookshelfThenEnterApp() {
+        sendEvent(Event.LogInSuccessEvent, "event_login_activity")
+        applicationScope.launch {
+            bookshelfSyncer.sync().onFailure { failure ->
+                Log.w("LoginViewModel", "Initial bookshelf sync failed", failure)
             }
-
-            list.awaitAll()
-            sendEvent(Event.LogInSuccessEvent, "event_login_activity")
         }
     }
 

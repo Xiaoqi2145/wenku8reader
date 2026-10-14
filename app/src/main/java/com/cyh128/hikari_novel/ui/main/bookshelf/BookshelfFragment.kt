@@ -24,7 +24,15 @@ import dagger.hilt.android.AndroidEntryPoint
 class BookshelfFragment : BaseFragment<FragmentBookshelfBinding>() {
     private val viewModel by lazy { ViewModelProvider(requireActivity())[BookshelfViewModel::class] }
 
-    private lateinit var syncingDialog: AlertDialog
+    /**
+     * The progress dialog shown while a manual sync runs.
+     *
+     * Nullable because the sync can fail before the dialog is ever created, and
+     * because the failure path has to dismiss it: it is deliberately
+     * non-cancelable, so leaving it up would trap the user behind a dialog with
+     * no way out.
+     */
+    private var syncingDialog: AlertDialog? = null
 
     private val tabTexts = listOf(
         R.string.default_bookshelf,
@@ -42,10 +50,13 @@ class BookshelfFragment : BaseFragment<FragmentBookshelfBinding>() {
             when (event) {
                 Event.LoadSuccessEvent -> {
                     Toast.makeText(context, getString(R.string.sync_completed), Toast.LENGTH_SHORT).show()
-                    syncingDialog.dismiss()
+                    syncingDialog?.dismiss()
+                    syncingDialog = null
                 }
 
                 is Event.NetworkErrorEvent -> {
+                    syncingDialog?.dismiss()
+                    syncingDialog = null
                     MaterialAlertDialogBuilder(requireActivity())
                         .setTitle(R.string.network_error)
                         .setIcon(R.drawable.ic_error)

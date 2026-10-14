@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.base.BaseFragment
 import com.cyh128.hikari_novel.databinding.FragmentGuideBinding
+import com.cyh128.hikari_novel.util.Constants
 import com.cyh128.hikari_novel.util.openUrl
 import com.cyh128.hikari_novel.util.startActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -39,7 +40,7 @@ class GuideFragment: BaseFragment<FragmentGuideBinding>() {
         }
 
         binding.bFGuideUsingHelp.setOnClickListener {
-            openUrl("https://github.com/15dd/wenku8reader/wiki")
+            openUrl(Constants.REPOSITORY_URL)
         }
     }
 }

@@ -22,8 +22,6 @@ class SplashViewModel @Inject constructor(
     private val _loggingInText = MutableLiveData<String>()
     val loggingInText: LiveData<String> = _loggingInText
 
-    fun getCookie() = wenku8Repository.cookie
-
     //判断是否处于未登录状态
     fun isNotLoggedIn(): Boolean =
          wenku8Repository.username.isNullOrEmpty() ||

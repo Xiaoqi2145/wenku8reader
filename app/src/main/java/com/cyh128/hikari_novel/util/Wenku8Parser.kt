@@ -1,6 +1,5 @@
 package com.cyh128.hikari_novel.util
 
-import android.util.Log
 import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.data.model.Bookshelf
 import com.cyh128.hikari_novel.data.model.BookshelfNovelInfo
@@ -326,13 +325,10 @@ object Wenku8Parser {
                 String.format("https://img.wenku8.com/image/%s/%s/%ss.jpg", aid[0], aid, aid)
             }
             bni.add(BookshelfNovelInfo(bid, aid, bookUrl, title, imgUrl))
-            Log.d("w_8_p","$bid, $aid, $bookUrl, $title, $imgUrl")
         }
 
         var title = document.getElementById("content")!!.select("div.gridtop").first()!!.text()
         title = title.substring(4).substringBeforeLast("。").trim()
-
-        Log.d("w_8_p",bni.size.toString())
 
         return Bookshelf(bni, title.substring(3).substringBefore("本").trim().toInt())
     }

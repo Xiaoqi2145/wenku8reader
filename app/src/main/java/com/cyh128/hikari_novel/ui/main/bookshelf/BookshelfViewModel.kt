@@ -6,13 +6,11 @@ import com.cyh128.hikari_novel.data.model.BookshelfNovelInfo
 import com.cyh128.hikari_novel.data.model.Event
 import com.cyh128.hikari_novel.data.repository.AppRepository
 import com.cyh128.hikari_novel.data.repository.BookshelfRepository
+import com.cyh128.hikari_novel.data.repository.BookshelfSyncer
 import com.cyh128.hikari_novel.data.repository.Wenku8Repository
-import com.cyh128.hikari_novel.data.source.local.database.bookshelf.BookshelfEntity
 import com.drake.channel.sendEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,7 +18,8 @@ import javax.inject.Inject
 class BookshelfViewModel @Inject constructor(
     private val wenku8Repository: Wenku8Repository,
     private val appRepository: AppRepository,
-    private val bookshelfRepository: BookshelfRepository
+    private val bookshelfRepository: BookshelfRepository,
+    private val bookshelfSyncer: BookshelfSyncer
 ) : ViewModel() {
     var getAllFlow = bookshelfRepository.getAll()
 
@@ -55,37 +54,12 @@ class BookshelfViewModel @Inject constructor(
     }
 
     fun getAllBookshelf() {
-        viewModelScope.launch {
-            bookshelfRepository.deleteAll()
-
-            val list = (0..5).map { classId ->
-                async<Boolean> {
-                    val result = wenku8Repository.getBookshelf(classId)
-                    result.onSuccess { success ->
-                        bookshelfRepository.upsertAll(
-                            success.list.map { info ->
-                                BookshelfEntity(
-                                    aid = info.aid,
-                                    bid = info.bid,
-                                    detailUrl = info.detailUrl,
-                                    title = info.title,
-                                    img = info.img,
-                                    classId = classId
-                                )
-                            }
-                        )
-                        if (classId == 5) {
-                            bookshelfRepository.setMaxCollection(success.maxNum)
-                        }
-                    }.onFailure { failure ->
-                        sendEvent(Event.NetworkErrorEvent(failure.message), "event_bookshelf_fragment")
-                    }
-                    result.isSuccess
+        viewModelScope.launch(Dispatchers.IO) {
+            bookshelfSyncer.sync()
+                .onSuccess { sendEvent(Event.LoadSuccessEvent, "event_bookshelf_fragment") }
+                .onFailure { failure ->
+                    sendEvent(Event.NetworkErrorEvent(failure.message), "event_bookshelf_fragment")
                 }
-            }
-
-            val result = list.awaitAll().all { it }
-            if (result) sendEvent(Event.LoadSuccessEvent, "event_bookshelf_fragment")
         }
     }
 }

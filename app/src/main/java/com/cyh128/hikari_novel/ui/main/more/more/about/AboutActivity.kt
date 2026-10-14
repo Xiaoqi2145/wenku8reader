@@ -6,6 +6,7 @@ import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.base.BaseActivity
 import com.cyh128.hikari_novel.data.model.Event
 import com.cyh128.hikari_novel.databinding.ActivityAboutBinding
+import com.cyh128.hikari_novel.util.Constants
 import com.cyh128.hikari_novel.util.openUrl
 import com.drake.channel.receiveEvent
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -30,7 +31,7 @@ class AboutActivity : BaseActivity<ActivityAboutBinding>() {
                         .setMessage(R.string.update_available_tip)
                         .setCancelable(false)
                         .setPositiveButton(R.string.go_to_download) { _, _ ->
-                            openUrl("https://github.com/15dd/wenku8reader/releases")
+                            openUrl(Constants.RELEASES_URL)
                         }
                         .setNegativeButton(R.string.cancel) { _, _ -> }
                         .show()
@@ -44,6 +45,19 @@ class AboutActivity : BaseActivity<ActivityAboutBinding>() {
                         .setPositiveButton(R.string.ok) { _, _ -> }
                         .show()
                     binding.llAAboutUpdate.isClickable = true
+                }
+
+                is Event.NetworkErrorEvent -> {
+                    // The row is disabled while the check runs. Without this
+                    // branch a failed check left it disabled forever, so the
+                    // button looked broken until the screen was reopened.
+                    binding.llAAboutUpdate.isClickable = true
+                    MaterialAlertDialogBuilder(this@AboutActivity)
+                        .setIcon(R.drawable.ic_error)
+                        .setTitle(R.string.check_update_failure)
+                        .setMessage(event.msg)
+                        .setPositiveButton(R.string.ok) { _, _ -> }
+                        .show()
                 }
 
                 else -> {}
@@ -68,14 +82,14 @@ class AboutActivity : BaseActivity<ActivityAboutBinding>() {
         }
 
         binding.bAAboutGithub.setOnClickListener {
-            openUrl("https://github.com/15dd/wenku8reader")
+            openUrl(Constants.REPOSITORY_URL)
         }
         binding.bAAboutTelegram.setOnClickListener {
             openUrl("https://t.me/+JH2H3VpET7ozMTU9")
         }
 
         binding.llAAboutHelp.setOnClickListener {
-            openUrl("https://github.com/15dd/wenku8reader/wiki")
+            openUrl(Constants.REPOSITORY_URL)
         }
     }
 }

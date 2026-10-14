@@ -15,6 +15,9 @@ class BookshelfRepository @Inject constructor(
 
     suspend fun upsertAll(list: List<BookshelfEntity>) = bookshelfDao.upsertAll(list)
 
+    /** Replaces the stored shelf with [list] atomically. */
+    suspend fun replaceAll(list: List<BookshelfEntity>) = bookshelfDao.replaceAll(list)
+
     suspend fun updateClassId(aid: String, newClassId: Int) = bookshelfDao.updateClassId(aid, newClassId)
 
     suspend fun delete(aid: String) = bookshelfDao.delete(aid)

@@ -1,6 +1,5 @@
 package com.cyh128.hikari_novel.data.repository
 
-import android.util.Log
 import com.cyh128.hikari_novel.R
 import com.cyh128.hikari_novel.data.model.Bookshelf
 import com.cyh128.hikari_novel.data.model.ChapterContentResponse
@@ -76,7 +75,6 @@ class Wenku8Repository @Inject constructor(
                         return Result.failure(NetworkException(HttpCodeParser.parser(body.code())))
                     } else {
                         val html = String(body.body()!!.bytes(), Charset.forName("GBK"))
-                        Log.d("w_8_r", html)
                         val response = LoginResponse.empty()
                         Wenku8Parser.isLoginInfoCorrect(html, response)
                         Wenku8Parser.isLoginSuccessful(html, response)

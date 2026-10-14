@@ -17,6 +17,7 @@ import com.cyh128.hikari_novel.ui.main.home.HomeFragment
 import com.cyh128.hikari_novel.ui.main.more.MoreFragment
 import com.cyh128.hikari_novel.ui.main.visit_history.VisitHistoryFragment
 import com.cyh128.hikari_novel.util.Constants
+import com.cyh128.hikari_novel.util.Constants.RELEASES_URL
 import com.cyh128.hikari_novel.util.openUrl
 import com.drake.channel.receiveEvent
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -74,16 +75,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
         receiveEvent<Event>("event_main_activity") { event ->
             when (event) {
-                is Event.NetworkErrorEvent -> {
-                    MaterialAlertDialogBuilder(this@MainActivity)
-                        .setIcon(R.drawable.ic_error)
-                        .setTitle(R.string.check_update_failure)
-                        .setMessage(event.msg)
-                        .setCancelable(false)
-                        .setPositiveButton(R.string.ok) { _, _ -> }
-                        .show()
-                }
-
                 Event.HaveAvailableUpdateEvent -> {
                     MaterialAlertDialogBuilder(this@MainActivity)
                         .setIcon(R.drawable.ic_release_alert)
@@ -91,7 +82,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                         .setMessage(R.string.update_available_tip)
                         .setCancelable(false)
                         .setPositiveButton(R.string.go_to_download) { _, _ ->
-                            openUrl("https://github.com/15dd/wenku8reader/releases")
+                            openUrl(RELEASES_URL)
                         }
                         .setNegativeButton(R.string.cancel) { _, _ -> }
                         .show()

@@ -56,14 +56,20 @@
 | 安全 | TLS 主机名校验被全局关闭（`.hostnameVerifier { _, _ -> true }`），任意无效证书均被接受，登录凭据存在中间人风险 | `HikariApp.kt` |
 | 安全 | 签名密钥 `app/src/key.jks` 与弱密码硬编码进版本库，且 debug / release 共用同一签名配置 | `app/build.gradle.kts` |
 | 安全 | `usesCleartextTraffic="true"` 放行明文流量，登录接口走 `http://app.wenku8.com` | `AndroidManifest.xml` / `Network.kt` |
-| 稳定性 | 枚举反序列化越界（`enumValues<T>()[index]`）：MMKV 中的 int 越界即抛异常，且发生在崩溃拦截初始化之前，会导致启动即崩且无法自恢复 | `AppRepository.kt` |
-| 稳定性 | 版本更新检查用字符串相等比较，`v` 前缀或 `DEBUG` 后缀会永久误判为"有更新" | `AppRepository.kt` |
-| 数据 | 正文图片 URL 被硬编码重写到第三方镜像域 `pic.777743.xyz` | `Wenku8Parser.kt` |
 | 发布 | `targetSdk = 34`（注释说明为保留 edgeToEdge 而刻意未升），已低于 Google Play 的 35+ 要求 | `app/build.gradle.kts` |
+
+以下条目经复核后**已修正**，保留在此仅为记录结论：
+
+| 类别 | 原问题 | 结论 |
+| --- | --- | --- |
+| 稳定性 | 枚举反序列化越界（`enumValues<T>()[index]`）：MMKV 中的 int 越界即抛异常，且发生在崩溃拦截初始化之前 | 已改为 `enumValue(entries, index, default)` 安全回退，附单测 |
+| 稳定性 | 版本更新检查用字符串相等比较，且指向已归档的上游仓库 | 改为读取本 fork 的 releases 并按数值比较版本号；`bye` 这类非版本 tag 被忽略 |
+| 数据 | 正文图片 URL 被重写到 `pic.777743.xyz` | **不是缺陷**：该域名是站点自己在正文 HTML 里返回的图床。实测 `https://pic.777743.xyz/3/3825/172100/212103.jpg` 返回 `200 image/jpeg`，而把同一路径换回 `img.wenku8.com` 会被 302 到 `deny.txt` 并最终 403 |
+| 发布 | 首个可用构建需等 JitPack 依赖可解析 | 依赖可解析，`assembleDebug` / `assembleRelease` 均可完成 |
 
 ### 发布状态
 
-本 fork **尚未发布任何 release 或 tag**，上述改动目前仅存在于源码。首个可用构建需要等 JitPack 依赖可解析、完成阶段七设备与性能验证后产出。
+本 fork 尚未发布 release 或 tag，上述改动目前仅存在于源码。构建本身已可用，产出 release 前仍需完成阶段七的设备与性能验证。
 
 ### 构建与测试
 
@@ -73,7 +79,7 @@
     .\gradlew.bat :app:compileDebugKotlin --no-daemon
     .\gradlew.bat :app:connectedDebugAndroidTest --no-daemon
 
-当前验证状态：本 fork 已完成源码审计与纯 Kotlin 领域测试的独立编译运行；**完整 Gradle 构建仍在 `dataBindingMergeDependencyArtifactsDebug` 因多个 JitPack 依赖无法解析而阻塞**，设备测试未执行。请勿把历史 `app/build` 报告当作当前验证结果。
+当前验证状态：`testDebugUnitTest`（204 个用例）、`compileDebugKotlin`、`assembleDebug` 与 `assembleRelease` 均已在本机通过。设备测试（`connectedDebugAndroidTest`）尚未执行，因为没有可用的真机或模拟器。
 
 <div align="center">
 

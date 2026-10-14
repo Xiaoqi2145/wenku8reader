@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -22,6 +23,21 @@ interface BookshelfDao {
 
     @Query("DELETE FROM bookshelf")
     suspend fun deleteAll()
+
+    /**
+     * Swap the whole table for [list] in one transaction.
+     *
+     * A sync used to run `deleteAll()` followed by one insert per shelf page,
+     * which left several separate commits. Room's invalidation tracker fires
+     * after each of them, so observers saw the shelf empty itself and refill;
+     * doing both halves in one transaction emits a single change and never
+     * exposes the intermediate empty state.
+     */
+    @Transaction
+    suspend fun replaceAll(list: List<BookshelfEntity>) {
+        deleteAll()
+        upsertAll(list)
+    }
 
     @Query("SELECT * FROM bookshelf WHERE classid = (:classId)")
     fun getByClassId(classId: Int): Flow<List<BookshelfEntity>?>
