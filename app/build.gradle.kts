@@ -14,8 +14,11 @@ android {
         applicationId = "com.cyh128.hikari_novel"
         minSdk = 24
         targetSdk = 34 //暂时不要升到35，不然之前的edgeToEdge效果会消失
-        versionCode = 260114
-        versionName = "3.9.10"
+        // 260114 was the last upstream build. This fork has to ship its own
+        // number, otherwise the update check cannot tell the two apart and no
+        // install would ever be offered the fixes.
+        versionCode = 261014
+        versionName = "3.9.11"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

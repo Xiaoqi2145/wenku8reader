@@ -106,3 +106,23 @@ GET https://img.wenku8.com/3/3825/172100/212103.jpg  -> 302 -> /deny.txt -> 403
 - `usesCleartextTraffic="true"` 与 `http://app.wenku8.com` 签到接口；
 - `app/src/key.jks` 与弱口令入库、debug/release 共用签名；
 - `targetSdk = 34` 低于 Google Play 的 35+ 要求。
+
+## 六、发布版本号
+
+原 `versionCode 260114` / `versionName 3.9.10` 与上游最后一次发布完全相同。
+若不改号，本 fork 的构建在更新检查里与上游 3.9.10 无法区分，用户永远收不到
+这些修复。本次改为 `versionCode 261014` / `versionName 3.9.11`。
+
+release 产物（`app/build/outputs/apk/release/`）：
+
+| APK | 大小 |
+| --- | --- |
+| `app-universal-release.apk` | 10.31 MB |
+| `app-arm64-v8a-release.apk` | 8.84 MB |
+| `app-armeabi-v7a-release.apk` | 8.62 MB |
+| `app-x86_64-release.apk` | 8.83 MB |
+| `app-x86-release.apk` | 8.80 MB |
+
+签名校验：V2 方案通过，单签名者，证书 SHA-256
+`8e439209aaa25420f75c5fbf37ebe50e78abdd48baab79598fa4b4fc886601c1`（与既有构建一致，
+可覆盖安装）。`lintVitalRelease` 无错误。

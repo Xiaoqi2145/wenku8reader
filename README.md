@@ -69,7 +69,9 @@
 
 ### 发布状态
 
-本 fork 尚未发布 release 或 tag，上述改动目前仅存在于源码。构建本身已可用，产出 release 前仍需完成阶段七的设备与性能验证。
+本 fork 尚未发布 release 或 tag，上述改动目前仅存在于源码。`assembleRelease` 已可产出
+签名 APK（`versionName 3.9.11`，`versionCode 261014`），发布前仍需完成阶段七的设备与
+性能验证。
 
 ### 构建与测试
 
